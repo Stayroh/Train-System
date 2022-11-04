@@ -15,12 +15,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-
+    - name: Get Aftman
 
     - uses: LPGhatguy/aftman@v0.2.7
       name: Install Aftman
       with:
-        version: "0.2.7"
+        version: "^0.2.7"
         token: ${{ SECRETS.GITHUB_TOKEN }}
     - name: Get Selene version
       run: |
