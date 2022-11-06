@@ -16,15 +16,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-
-    - uses: LPGhatguy/aftman@v0.2.7
-      name: Install Aftman
+    - uses: Roblox/setup-foreman@v1
+      name: Install Foreman
       with:
-        version: "^0.2.7"
+        version: "^1.0.0"
         token: ${{ SECRETS.GITHUB_TOKEN }}
-    - name: Get Selene version
-      run: |
-        selene --version
+
     - name: Lint
       run: |
         selene ./src
