@@ -5,26 +5,26 @@
 
     "ReplicatedStorage": {
       "source": {
-        "$path": "src/shared"
+        "$path": "./src/shared"
       }
     },
 
     "ServerScriptService": {
       "source": {
-        "$path": "src/server"
+        "$path": "./src/server"
       }
     },
 
     "ServerStorage": {
       "source": {
-        "$path": "src/storage"
+        "$path": "./src/storage"
       }
     },
 
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "source": {
-          "$path": "src/client"
+          "$path": "./src/client"
         }
       }
     },
