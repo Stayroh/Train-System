@@ -18,10 +18,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - uses: ok-nick/setup-aftman@v0.1.0
+    - uses: actions/setup-aftman@v0.3.0
       name: Install Aftman
       with:
-        version: "^0.2.6"
+        version: "v0.3.0"
         token: ${{ SECRETS.GITHUB_TOKEN }}
         trust-check: false
 
