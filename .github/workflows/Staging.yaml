@@ -17,12 +17,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - uses: Roblox/setup-foreman@v1
-      name: Install Foreman
+    - uses: ok-nick/setup-aftman@v0.1.0
+      name: Install Aftman
       with:
-        version: "^1.0.0"
+        version: "v0.2.6"
+        trust-check: false
         token: ${{ SECRETS.GITHUB_TOKEN }}
-
+        
     - run: rojo build -o Train-System.rbxl
 
     - run: rbxcloud experience publish --filename Train-System.rbxl  --place-id 11460457200 --universe-id 4074309530 --version-type published --api-key ${{ secrets.API_KEY }}
