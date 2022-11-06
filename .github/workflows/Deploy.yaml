@@ -26,6 +26,6 @@ jobs:
 
     - run: rojo --version
 
-    - run: rojo build -o Train-System.rbxl
+    - run: rojo build default.project.json -o Train-System.rbxl
 
     - run: rbxcloud experience publish --filename Train-System.rbxl  --place-id 11460400865 --universe-id 4074292350 --version-type published --api-key ${{ secrets.API_KEY }}
