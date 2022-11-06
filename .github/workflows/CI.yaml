@@ -18,13 +18,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-     name: Setup Aftman
-        uses: ok-nick/setup-aftman@v0.1.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          trust-check: false
-          version: 'v0.2.6'
-          
+    - uses: ok-nick/setup-aftman@v0.1.0
+      name: Install Aftman
+      with:
+        version: "^0.2.6"
+        token: ${{ SECRETS.GITHUB_TOKEN }}
+        trust-check: false
+
     - name: Lint
       run: |
         selene ./src
