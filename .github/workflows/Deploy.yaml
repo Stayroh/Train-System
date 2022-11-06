@@ -2,11 +2,11 @@ name: Deploy
 
 
 on:
-  push:
-    branches:
-    - main
-    pull_request:
-    - main
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: 
+      - completed
 
 
 jobs:
