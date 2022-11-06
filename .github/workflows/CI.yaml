@@ -22,6 +22,7 @@ jobs:
       name: Install Aftman
       with:
         version: "v0.2.6"
+        trust-check: false
         token: ${{ SECRETS.GITHUB_TOKEN }}
 
     - name: Lint
