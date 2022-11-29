@@ -17,7 +17,8 @@ function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number):
 	end
 	local acos = math.acos(ToAcos)
 	local Angle = atan - acos
-	print(atan, acos)
+	Angle = (V1.Y * Height >= 0) and Angle or Angle + math.pi
+	print(math.deg(Angle))
 	return Angle
 end
 
