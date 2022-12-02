@@ -6,18 +6,7 @@ function Math.RotateOverVector(V1: Vector3, V2: Vector3, Angle: number): Vector3
 end
 
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number, Rev: boolean): number?
-	print(Rev)
-	--[[
-	local Neg = 1
-	if Height < 0 then
-		Height *= -1
-		V1 *= Vector3.new(1, -1, 1)
-		V2 *= Vector3.new(1, -1, 1)
-		Neg = -1
-	end
-	]]
 	local GC = V1:Cross(V2).Unit
-
 	local a = V1.Y
 	local b = GC:Cross(V1).Unit.Y
 	local c = Height

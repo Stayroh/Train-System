@@ -1,7 +1,6 @@
 local Module = {}
 local Math = require(game.ReplicatedStorage.source.Math)
 function Module.Test(Height, Rev: boolean?)
-	print(Rev)
 	local S = game.Workspace.Sphere
 	local A = workspace.PointA
 	local B = workspace.PointB
