@@ -1,6 +1,6 @@
 local Module = {}
 local Math = require(game.ReplicatedStorage.source.Math)
-function Module.Test(Height, Rev: boolean?)
+function Module.Test(Height)
 	local S = game.Workspace.Sphere
 	local A = workspace.PointA
 	local B = workspace.PointB
@@ -12,7 +12,7 @@ function Module.Test(Height, Rev: boolean?)
 	local V1 = (A.Position - S.Position).Unit
 	local V2 = (B.Position - S.Position).Unit
 	D.CFrame = CFrame.lookAt(Vector3.zero, V1:Cross(V2)) * CFrame.Angles(0, math.pi / 2, 0) + D.Position
-	local Angle = Math.ArcLatitudeIntersection(V1, V2, Height, Rev)
+	local Angle = Math.ArcLatitudeIntersection(V1, V2, Height)
 	if not Angle then
 		print("Not succeded")
 		return

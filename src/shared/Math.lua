@@ -5,7 +5,11 @@ function Math.RotateOverVector(V1: Vector3, V2: Vector3, Angle: number): Vector3
 	return V1 * math.cos(Angle) + GC:Cross(V1) * math.sin(Angle)
 end
 
-function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number, Rev: boolean): number?
+function Math.GetQuardant(Angle: number): number
+	return math.ceil((Angle % (math.pi * 2)) / (math.pi / 2)) + 1
+end
+
+function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
 	local GC = V1:Cross(V2).Unit
 	local a = V1.Y
 	local b = GC:Cross(V1).Unit.Y
@@ -16,11 +20,8 @@ function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number, 
 		return nil
 	end
 	local acos = math.acos(ToAcos)
-	acos = (not Rev) and acos or -acos
-	print(math.deg(atan), math.deg(acos))
+	acos = (atan - acos) % (math.pi * 2) <= (atan + acos) % (math.pi * 2) and acos or -acos
 	local Angle = atan - acos
-
-	print(math.deg(Angle))
 	return Angle
 end
 
