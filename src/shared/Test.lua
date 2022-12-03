@@ -1,6 +1,6 @@
 local Module = {}
 local Math = require(game.ReplicatedStorage.source.Math)
-function Module.Test(Height)
+function Module.Alpha(Height)
 	local S = game.Workspace.Sphere
 	local A = workspace.PointA
 	local B = workspace.PointB
@@ -19,4 +19,16 @@ function Module.Test(Height)
 	end
 	R.Position = Math.RotateOverVector(V1, V2, Angle).Unit * Radius + S.Position
 end
+
+function Module.Beta()
+	local P1 = game.Workspace.P1
+	local P2 = game.Workspace.P2
+	local T1 = game.Workspace.T1
+	local S = game.Workspace.S
+	local Pos, Size = Math.SphereFromArc(P1.Position, P2.Position, T1.Position - P1.Position)
+	print(Size)
+	S.Position = Pos
+	S.Size = Vector3.one * Size * 2
+end
+
 return Module

@@ -25,4 +25,33 @@ function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number):
 	return Angle
 end
 
+function Math.GetTangent(RelativNext: Vector3, Tangent: Vector3): Vector3
+	local d = -Tangent
+	local Normal = RelativNext.Unit
+	return d - 2 * d:Dot(Normal) * Normal
+end
+
+function Math.SphereFromArc(Arc_P1: Vector3, Arc_P2: Vector3, Tangent_V1: Vector3)
+	Arc_P2 -= Arc_P1
+	local Tangent_V2 = Math.GetTangent(Arc_P2, Tangent_V1)
+	local N_V1 = Tangent_V1:Cross(Arc_P2):Cross(Tangent_V1).Unit
+	local N_V2 = Tangent_V2:Cross(-Arc_P2):Cross(Tangent_V2).Unit
+	local Alpha = math.acos(N_V1:Dot(Arc_P2.Unit))
+	local Beta = math.acos(N_V2:Dot(-Arc_P2.Unit))
+	local Gamma = math.pi - (Alpha + Beta)
+	local d = Arc_P2.Magnitude / math.sin(Gamma) * math.sin(Beta)
+	return N_V1 * d + Arc_P1, d
+end
+
+function Math.ArcSphereIntersection(
+	Arc_P1: Vector3,
+	Arc_P2: Vector3,
+	Tangent_V1: Vector3,
+	Tangent_V2: Vector3,
+	Sphere_Pos: Vector3,
+	Radius: number
+): number
+	return
+end
+
 return Math
