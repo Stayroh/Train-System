@@ -31,6 +31,16 @@ function Math.GetTangent(RelativNext: Vector3, Tangent: Vector3): Vector3
 	return d - 2 * d:Dot(Normal) * Normal
 end
 
+function Math.SphereSphereIntersection(
+	Sphere1_Pos: Vector3,
+	Sphere2_Pos: Vector3,
+	Radius1: number,
+	Radius2: number
+): number
+	local d = (Sphere1_Pos - Sphere2_Pos).Magnitude
+	return (Radius1 ^ 2 - Radius2 ^ 2 + d ^ 2) / (2 * d)
+end
+
 function Math.SphereFromArc(Arc_P1: Vector3, Arc_P2: Vector3, Tangent_V1: Vector3)
 	Arc_P2 -= Arc_P1
 	local Tangent_V2 = Math.GetTangent(Arc_P2, Tangent_V1)
@@ -51,7 +61,6 @@ function Math.ArcSphereIntersection(
 	Sphere_Pos: Vector3,
 	Radius: number
 ): number
-	return
 end
 
 return Math
