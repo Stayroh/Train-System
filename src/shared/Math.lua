@@ -61,6 +61,6 @@ function Math.ArcSphereIntersection(
 	Sphere_Pos: Vector3,
 	Radius: number
 ): number
-end
+send
 
 return Math
