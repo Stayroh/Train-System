@@ -14,28 +14,43 @@ function Math.ToUpSpace(V1: Vector3, Direction: Vector3): Vector3
 	local D_ZHead = D_XHead:Cross(Vector3.new(0, 1, 0))
 	D_ZHead = D_ZHead == Vector3.zero and Vector3.new(1, 0, 0) or D_ZHead.Unit
 	local D_YHead = D_ZHead:Cross(D_XHead)
+	print("-----------------------------")
+	print(D_XHead.X, D_YHead.X, D_ZHead.X)
+	print(D_XHead.Y, D_YHead.Y, D_ZHead.Y)
+	print(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
 	local XHead = Vector3.new(0, 1, 0)
-	local ZHead = Vector3.new(0, 0, 1)
 	local YHead = Vector3.new(-1, 0, 0)
-	local D_XHead, D_ZHead, D_YHead =
-		Vector3.new(D_XHead.X, D_YHead.X, D_ZHead.X),
-		Vector3.new(D_XHead.Y, D_YHead.Y, D_ZHead.Y),
-		Vector3.new(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
+	local ZHead = Vector3.new(0, 0, 1)
+
+	local D_XHeadT = Vector3.new(D_XHead.X, D_YHead.X, D_ZHead.X)
+	local D_YHeadT = Vector3.new(D_XHead.Y, D_YHead.Y, D_ZHead.Y)
+	local D_ZHeadT = Vector3.new(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
+	print("-----------------------------")
+	print(D_XHeadT.X, D_YHeadT.X, D_ZHeadT.X)
+	print(D_XHeadT.Y, D_YHeadT.Y, D_ZHeadT.Y)
+	print(D_XHeadT.Z, D_YHeadT.Z, D_ZHeadT.Z)
+
 	local I_XHead = Vector3.new(
-		XHead.X * D_XHead.X + YHead.X * D_XHead.Y + ZHead.X * D_XHead.Z,
-		XHead.Y * D_XHead.X + YHead.Y * D_XHead.Y + ZHead.Y * D_XHead.Z,
-		XHead.Z * D_XHead.X + YHead.Z * D_XHead.Y + ZHead.Z * D_XHead.Z
+		XHead.X * D_XHeadT.X + YHead.X * D_XHeadT.Y + ZHead.X * D_XHeadT.Z,
+		XHead.Y * D_XHeadT.X + YHead.Y * D_XHeadT.Y + ZHead.Y * D_XHeadT.Z,
+		XHead.Z * D_XHeadT.X + YHead.Z * D_XHeadT.Y + ZHead.Z * D_XHeadT.Z
 	)
 	local I_YHead = Vector3.new(
-		XHead.X * D_YHead.X + YHead.X * D_YHead.Y + ZHead.X * D_YHead.Z,
-		XHead.Y * D_YHead.X + YHead.Y * D_YHead.Y + ZHead.Y * D_YHead.Z,
-		XHead.Z * D_YHead.X + YHead.Z * D_YHead.Y + ZHead.Z * D_YHead.Z
+		XHead.X * D_YHeadT.X + YHead.X * D_YHeadT.Y + ZHead.X * D_YHeadT.Z,
+		XHead.Y * D_YHeadT.X + YHead.Y * D_YHeadT.Y + ZHead.Y * D_YHeadT.Z,
+		XHead.Z * D_YHeadT.X + YHead.Z * D_YHeadT.Y + ZHead.Z * D_YHeadT.Z
 	)
 	local I_ZHead = Vector3.new(
-		XHead.X * D_ZHead.X + YHead.X * D_ZHead.Y + ZHead.X * D_ZHead.Z,
-		XHead.Y * D_ZHead.X + YHead.Y * D_ZHead.Y + ZHead.Y * D_ZHead.Z,
-		XHead.Z * D_ZHead.X + YHead.Z * D_ZHead.Y + ZHead.Z * D_ZHead.Z
+		XHead.X * D_ZHeadT.X + YHead.X * D_ZHeadT.Y + ZHead.X * D_ZHeadT.Z,
+		XHead.Y * D_ZHeadT.X + YHead.Y * D_ZHeadT.Y + ZHead.Y * D_ZHeadT.Z,
+		XHead.Z * D_ZHeadT.X + YHead.Z * D_ZHeadT.Y + ZHead.Z * D_ZHeadT.Z
 	)
+	print("-----------------------------")
+	print(I_XHead.X, I_YHead.X, I_ZHead.X)
+	print(I_XHead.Y, I_YHead.Y, I_ZHead.Y)
+	print(I_XHead.Z, I_YHead.Z, I_ZHead.Z)
+	print("-----------------------------")
+
 	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead
 end
 
