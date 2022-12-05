@@ -9,6 +9,36 @@ function Math.GetQuardant(Angle: number): number
 	return math.ceil((Angle % (math.pi * 2)) / (math.pi / 2)) + 1
 end
 
+function Math.ToUpSpace(V1: Vector3, Direction: Vector3): Vector3
+	local D_XHead = Direction.Unit
+	local D_ZHead = D_XHead:Cross(Vector3.new(0, 1, 0))
+	D_ZHead = D_ZHead == Vector3.zero and Vector3.new(1, 0, 0) or D_ZHead.Unit
+	local D_YHead = D_ZHead:Cross(D_XHead)
+	local XHead = Vector3.new(0, 1, 0)
+	local ZHead = Vector3.new(0, 0, 1)
+	local YHead = Vector3.new(-1, 0, 0)
+	local D_XHead, D_ZHead, D_YHead =
+		Vector3.new(D_XHead.X, D_YHead.X, D_ZHead.X),
+		Vector3.new(D_XHead.Y, D_YHead.Y, D_ZHead.Y),
+		Vector3.new(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
+	local I_XHead = Vector3.new(
+		XHead.X * D_XHead.X + YHead.X * D_XHead.Y + ZHead.X * D_XHead.Z,
+		XHead.Y * D_XHead.X + YHead.Y * D_XHead.Y + ZHead.Y * D_XHead.Z,
+		XHead.Z * D_XHead.X + YHead.Z * D_XHead.Y + ZHead.Z * D_XHead.Z
+	)
+	local I_YHead = Vector3.new(
+		XHead.X * D_YHead.X + YHead.X * D_YHead.Y + ZHead.X * D_YHead.Z,
+		XHead.Y * D_YHead.X + YHead.Y * D_YHead.Y + ZHead.Y * D_YHead.Z,
+		XHead.Z * D_YHead.X + YHead.Z * D_YHead.Y + ZHead.Z * D_YHead.Z
+	)
+	local I_ZHead = Vector3.new(
+		XHead.X * D_ZHead.X + YHead.X * D_ZHead.Y + ZHead.X * D_ZHead.Z,
+		XHead.Y * D_ZHead.X + YHead.Y * D_ZHead.Y + ZHead.Y * D_ZHead.Z,
+		XHead.Z * D_ZHead.X + YHead.Z * D_ZHead.Y + ZHead.Z * D_ZHead.Z
+	)
+	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead
+end
+
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
 	local GC = V1:Cross(V2).Unit
 	local a = V1.Y
@@ -61,6 +91,6 @@ function Math.ArcSphereIntersection(
 	Sphere_Pos: Vector3,
 	Radius: number
 ): number
-send
+end
 
 return Math
