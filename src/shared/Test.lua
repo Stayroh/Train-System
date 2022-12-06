@@ -41,7 +41,7 @@ function Module.Gamma()
 	local Disc = game.Workspace.TDisc
 
 	local Angle, P, Origin, Arc_Radius, GC =
-		Math.ArcSphereIntersection(P1.Position, P2.Position, T1.Position - P1.Position, IS.Position, IS.Size.X / 2)
+		Math.ArcSphereIntersectionDemo(P1.Position, P2.Position, T1.Position - P1.Position, IS.Position, IS.Size.X / 2)
 	T.Position = P * Arc_Radius + Origin
 	S.Position = Origin
 	S.Size = Vector3.one * Arc_Radius * 2

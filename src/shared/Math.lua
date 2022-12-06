@@ -5,19 +5,12 @@ function Math.RotateOverVector(V1: Vector3, V2: Vector3, Angle: number): Vector3
 	return V1 * math.cos(Angle) + GC:Cross(V1) * math.sin(Angle)
 end
 
-function Math.GetQuardant(Angle: number): number
-	return math.ceil((Angle % (math.pi * 2)) / (math.pi / 2)) + 1
-end
-
 function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	local D_XHead = Direction.Unit
 	local D_ZHead = D_XHead:Cross(Vector3.new(0, 1, 0))
 	D_ZHead = D_ZHead == Vector3.zero and Vector3.new(1, 0, 0) or D_ZHead.Unit
 	local D_YHead = D_ZHead:Cross(D_XHead)
-	print("-----------------------------")
-	print(D_XHead.X, D_YHead.X, D_ZHead.X)
-	print(D_XHead.Y, D_YHead.Y, D_ZHead.Y)
-	print(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
+
 	local XHead = Vector3.new(0, 1, 0)
 	local YHead = Vector3.new(-1, 0, 0)
 	local ZHead = Vector3.new(0, 0, 1)
@@ -25,10 +18,6 @@ function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	local D_XHeadT = Vector3.new(D_XHead.X, D_YHead.X, D_ZHead.X)
 	local D_YHeadT = Vector3.new(D_XHead.Y, D_YHead.Y, D_ZHead.Y)
 	local D_ZHeadT = Vector3.new(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
-	print("-----------------------------")
-	print(D_XHeadT.X, D_YHeadT.X, D_ZHeadT.X)
-	print(D_XHeadT.Y, D_YHeadT.Y, D_ZHeadT.Y)
-	print(D_XHeadT.Z, D_YHeadT.Z, D_ZHeadT.Z)
 
 	local I_XHead = Vector3.new(
 		XHead.X * D_XHeadT.X + YHead.X * D_XHeadT.Y + ZHead.X * D_XHeadT.Z,
@@ -45,11 +34,6 @@ function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 		XHead.Y * D_ZHeadT.X + YHead.Y * D_ZHeadT.Y + ZHead.Y * D_ZHeadT.Z,
 		XHead.Z * D_ZHeadT.X + YHead.Z * D_ZHeadT.Y + ZHead.Z * D_ZHeadT.Z
 	)
-	print("-----------------------------")
-	print(I_XHead.X, I_YHead.X, I_ZHead.X)
-	print(I_XHead.Y, I_YHead.Y, I_ZHead.Y)
-	print(I_XHead.Z, I_YHead.Z, I_ZHead.Z)
-	print("-----------------------------")
 
 	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead, V2.X * I_XHead + V2.Y * I_YHead + V2.Z * I_ZHead
 end
@@ -99,6 +83,27 @@ function Math.SphereFromArc(Arc_P1: Vector3, Arc_P2: Vector3, Tangent_V1: Vector
 end
 
 function Math.ArcSphereIntersection(
+	Arc_P1: Vector3,
+	Arc_P2: Vector3,
+	Tangent_V1: Vector3,
+	Sphere_Pos: Vector3,
+	Radius: number
+): number?
+	local Origin, Arc_Radius = Math.SphereFromArc(Arc_P1, Arc_P2, Tangent_V1)
+	local Start, End = Math.ToUpSpace((Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit, (Sphere_Pos - Origin).Unit)
+	local HeightIntersection = Math.SphereSphereIntersection(Vector3.zero, Sphere_Pos - Origin, Arc_Radius, Radius)
+	local Height = HeightIntersection / Arc_Radius
+	if Height > 1 or Height < -1 then
+		return
+	end
+	local Angle = Math.ArcLatitudeIntersection(Start, End, Height)
+	if Angle == nil then
+		return
+	end
+	return Angle / math.acos(Start:Dot(End))
+end
+
+function Math.ArcSphereIntersectionDemo(
 	Arc_P1: Vector3,
 	Arc_P2: Vector3,
 	Tangent_V1: Vector3,
