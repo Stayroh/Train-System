@@ -47,7 +47,6 @@ function Module.Gamma()
 	S.Size = Vector3.one * Arc_Radius * 2
 	Disc.CFrame = CFrame.lookAt(Vector3.zero, GC) * CFrame.Angles(0, math.pi / 2, 0) + Origin
 	Disc.Size = Vector3.new(0.01, 2 * Arc_Radius, 2 * Arc_Radius)
-	print(Angle)
 end
 
 return Module

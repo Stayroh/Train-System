@@ -122,7 +122,11 @@ function Math.ArcSphereIntersectionDemo(
 		return
 	end
 	local S, E = (Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit
-	return Angle / math.acos(S:Dot(E)), Math.RotateOverVector(S, E, Angle), Origin, Arc_Radius, S:Cross(E).Unit
+	return (Angle % (math.pi * 2)) / math.acos(S:Dot(E)),
+		Math.RotateOverVector(S, E, Angle),
+		Origin,
+		Arc_Radius,
+		S:Cross(E)
 end
 
 return Math
