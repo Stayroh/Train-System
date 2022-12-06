@@ -9,7 +9,7 @@ function Math.GetQuardant(Angle: number): number
 	return math.ceil((Angle % (math.pi * 2)) / (math.pi / 2)) + 1
 end
 
-function Math.ToUpSpace(V1: Vector3, Direction: Vector3): Vector3
+function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	local D_XHead = Direction.Unit
 	local D_ZHead = D_XHead:Cross(Vector3.new(0, 1, 0))
 	D_ZHead = D_ZHead == Vector3.zero and Vector3.new(1, 0, 0) or D_ZHead.Unit
@@ -51,7 +51,7 @@ function Math.ToUpSpace(V1: Vector3, Direction: Vector3): Vector3
 	print(I_XHead.Z, I_YHead.Z, I_ZHead.Z)
 	print("-----------------------------")
 
-	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead
+	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead, V2.X * I_XHead + V2.Y * I_YHead + V2.Z * I_ZHead
 end
 
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
@@ -102,10 +102,22 @@ function Math.ArcSphereIntersection(
 	Arc_P1: Vector3,
 	Arc_P2: Vector3,
 	Tangent_V1: Vector3,
-	Tangent_V2: Vector3,
 	Sphere_Pos: Vector3,
 	Radius: number
-): number
+): number?
+	local Origin, Arc_Radius = Math.SphereFromArc(Arc_P1, Arc_P2, Tangent_V1)
+	local Start, End = Math.ToUpSpace((Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit, (Sphere_Pos - Origin).Unit)
+	local HeightIntersection = Math.SphereSphereIntersection(Vector3.zero, Sphere_Pos - Origin, Arc_Radius, Radius)
+	local Height = HeightIntersection / Arc_Radius
+	if Height > 1 or Height < -1 then
+		return
+	end
+	local Angle = Math.ArcLatitudeIntersection(Start, End, Height)
+	if Angle == nil then
+		return
+	end
+	local S, E = (Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit
+	return Angle / math.acos(S:Dot(E)), Math.RotateOverVector(S, E, Angle), Origin, Arc_Radius, S:Cross(E).Unit
 end
 
 return Math
