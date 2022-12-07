@@ -49,4 +49,16 @@ function Module.Gamma()
 	Disc.Size = Vector3.new(0.01, 2 * Arc_Radius, 2 * Arc_Radius)
 end
 
+function Module.Delta()
+	for _ = 1, 200, 1 do
+		Math.ArcSphereIntersection(
+			Vector3.new(-1.655, 4.75, 4.187),
+			Vector3.new(-28.121, 2.575, 4.289),
+			Vector3.new(-3.077, 3.722, 11.49) - Vector3.new(-1.655, 4.75, 4.187),
+			Vector3.new(-13.607, 0.974, 13.46),
+			9
+		)
+	end
+end
+
 return Module
