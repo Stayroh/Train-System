@@ -50,7 +50,7 @@ function Module.Gamma()
 end
 
 function Module.Delta()
-	for i = 1, 2000, 1 do
+	for i = 1, 10000, 1 do
 		Math.ArcSphereIntersection(
 			Vector3.new(-1.655, 4.75, 4.187),
 			Vector3.new(-28.121, 2.575, 4.289),
