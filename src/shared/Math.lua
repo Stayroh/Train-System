@@ -6,6 +6,11 @@ function Math.RotateOverVector(V1: Vector3, V2: Vector3, Angle: number): Vector3
 end
 
 function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
+	local CF = CFrame.lookAt(Vector3.zero, Direction)
+	local UpCF = CFrame.lookAt(Vector3.zero, Vector3.new(0, 1, 0))
+	return UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V1)), UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V2))
+
+	--[[
 	local D_XHead = Direction.Unit
 	local D_ZHead = D_XHead:Cross(Vector3.new(0, 1, 0))
 	D_ZHead = D_ZHead == Vector3.zero and Vector3.new(1, 0, 0) or D_ZHead.Unit
@@ -36,6 +41,7 @@ function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	)
 
 	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead, V2.X * I_XHead + V2.Y * I_YHead + V2.Z * I_ZHead
+	]]
 end
 
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
