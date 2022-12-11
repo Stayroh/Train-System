@@ -66,4 +66,14 @@ function Module.Delta()
 	end
 end
 
+function Module.Epsilon()
+	local P1 = game.Workspace.P1
+	local P2 = game.Workspace.P2
+	local T = game.Workspace.Target
+	local IS = game.Workspace.IntersectionSphere
+	local Pos = Math.LineSphereIntersection(P1.Position, P2.Position, IS.Position, IS.Size.X / 2)
+	local Position = (P2.Position - P1.Position).Unit * Pos + P1.Position
+	T.Position = Position
+end
+
 return Module

@@ -11,6 +11,27 @@ function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	return UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V1)), UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V2))
 end
 
+function Math.LineSphereIntersection(Start: Vector3, End: Vector3, Sphere_Pos: Vector3, Radius: number): number?
+	End -= Start
+	Sphere_Pos -= Start
+	local Lenght = End.Magnitude
+	local Direction = End.Unit
+	local Center = Direction:Dot(Sphere_Pos)
+	local CenterPos = Center * Direction
+	local NearRadius = (CenterPos - Sphere_Pos).Magnitude
+	if NearRadius > Radius then
+		return
+	end
+	local X = math.sqrt(Radius ^ 2 - NearRadius ^ 2)
+	local T1, T2 = Center - X, Center + X
+	if T1 >= 0 and T1 <= Lenght then
+		return T1
+	end
+	if T2 >= 0 and T2 <= Lenght then
+		return T2
+	end
+end
+
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
 	local GC = V1:Cross(V2).Unit
 	local a = V1.Y
