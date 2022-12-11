@@ -4,7 +4,7 @@ end
 local Test = require(game.ReplicatedStorage.source.Test)
 
 game:GetService("RunService").Heartbeat:Connect(function()
-	Test.Gamma()
+	Test.Delta()
 end)
 
-print("UwU")
+print("Kek")
