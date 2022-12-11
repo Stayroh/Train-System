@@ -76,6 +76,17 @@ function Module.Epsilon()
 	T.Position = Position
 end
 
+function Module.Theta()
+	local P1 = game.Workspace.P1
+	local P2 = game.Workspace.P2
+	local T = game.Workspace.Target
+	local IS = game.Workspace.IntersectionSphere
+	local Pos =
+		Math.SemiGradSphereIntersection(P1.Position, (P2.Position - P1.Position).Unit, IS.Position, IS.Size.X / 2)
+	local Position = (P2.Position - P1.Position).Unit * Pos + P1.Position
+	T.Position = Position
+end
+
 function Module.Zeta()
 	for _ = 1, 10000, 1 do
 		Math.LineSphereIntersection(
