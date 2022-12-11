@@ -76,4 +76,15 @@ function Module.Epsilon()
 	T.Position = Position
 end
 
+function Module.Zeta()
+	for _ = 1, 10000, 1 do
+		Math.LineSphereIntersection(
+			Vector3.new(20.911, 0.25, -25.956),
+			Vector3.new(10.013, 6.257, 4.666),
+			Vector3.new(17.241, 0.25, 0.382),
+			11
+		)
+	end
+end
+
 return Module
