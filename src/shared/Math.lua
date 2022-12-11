@@ -9,39 +9,6 @@ function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	local CF = CFrame.lookAt(Vector3.zero, Direction)
 	local UpCF = CFrame.lookAt(Vector3.zero, Vector3.new(0, 1, 0))
 	return UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V1)), UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V2))
-
-	--[[
-	local D_XHead = Direction.Unit
-	local D_ZHead = D_XHead:Cross(Vector3.new(0, 1, 0))
-	D_ZHead = D_ZHead == Vector3.zero and Vector3.new(1, 0, 0) or D_ZHead.Unit
-	local D_YHead = D_ZHead:Cross(D_XHead)
-
-	local XHead = Vector3.new(0, 1, 0)
-	local YHead = Vector3.new(-1, 0, 0)
-	local ZHead = Vector3.new(0, 0, 1)
-
-	local D_XHeadT = Vector3.new(D_XHead.X, D_YHead.X, D_ZHead.X)
-	local D_YHeadT = Vector3.new(D_XHead.Y, D_YHead.Y, D_ZHead.Y)
-	local D_ZHeadT = Vector3.new(D_XHead.Z, D_YHead.Z, D_ZHead.Z)
-
-	local I_XHead = Vector3.new(
-		XHead.X * D_XHeadT.X + YHead.X * D_XHeadT.Y + ZHead.X * D_XHeadT.Z,
-		XHead.Y * D_XHeadT.X + YHead.Y * D_XHeadT.Y + ZHead.Y * D_XHeadT.Z,
-		XHead.Z * D_XHeadT.X + YHead.Z * D_XHeadT.Y + ZHead.Z * D_XHeadT.Z
-	)
-	local I_YHead = Vector3.new(
-		XHead.X * D_YHeadT.X + YHead.X * D_YHeadT.Y + ZHead.X * D_YHeadT.Z,
-		XHead.Y * D_YHeadT.X + YHead.Y * D_YHeadT.Y + ZHead.Y * D_YHeadT.Z,
-		XHead.Z * D_YHeadT.X + YHead.Z * D_YHeadT.Y + ZHead.Z * D_YHeadT.Z
-	)
-	local I_ZHead = Vector3.new(
-		XHead.X * D_ZHeadT.X + YHead.X * D_ZHeadT.Y + ZHead.X * D_ZHeadT.Z,
-		XHead.Y * D_ZHeadT.X + YHead.Y * D_ZHeadT.Y + ZHead.Y * D_ZHeadT.Z,
-		XHead.Z * D_ZHeadT.X + YHead.Z * D_ZHeadT.Y + ZHead.Z * D_ZHeadT.Z
-	)
-
-	return V1.X * I_XHead + V1.Y * I_YHead + V1.Z * I_ZHead, V2.X * I_XHead + V2.Y * I_YHead + V2.Z * I_ZHead
-	]]
 end
 
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
