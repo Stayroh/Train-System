@@ -32,6 +32,29 @@ function Math.LineSphereIntersection(Start: Vector3, End: Vector3, Sphere_Pos: V
 	end
 end
 
+function Math.SemiGradSphereIntersection(
+	Start: Vector3,
+	Direction: Vector3,
+	Sphere_Pos: Vector3,
+	Radius: number
+): number?
+	Sphere_Pos -= Start
+	local Center = Direction:Dot(Sphere_Pos)
+	local CenterPos = Center * Direction
+	local NearRadius = (CenterPos - Sphere_Pos).Magnitude
+	if NearRadius > Radius then
+		return
+	end
+	local X = math.sqrt(Radius ^ 2 - NearRadius ^ 2)
+	local T1, T2 = Center - X, Center + X
+	if T1 >= 0 then
+		return T1
+	end
+	if T2 >= 0 then
+		return T2
+	end
+end
+
 function Math.ArcLatitudeIntersection(V1: Vector3, V2: Vector3, Height: number): number?
 	local GC = V1:Cross(V2).Unit
 	local a = V1.Y
