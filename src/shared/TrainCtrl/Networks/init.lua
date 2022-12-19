@@ -4,8 +4,8 @@ type Node = {
 	Position: Vector3,
 	Tangent: Vector3,
 	UpVector: Vector3,
-	Pre: number?,
-	Fol: number?,
+	Pre: number | { [number]: number } | nil,
+	Fol: number | { [number]: number } | nil,
 }
 
 type NetworkType = { [number]: Node }
@@ -20,11 +20,11 @@ for i, v in pairs(Selection) do
 	Networks[i] = table.freeze(require(v))
 end
 
-function NetworkInit:GetNetwork(Id: number): NetworkType?
+function NetworkInit.GetNetwork(Id: number): NetworkType?
 	return Networks[Id]
 end
 
-function NetworkInit:GetIdfromNetwork(Network: NetworkType): number?
+function NetworkInit.GetIdfromNetwork(Network: NetworkType): number?
 	return table.find(Networks, Network)
 end
 
