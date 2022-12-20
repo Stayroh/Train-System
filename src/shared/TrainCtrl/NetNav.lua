@@ -1,4 +1,5 @@
 local Networks = require(script.Parent.Networks)
+local TrainSwitch = require(script.Parent.Switch)
 
 local NetNav = {}
 
@@ -14,17 +15,27 @@ function SearchTroughConnection(Connection: number | table | nil, Value: number)
 	return false
 end
 
-function NetNav.GetNextNode(From: number, To: number, Network: number): number?
+function NetNav.GetNextNode(From: number, To: number, TrainId: number, Network: number): number?
 	local Net = Networks.GetNetwork(Network)
-	if not Net or not From then
+	if not Net then
 		return
 	end
 	local ToNode = Net[To]
+	local Direction: number? = nil
+	local NextNode: number | table | nil = nil
 	if SearchTroughConnection(ToNode.Fol, From) then
-		return ToNode.Pre
+		Direction = false
+		NextNode = ToNode.Pre
 	else
-		return ToNode.Fol
+		Direction = true
+		NextNode = ToNode.Fol
 	end
+	print(Direction, NextNode)
+	if type(NextNode) ~= "table" then
+		return NextNode
+	end
+	local SwitchReturn = TrainSwitch.GetNextNode(To, Direction, TrainId, Network)
+	return SwitchReturn and SwitchReturn or NextNode[1]
 end
 
 return table.freeze(NetNav)
