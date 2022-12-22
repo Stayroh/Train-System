@@ -1,3 +1,5 @@
+local Types = require(game.ReplicatedStorage.source.TrainCtrl.TrainClass)
+
 local Train = {}
 Train.__index = Train
 
