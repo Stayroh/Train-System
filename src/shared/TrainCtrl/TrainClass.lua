@@ -3,9 +3,9 @@ Train.__index = Train
 
 local Constructors = {}
 
-function Constructors.create(TrainId: number,)
-	local self = setmetatable({},Train)
-	self.Network
+function Constructors.create(TrainId: number, Network: number, Wagons: table, From: number, To: number, T: number)
+	local self = setmetatable({}, Train)
+	self.Network = Network
 end
 
 return Constructors
