@@ -1,0 +1,10 @@
+local Train = {}
+Train.__index = Train
+
+local Constructors = {}
+
+function Constructors.new()
+	local self = setmetatable({}, Train)
+end
+
+return Constructors
