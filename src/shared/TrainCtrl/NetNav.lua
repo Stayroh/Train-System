@@ -75,14 +75,18 @@ function NetNav.PositionInRadiusBackwards(
 	AlternateRadius: number,
 	TrainId: number
 )
+	print("a")
 	local Net = Networks.GetNetwork(TrainPos.Network)
 	local Backwards = {
 		[1] = TrainPos.To,
 		[2] = TrainPos.From,
 	}
-
+	if not Position then
+		Position = NetNav.GetVecPos(TrainPos)
+	end
 	local Iteration = 1
 	repeat
+		print("b")
 		if Iteration ~= 1 then
 			Backwards[Iteration + 1] =
 				NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
