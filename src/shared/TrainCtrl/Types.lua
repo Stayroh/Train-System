@@ -31,4 +31,18 @@ export type BroadcastElementType = {
 }
 export type BroadcastType = { [number]: BroadcastElementType }
 
+export type WagonDecleration = {
+	WagonSeries: string,
+	WagonReference: Folder,
+}
+
+export type TrainLineType = { [number]: WagonDecleration }
+
+export type TrainPosType = {
+	From: number?,
+	To: number?,
+	T: number,
+	Network: number,
+}
+
 return Types

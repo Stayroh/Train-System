@@ -1,4 +1,5 @@
 local NetworkInit = {}
+local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 
 type Node = {
 	Position: Vector3,
@@ -22,6 +23,14 @@ end
 
 function NetworkInit.GetNetwork(Id: number): NetworkType?
 	return Networks[Id]
+end
+
+function NetworkInit.GetNode(NodeId: number, NetworkId: number): Types.NodeType
+	local Net = Networks[NetworkId]
+	if not Net then
+		return
+	end
+	return Net[NodeId]
 end
 
 function NetworkInit.GetIdfromNetwork(Network: NetworkType): number?

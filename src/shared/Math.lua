@@ -16,7 +16,7 @@ function Math.LineSphereIntersection(Start: Vector3, End: Vector3, Sphere_Pos: V
 	Sphere_Pos -= Start
 	local Lenght = End.Magnitude
 	local Direction = End.Unit
-	local Center = Direction:Dot(Sphere_Pos)
+	local Center = math.abs(Direction:Dot(Sphere_Pos))
 	local CenterPos = Center * Direction
 	local NearRadius = (CenterPos - Sphere_Pos).Magnitude
 	if NearRadius > Radius then
@@ -32,6 +32,19 @@ function Math.LineSphereIntersection(Start: Vector3, End: Vector3, Sphere_Pos: V
 	end
 end
 
+function Math.SLerp(V1: Vector3, V2: Vector3, T: number): Vector3
+	local Up = V1:Cross(V2):Cross(V1).Unit
+	local Angle = math.acos(V1:Dot(V2)) * T
+	return V1 * math.cos(Angle) + Up * math.sin(Angle)
+end
+
+function Math.ArcLerp(Start: Vector3, End: Vector3, Tangent: Vector3, T: number): Vector3
+	local Origin, Radius = Math.SphereFromArc(Start, End, Tangent)
+	Start = (Start - Origin).Unit
+	End = (End - Origin).Unit
+	return Math.SLerp(Start, End, T) * Radius + Origin
+end
+
 function Math.SemiGradSphereIntersection(
 	Start: Vector3,
 	Direction: Vector3,
@@ -39,7 +52,7 @@ function Math.SemiGradSphereIntersection(
 	Radius: number
 ): number?
 	Sphere_Pos -= Start
-	local Center = Direction:Dot(Sphere_Pos)
+	local Center = math.abs(Direction:Dot(Sphere_Pos))
 	local CenterPos = Center * Direction
 	local NearRadius = (CenterPos - Sphere_Pos).Magnitude
 	if NearRadius > Radius then
@@ -140,4 +153,4 @@ function Math.ArcSphereIntersectionDemo(
 		S:Cross(E)
 end
 
-return Math
+return table.freeze(Math)

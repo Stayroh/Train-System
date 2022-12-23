@@ -1,14 +1,14 @@
 local Module = {
 	[1] = {
 		["Position"] = Vector3.one,
-		["Tangent"] = Vector3.new(1, 0, 0.5),
+		["Tangent"] = Vector3.new(0, 0, 1),
 		["UpVector"] = Vector3.new(0, 1, 0),
 		["Pre"] = 4,
 		["Fol"] = { 2, 6 },
 	},
 	[2] = {
-		["Position"] = Vector3.one,
-		["Tangent"] = Vector3.new(1, -1, 0.1),
+		["Position"] = Vector3.new(1, 1, 2),
+		["Tangent"] = Vector3.new(0, 0, 1),
 		["UpVector"] = Vector3.new(0.5, 1, 0),
 		["Pre"] = 1,
 		["Fol"] = 3,
