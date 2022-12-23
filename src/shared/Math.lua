@@ -11,7 +11,13 @@ function Math.ToUpSpace(V1: Vector3, V2: Vector3, Direction: Vector3)
 	return UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V1)), UpCF:VectorToWorldSpace(CF:VectorToObjectSpace(V2))
 end
 
-function Math.LineSphereIntersection(Start: Vector3, End: Vector3, Sphere_Pos: Vector3, Radius: number): number?
+function Math.LineSphereIntersection(
+	Start: Vector3,
+	End: Vector3,
+	Sphere_Pos: Vector3,
+	Radius: number,
+	FirstIntersection: boolean
+): number?
 	End -= Start
 	Sphere_Pos -= Start
 	local Lenght = End.Magnitude
@@ -23,12 +29,9 @@ function Math.LineSphereIntersection(Start: Vector3, End: Vector3, Sphere_Pos: V
 		return
 	end
 	local X = math.sqrt(Radius ^ 2 - NearRadius ^ 2)
-	local T1, T2 = Center - X, Center + X
-	if T1 >= 0 and T1 <= Lenght then
-		return T1
-	end
-	if T2 >= 0 and T2 <= Lenght then
-		return T2
+	local T = FirstIntersection and Center - X or Center + X
+	if T >= 0 and T <= Lenght then
+		return T
 	end
 end
 
@@ -49,7 +52,8 @@ function Math.SemiGradSphereIntersection(
 	Start: Vector3,
 	Direction: Vector3,
 	Sphere_Pos: Vector3,
-	Radius: number
+	Radius: number,
+	FirstIntersection: boolean
 ): number?
 	Sphere_Pos -= Start
 	local Center = math.abs(Direction:Dot(Sphere_Pos))
@@ -59,12 +63,9 @@ function Math.SemiGradSphereIntersection(
 		return
 	end
 	local X = math.sqrt(Radius ^ 2 - NearRadius ^ 2)
-	local T1, T2 = Center - X, Center + X
-	if T1 >= 0 then
-		return T1
-	end
-	if T2 >= 0 then
-		return T2
+	local T = FirstIntersection and Center - X or Center + X
+	if T >= 0 then
+		return T
 	end
 end
 
@@ -125,32 +126,6 @@ function Math.ArcSphereIntersection(
 		return
 	end
 	return Angle / math.acos(Start:Dot(End))
-end
-
-function Math.ArcSphereIntersectionDemo(
-	Arc_P1: Vector3,
-	Arc_P2: Vector3,
-	Tangent_V1: Vector3,
-	Sphere_Pos: Vector3,
-	Radius: number
-): number?
-	local Origin, Arc_Radius = Math.SphereFromArc(Arc_P1, Arc_P2, Tangent_V1)
-	local Start, End = Math.ToUpSpace((Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit, (Sphere_Pos - Origin).Unit)
-	local HeightIntersection = Math.SphereSphereIntersection(Vector3.zero, Sphere_Pos - Origin, Arc_Radius, Radius)
-	local Height = HeightIntersection / Arc_Radius
-	if Height > 1 or Height < -1 then
-		return
-	end
-	local Angle = Math.ArcLatitudeIntersection(Start, End, Height)
-	if Angle == nil then
-		return
-	end
-	local S, E = (Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit
-	return (Angle % (math.pi * 2)) / math.acos(S:Dot(E)),
-		Math.RotateOverVector(S, E, Angle),
-		Origin,
-		Arc_Radius,
-		S:Cross(E)
 end
 
 return table.freeze(Math)

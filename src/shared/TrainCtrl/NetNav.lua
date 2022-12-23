@@ -1,7 +1,10 @@
-local Networks = require(script.Parent.Networks)
-local TrainSwitch = require(script.Parent.Switch)
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
-local Math = require(game.ReplicatedStorage.source.Math)
+local SharedSource = game.ReplicatedStorage.source
+local TrainSystem = SharedSource.TrainCtrl
+local Networks = require(TrainSystem.Networks)
+local TrainSwitch = require(TrainSystem.Switch)
+local Types = require(TrainSystem.Types)
+local Math = require(SharedSource.Math)
+local NetPosition = require(TrainSystem.NetPosition)
 
 local NetNav = {}
 
@@ -10,6 +13,11 @@ function SearchTroughConnection(Connection: number | table | nil, Value: number)
 		return true
 	end
 	if type(Connection) == "table" then
+		if Value == nil and #Connection == 0 then
+			return true
+		elseif Value == nil then
+			return false
+		end
 		if table.find(Connection, Value) then
 			return true
 		end
@@ -22,7 +30,7 @@ function IsLine(Start: Vector3, End: Vector3, Tangent: Vector3, Tolerance: numbe
 	return Deviation >= 1 - Tolerance
 end
 
-function NetNav.GetNextNode(From: number, To: number, TrainId: number, Network: number): number?
+function NetNav.GetNextNode(From: number?, To: number, TrainId: number, Network: number): number?
 	local Net = Networks.GetNetwork(Network)
 	if not Net then
 		return
@@ -59,26 +67,55 @@ function NetNav.PositionInRadiusBackwards(
 	TrainId: number
 )
 	local Net = Networks.GetNetwork(TrainPos.Network)
-	local Backwards = setmetatable({
+	local Backwards = {
 		[1] = TrainPos.To,
 		[2] = TrainPos.From,
-	}, {
-		__index = function(T, Index)
-			T[Index] = NetNav.GetNextNode(T[Index - 2], T[Index - 1], TrainId, TrainPos.Network)
-		end,
-	})
+	}
 
 	local Iteration = 1
 	repeat
+		if Iteration ~= 1 then
+			Backwards[Iteration + 1] =
+				NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
+		end
 		local StartNode = Backwards[Iteration + 1]
 		local EndNode = Backwards[Iteration]
+		if StartNode == nil then
+			local P = Net[EndNode].Position
+			local Direction = Net[EndNode].Tangent
+			local Intersection = Math.SemiGradSphereIntersection(P, Direction, Position, Radius, false)
+			if Intersection then
+				return NetPosition.new(nil, EndNode, Intersection, TrainPos.Network)
+			else
+				break
+			end
+		end
+		if EndNode == nil then
+			local P = Net[StartNode].Position
+			local Direction = Net[StartNode].Tangent
+			local Intersection = Math.SemiGradSphereIntersection(P, Direction, Position, Radius, true)
+			if Intersection then
+				return NetPosition.new(StartNode, nil, Intersection, TrainPos.Network)
+			end
+			Iteration += 1
+			continue
+		end
 		if (Net[StartNode].Position - Position).Magnitude < Radius then
 			continue
 		end
 		local Start = Net[StartNode].Position
 		local End = Net[EndNode].Position
 		local Tangent = Net[StartNode].Tangent
-		local Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
+		local Intersection = nil
+		if IsLine(Start, End, Tangent, 0.01) then
+			Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
+		else
+			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
+		end
+		if Intersection then
+			return NetPosition.new(StartNode, EndNode, Intersection, TrainPos.Network)
+		end
+
 		Iteration += 1
 	until Iteration > 10
 end
