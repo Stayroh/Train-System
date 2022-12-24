@@ -22,7 +22,7 @@ function Math.LineSphereIntersection(
 	Sphere_Pos -= Start
 	local Lenght = End.Magnitude
 	local Direction = End.Unit
-	local Center = math.abs(Direction:Dot(Sphere_Pos))
+	local Center = Direction:Dot(Sphere_Pos)
 	local CenterPos = Center * Direction
 	local NearRadius = (CenterPos - Sphere_Pos).Magnitude
 	if NearRadius > Radius then
@@ -56,7 +56,7 @@ function Math.SemiGradSphereIntersection(
 	FirstIntersection: boolean
 ): number?
 	Sphere_Pos -= Start
-	local Center = math.abs(Direction:Dot(Sphere_Pos))
+	local Center = Direction:Dot(Sphere_Pos)
 	local CenterPos = Center * Direction
 	local NearRadius = (CenterPos - Sphere_Pos).Magnitude
 	if NearRadius > Radius then
@@ -112,9 +112,10 @@ function Math.ArcSphereIntersection(
 	Arc_P2: Vector3,
 	Tangent_V1: Vector3,
 	Sphere_Pos: Vector3,
-	Radius: number
+	Radius: number,
+	DoesLimit: boolean?
 ): number?
-	print("c")
+	DoesLimit = DoesLimit and DoesLimit or true
 	local Origin, Arc_Radius = Math.SphereFromArc(Arc_P1, Arc_P2, Tangent_V1)
 	local Start, End = Math.ToUpSpace((Arc_P1 - Origin).Unit, (Arc_P2 - Origin).Unit, (Sphere_Pos - Origin).Unit)
 	local HeightIntersection = Math.SphereSphereIntersection(Vector3.zero, Sphere_Pos - Origin, Arc_Radius, Radius)
@@ -126,7 +127,13 @@ function Math.ArcSphereIntersection(
 	if Angle == nil then
 		return
 	end
-	return Angle / math.acos(Start:Dot(End))
+	local T = Angle / math.acos(Start:Dot(End))
+	if not DoesLimit then
+		return T
+	end
+	if T >= 0 and T <= 0 then
+		return T
+	end
 end
 
 return table.freeze(Math)
