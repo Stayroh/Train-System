@@ -95,14 +95,22 @@ function Math.SphereSphereIntersection(
 	return (Radius1 ^ 2 - Radius2 ^ 2 + d ^ 2) / (2 * d)
 end
 
+function Math.GetNextTangent(Start: Vector3, End: Vector3, Tangent: Vector3): Vector3
+	return Math.ReflectVector(-Tangent, (End - Start).Unit)
+end
+
+function Math.ReflectVector(InBound: Vector3, Normal: Vector3): Vector3
+	return (InBound - 2 * InBound:Dot(Normal) * Normal).Unit
+end
+
 function Math.SphereFromArc(Arc_P1: Vector3, Arc_P2: Vector3, Tangent_V1: Vector3)
 	Arc_P2 -= Arc_P1
 	local XHead = Tangent_V1:Cross(Arc_P2):Cross(Tangent_V1).Unit
 	local X = XHead:Dot(Arc_P2)
 	local Y = Tangent_V1:Dot(Arc_P2)
 	local H = X / 2 + (Y ^ 2) / (2 * X)
-	local R = math.abs(H)
-	local Center = XHead * H + Arc_P1
+	local R: number = math.abs(H)
+	local Center: Vector3 = XHead * H + Arc_P1
 
 	return Center, R
 end

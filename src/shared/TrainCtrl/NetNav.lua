@@ -25,7 +25,7 @@ function SearchTroughConnection(Connection: number | table | nil, Value: number)
 	return false
 end
 
-function IsLine(Start: Vector3, End: Vector3, Tangent: Vector3, Tolerance: number): boolean
+function NetNav.IsLine(Start: Vector3, End: Vector3, Tangent: Vector3, Tolerance: number): boolean
 	local Deviation = math.abs(Tangent:Dot((End - Start).Unit))
 	return Deviation >= 1 - Tolerance
 end
@@ -61,7 +61,7 @@ function NetNav.GetVecPos(Pos: Types.TrainPosType): Vector3
 	if To == nil then
 		return From.Tangent * Pos.T + From.Position
 	end
-	if not IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
+	if not NetNav.IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
 		return Math.ArcLerp(From.Position, To.Position, From.Tangent, Pos.T)
 	end
 	if To == nil then
@@ -125,7 +125,7 @@ function NetNav.PositionInRadiusBackwards(
 		local End = Net[EndNode].Position
 		local Tangent = Net[StartNode].Tangent
 		local Intersection = nil
-		if IsLine(Start, End, Tangent, 0.01) then
+		if NetNav.IsLine(Start, End, Tangent, 0.01) then
 			Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
 		else
 			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
@@ -175,7 +175,7 @@ function NetNav.PositionInRadiusBackwards(
 		local End = Net[EndNode].Position
 		local Tangent = Net[StartNode].Tangent
 		local Intersection = nil
-		if IsLine(Start, End, Tangent, 0.01) then
+		if NetNav.IsLine(Start, End, Tangent, 0.01) then
 			Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
 		else
 			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)

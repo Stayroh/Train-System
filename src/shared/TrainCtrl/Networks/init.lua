@@ -1,27 +1,26 @@
 local NetworkInit = {}
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 
-type Node = {
-	Position: Vector3,
-	Tangent: Vector3,
-	UpVector: Vector3,
-	Pre: number | { [number]: number } | nil,
-	Fol: number | { [number]: number } | nil,
-}
-
-type NetworkType = { [number]: Node }
-
 local Selection = {
 	[1] = script.NetworkAlpha,
 }
 
 local Networks = {}
 
+function Insert(T, Value): number
+	local Index = 1
+	while T[Index] ~= nil do
+		Index += 1
+	end
+	T[Index] = Value
+	return Index
+end
+
 for i, v in pairs(Selection) do
 	Networks[i] = table.freeze(require(v))
 end
 
-function NetworkInit.GetNetwork(Id: number): NetworkType?
+function NetworkInit.GetNetwork(Id: number): Types.NetworkType?
 	return Networks[Id]
 end
 
@@ -33,7 +32,15 @@ function NetworkInit.GetNode(NodeId: number, NetworkId: number): Types.NodeType
 	return Net[NodeId]
 end
 
-function NetworkInit.GetIdfromNetwork(Network: NetworkType): number?
+function NetworkInit.Remove(NetworkId)
+	Networks[NetworkId] = nil
+end
+
+function NetworkInit.Add(Network: Types.NetworkType): number
+	return Insert(Networks, Network)
+end
+
+function NetworkInit.GetIdfromNetwork(Network: Types.NetworkType): number?
 	return table.find(Networks, Network)
 end
 
