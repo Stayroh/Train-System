@@ -16,8 +16,10 @@ function Math.LineSphereIntersection(
 	End: Vector3,
 	Sphere_Pos: Vector3,
 	Radius: number,
-	FirstIntersection: boolean
+	FirstIntersection: boolean,
+	IsPercentage: boolean?
 ): number?
+	IsPercentage = IsPercentage == nil and true or IsPercentage
 	End -= Start
 	Sphere_Pos -= Start
 	local Lenght = End.Magnitude
@@ -31,7 +33,7 @@ function Math.LineSphereIntersection(
 	local X = math.sqrt(Radius ^ 2 - NearRadius ^ 2)
 	local T = FirstIntersection and Center - X or Center + X
 	if T >= 0 and T <= Lenght then
-		return T
+		return IsPercentage and T / Lenght or T
 	end
 end
 
@@ -139,7 +141,7 @@ function Math.ArcSphereIntersection(
 	if not DoesLimit then
 		return T
 	end
-	if T >= 0 and T <= 0 then
+	if T >= 0 and T <= 1 then
 		return T
 	end
 end

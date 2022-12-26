@@ -4,7 +4,7 @@ local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
 local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 
-function Module.Alpha(From: number, To: number, T: number, Rotation: Vector3)
+function Module.Alpha(From: number, To: number, T: number)
 	local Points = workspace.Nodes:GetChildren()
 	local SampleDisc = workspace.Disc
 	local Circles = workspace.Circles
@@ -24,7 +24,6 @@ function Module.Alpha(From: number, To: number, T: number, Rotation: Vector3)
 			Node.Pre = i - 1
 			Net[i - 1].Fol = i
 
-			print(Net[i - 1].Position, Node.Position)
 			Node.Tangent = Math.GetNextTangent(Net[i - 1].Position, Node.Position, Net[i - 1].Tangent)
 		end
 		Net[i] = Node
@@ -37,13 +36,12 @@ function Module.Alpha(From: number, To: number, T: number, Rotation: Vector3)
 		local Pos: Vector3 = v.Position
 		local LPos: Vector3 = Net[i - 1].Position
 		local LTan = Net[i - 1].Tangent
-		if NetNav.IsLine(LPos, Pos, LTan, 0.01) then
+		if NetNav.IsLine(LPos, Pos, LTan, 0.001) then
 			continue
 		end
 		local Position, Radius = Math.SphereFromArc(LPos, Pos, LTan)
 		local Up = (LPos - Position):Cross(Pos - Position).Unit
-		local CF = (CFrame.lookAt(Vector3.zero, Up) * CFrame.fromEulerAnglesXYZ(Rotation.X, Rotation.Y, Rotation.Z))
-			+ Position
+		local CF = (CFrame.lookAt(Vector3.zero, Up) * CFrame.fromEulerAnglesXYZ(0, math.pi / 2, 0)) + Position
 		local Size = Vector3.new(0.001, Radius * 2, Radius * 2)
 		local Copy: Part = SampleDisc:Clone()
 		Copy.Size = Size
@@ -58,7 +56,6 @@ function Module.Alpha(From: number, To: number, T: number, Rotation: Vector3)
 	Pos.T = T
 	Pos.To = To
 	local Intersection = NetNav.PositionInRadiusBackwards(Pos, Sphere.Position, Radius, Radius, 1)
-	print(Intersection)
 	Result.Position = NetNav.GetVecPos(Intersection)
 	Networks.Remove(NetworkId)
 end

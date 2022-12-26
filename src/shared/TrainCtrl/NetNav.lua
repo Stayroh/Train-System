@@ -85,89 +85,92 @@ function NetNav.PositionInRadiusBackwards(
 		[1] = TrainPos.To,
 		[2] = TrainPos.From,
 	}
-	if not Position then
-		Position = NetNav.GetVecPos(TrainPos)
-	end
 	local Iteration = 1
-	repeat
-		if Iteration ~= 1 then
-			Backwards[Iteration + 1] =
-				NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
-		end
-		local StartNode = Backwards[Iteration + 1]
-		local EndNode = Backwards[Iteration]
-		print(StartNode, EndNode)
-		if StartNode == nil then
-			local P = Net[EndNode].Position
-			local Direction = Net[EndNode].Tangent
-			local Intersection = Math.SemiGradSphereIntersection(P, Direction, Position, Radius, false)
-			if Intersection then
-				return NetPosition.new(nil, EndNode, Intersection, TrainPos.Network)
+	if Position ~= nil then
+		repeat
+			if Iteration ~= 1 then
+				Backwards[Iteration + 1] =
+					NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
+			end
+			local StartNode = Backwards[Iteration + 1]
+			local EndNode = Backwards[Iteration]
+			if StartNode == nil then
+				local P = Net[EndNode].Position
+				local Direction = Net[EndNode].Tangent
+				local Offset = Iteration == 1 and TrainPos.T or 0
+				local Intersection =
+					Math.SemiGradSphereIntersection(P + Direction * Offset, Direction, Position, Radius, false)
+				if Intersection then
+					return NetPosition.new(nil, EndNode, Intersection + Offset, TrainPos.Network)
+				else
+					break
+				end
+			end
+			if EndNode == nil then
+				local P = Net[StartNode].Position
+				local Direction = Net[StartNode].Tangent
+				local Intersection =
+					Math.LineSphereIntersection(P, P + Direction.Unit * TrainPos.T, Position, Radius, true, false)
+				if Intersection then
+					return NetPosition.new(StartNode, nil, Intersection, TrainPos.Network)
+				end
+				Iteration += 1
+				continue
+			end
+			if (Net[StartNode].Position - Position).Magnitude < Radius then
+				Iteration += 1
+				continue
+			end
+			local Start = Net[StartNode].Position
+			local End = Net[EndNode].Position
+			local Tangent = Net[StartNode].Tangent
+			local Intersection = nil
+			if NetNav.IsLine(Start, End, Tangent, 0.001) then
+				Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
 			else
-				break
+				Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
 			end
-		end
-		if EndNode == nil then
-			local P = Net[StartNode].Position
-			local Direction = Net[StartNode].Tangent
-			local Intersection = Math.SemiGradSphereIntersection(P, Direction, Position, Radius, true)
 			if Intersection then
-				return NetPosition.new(StartNode, nil, Intersection, TrainPos.Network)
+				return NetPosition.new(StartNode, EndNode, Intersection, TrainPos.Network)
 			end
-			Iteration += 1
-			continue
-		end
-		if (Net[StartNode].Position - Position).Magnitude < Radius then
-			Iteration += 1
-			continue
-		end
-		local Start = Net[StartNode].Position
-		local End = Net[EndNode].Position
-		local Tangent = Net[StartNode].Tangent
-		local Intersection = nil
-		if NetNav.IsLine(Start, End, Tangent, 0.01) then
-			Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
-		else
-			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
-		end
-		if Intersection then
-			return NetPosition.new(StartNode, EndNode, Intersection, TrainPos.Network)
-		end
 
-		Iteration += 1
-	until Iteration > 10
-	Position = NetNav.GetVecPos(TrainPos)
+			Iteration += 1
+		until Iteration > 10
+	end
+	local AlternatePosition = NetNav.GetVecPos(TrainPos)
 	Radius = AlternateRadius
 	Iteration = 1
 	repeat
-		if Iteration ~= 1 then
+		if Iteration ~= 1 and Position == nil then
 			Backwards[Iteration + 1] =
 				NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
 		end
 		local StartNode = Backwards[Iteration + 1]
 		local EndNode = Backwards[Iteration]
-		print(StartNode, EndNode)
 		if StartNode == nil then
 			local P = Net[EndNode].Position
 			local Direction = Net[EndNode].Tangent
-			local Intersection = Math.SemiGradSphereIntersection(P, Direction, Position, Radius, false)
+			local Offset = Iteration == 1 and TrainPos.T or 0
+			local Intersection =
+				Math.SemiGradSphereIntersection(P + Direction * Offset, Direction, AlternatePosition, Radius, false)
 			if Intersection then
-				return NetPosition.new(nil, EndNode, Intersection, TrainPos.Network)
+				return NetPosition.new(nil, EndNode, Intersection + Offset, TrainPos.Network)
 			else
-				return NetPosition.new(nil, EndNode, 1, TrainPos.Network)
+				return NetPosition.new(nil, EndNode, Offset, TrainPos.Network)
 			end
 		end
 		if EndNode == nil then
 			local P = Net[StartNode].Position
 			local Direction = Net[StartNode].Tangent
-			local Intersection = Math.SemiGradSphereIntersection(P, Direction, Position, Radius, true)
+			local Intersection =
+				Math.LineSphereIntersection(P, P + Direction * TrainPos.T, AlternatePosition, Radius, true, false)
 			if Intersection then
 				return NetPosition.new(StartNode, nil, Intersection, TrainPos.Network)
 			end
 			Iteration += 1
 			continue
 		end
-		if (Net[StartNode].Position - Position).Magnitude < Radius then
+		if (Net[StartNode].Position - AlternatePosition).Magnitude < Radius then
 			Iteration += 1
 			continue
 		end
@@ -175,10 +178,10 @@ function NetNav.PositionInRadiusBackwards(
 		local End = Net[EndNode].Position
 		local Tangent = Net[StartNode].Tangent
 		local Intersection = nil
-		if NetNav.IsLine(Start, End, Tangent, 0.01) then
-			Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
+		if NetNav.IsLine(Start, End, Tangent, 0.001) then
+			Intersection = Math.LineSphereIntersection(Start, End, AlternatePosition, Radius, true)
 		else
-			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
+			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, AlternatePosition, Radius)
 		end
 		if Intersection then
 			return NetPosition.new(StartNode, EndNode, Intersection, TrainPos.Network)
