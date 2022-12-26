@@ -36,7 +36,7 @@ function NetNav.GetNextNode(From: number?, To: number, TrainId: number, Network:
 		return
 	end
 	local ToNode = Net[To]
-	local Direction: number? = nil
+	local Direction: boolean? = nil
 	local NextNode: number | table | nil = nil
 	if SearchTroughConnection(ToNode.Fol, From) then
 		Direction = false

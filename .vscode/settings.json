@@ -5,5 +5,7 @@
     },
     "robloxLsp.diagnostics.globals": [
         "ma"
-    ]
+    ],
+    "robloxLsp.completion.callParenthesess": true,
+    "robloxLsp.typeChecking.mode": "Non Strict"
 }

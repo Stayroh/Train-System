@@ -26,9 +26,6 @@ end
 
 function NetworkInit.GetNode(NodeId: number, NetworkId: number): Types.NodeType
 	local Net = Networks[NetworkId]
-	if not Net then
-		return
-	end
 	return Net[NodeId]
 end
 
