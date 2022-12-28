@@ -20,7 +20,7 @@
 
     "ServerStorage": {
       "source": {
-        "$path": "./src/storage"
+        "$path": "./src/serverStorage"
       }
     },
 

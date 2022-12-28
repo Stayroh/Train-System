@@ -8,6 +8,7 @@ local Constructors = {}
 function Constructors.create(TrainId: number, Network: number, Wagons: table, From: number, To: number, T: number)
 	local self = setmetatable({}, Train)
 	self.Network = Network
+	return self
 end
 
 return Constructors
