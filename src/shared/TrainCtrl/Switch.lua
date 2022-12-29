@@ -1,54 +1,35 @@
 local SwitchModule = {}
+local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 
-type SwitchType = {
-	Pre: {
-		Visual: number,
-		Individ: { [number]: number? },
-	},
-	Fol: {
-		Visual: number,
-		Individ: { [number]: number? },
-	},
-}
+local SwitchNetworks = {} --Array of networks where switchs are stored for this network
+SwitchNetworks.__index = function(T, index)
+	SwitchNetworks[index] = {}
+end
 
-type SwitchNetType = { [number]: SwitchType }
-type SwitchesType = { [number]: SwitchNetType }
-
-type BroadcastElement = {
-	Network: number,
-	Node: number,
-	State: SwitchType,
-}
-type Broadcast = { [number]: BroadcastElement }
-
-local Switches: SwitchesType = {}
-
-function SwitchModule.ApplyChanges(ChangeBroadcast: Broadcast)
-	if not ChangeBroadcast then
+function SwitchModule:Update(Update: Types.SwitchUpdateType)
+	if not Update then
 		return
 	end
-	for _, Element: BroadcastElement in pairs(ChangeBroadcast) do
-		local Network = Element.Network
-		if Switches[Network] == nil then
-			Switches[Network] = {}
+	for Network, SwitchUpdates: Types.NetworkSwitches in pairs(Update) do
+		if type(SwitchUpdates) ~= "table" then
+			SwitchNetworks[Network] = nil
+			continue
 		end
-		Switches[Network][Element.Node] = Element.State
+		for Node, SwitchState: Types.SwitchType in pairs(SwitchUpdates) do
+			if type(SwitchState) ~= "table" then
+				SwitchNetworks[Network][Node] = nil
+				continue
+			end
+			SwitchNetworks[Network][Node] = SwitchState
+		end
 	end
 end
 
-function SwitchModule.ClearAllSwitches()
-	Switches = {}
-end
-
-function SwitchModule.ApplySwitches(NewStates: SwitchesType)
-	Switches = NewStates
-end
-
-function SwitchModule.GetNextNode(NodeId: number, Direction: boolean, TrainId: number, Network: number)
-	if not (Switches[Network] and Switches[Network][NodeId]) then
+function SwitchModule:GetNextNode(NodeId: number, Direction: boolean, TrainId: number, Network: number)
+	if not (SwitchNetworks[Network] and SwitchNetworks[Network][NodeId]) then
 		return
 	end
-	local Switch: SwitchType = Switches[Network][NodeId]
+	local Switch: Types.SwitchType = SwitchNetworks[Network][NodeId]
 	local SwitchSide = Switch[Direction and "Fol" or "Pre"]
 	if SwitchSide.Individ and SwitchSide.Individ[TrainId] then
 		return SwitchSide.Individ[TrainId]
@@ -56,4 +37,4 @@ function SwitchModule.GetNextNode(NodeId: number, Direction: boolean, TrainId: n
 	return SwitchSide.Visual
 end
 
-return table.freeze(SwitchModule)
+return SwitchModule
