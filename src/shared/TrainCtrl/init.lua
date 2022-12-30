@@ -7,23 +7,23 @@ local TrainController = Knit.CreateController({
 	Name = "TrainController",
 })
 
-function TrainController:KnitInit() end
+function TrainController:SwitchUpdates(UpdateState)
+	if not UpdateState then
+		return
+	end
+	SwitchModule:Update(UpdateState)
+end
 
-function TrainController:KnitStart()
-	--[[
+function TrainController:KnitInit()
 	self.TrainService = Knit.GetService("TrainService")
-	self.TrainService:RequestSwitchStates():andThen(function(Update)
-		print(type(Update))
-		SwitchModule:Update(Update)
+	self.TrainService:RequestSwitchStates():andThen(function(UpdateState)
+		self:SwitchUpdates(UpdateState)
 		self.TrainService.OnSwitchUpdates:Connect(function(update)
-			SwitchModule:Update(update)
+			TrainController:SwitchUpdates(update)
 		end)
 	end)
-	]]
 end
 
-function TrainController:Test()
-	print(self, self == TrainController)
-end
+function TrainController:KnitStart() end
 
 return TrainController

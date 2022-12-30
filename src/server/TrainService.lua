@@ -12,11 +12,11 @@ local TrainService = Knit.CreateService({
 })
 
 function TrainService.Client:RequestTrainStates()
-	return nil
+	return
 end
 
 function TrainService.Client:RequestSwitchStates()
-	return nil
+	return
 end
 
 return TrainService
