@@ -19,7 +19,7 @@ function Module.Alpha(From: number, To: number, T: number)
 			Node.Tangent = Tan
 		end
 		Node.Position = v.Position
-		Node.UpVector = Vector3.new(0, 1, 0)
+		Node.ZRotation = 0
 		if Net[i - 1] ~= nil then
 			Node.Pre = i - 1
 			Net[i - 1].Fol = i

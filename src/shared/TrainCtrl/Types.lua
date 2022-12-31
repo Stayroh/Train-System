@@ -3,7 +3,7 @@ local Types = {}
 export type NodeType = {
 	Position: Vector3,
 	Tangent: Vector3,
-	UpVector: Vector3,
+	ZRotation: number,
 	Pre: number | { [number]: number } | nil,
 	Fol: number | { [number]: number } | nil,
 } --Stores the information data about Position, Tangent, Upvector and connections of this node
