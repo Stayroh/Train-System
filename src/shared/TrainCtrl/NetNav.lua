@@ -25,12 +25,13 @@ function SearchTroughConnection(Connection: number | table | nil, Value: number)
 	return false
 end
 
-function NetNav.IsLine(Start: Vector3, End: Vector3, Tangent: Vector3, Tolerance: number): boolean
+function NetNav:IsLine(Start: Vector3, End: Vector3, Tangent: Vector3, Tolerance: number): boolean
 	local Deviation = math.abs(Tangent:Dot((End - Start).Unit))
+	print(Deviation)
 	return Deviation >= 1 - Tolerance
 end
 
-function NetNav.GetNextNode(From: number?, To: number, TrainId: number, Network: number): number?
+function NetNav:GetNextNode(From: number?, To: number, TrainId: number, Network: number): number?
 	local Net = Networks.GetNetwork(Network)
 	if not Net then
 		return
@@ -48,39 +49,65 @@ function NetNav.GetNextNode(From: number?, To: number, TrainId: number, Network:
 	if type(NextNode) ~= "table" then
 		return NextNode
 	end
-	local SwitchReturn = TrainSwitch.GetNextNode(To, Direction, TrainId, Network)
+	local SwitchReturn = TrainSwitch:GetNextNode(To, Direction, TrainId, Network)
 	return SwitchReturn and SwitchReturn or NextNode[1]
 end
 
-function NetNav.GetVecPos(Pos: Types.TrainPosType): Vector3
-	local From = Networks.GetNode(Pos.From, Pos.Network)
-	local To = Networks.GetNode(Pos.To, Pos.Network)
+function NetNav:CreateCFrame(Position, Tangent, Rotation): CFrame
+	return CFrame.lookAt(Vector3.zero, Tangent):ToWorldSpace(CFrame.Angles(0, 0, Rotation)) + Position
+end
+
+function NetNav:GetCFrame(Pos: Types.TrainPosType): CFrame
+	local From = Networks:GetNode(Pos.From, Pos.Network)
+	local To = Networks:GetNode(Pos.To, Pos.Network)
+	local T = Pos.T
+	if From == nil then
+		local Position = To.Tangent * T + To.Position
+		return self:CreateCFrame(Position, -To.Tangent, -To.ZRotation)
+	end
+	if To == nil then
+		local Position = From.Tangent * T + From.Position
+		return self:CreateCFrame(Position, From.Tangent, From.ZRotation)
+	end
+	if self:IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
+		local Position = From.Position:Lerp(To.Position, T)
+		local Direction = (To.Position - From.Position).Unit
+		local A1 = (Direction:Dot(From.Tangent)) < 0 and -From.ZRotation or From.ZRotation
+		local A2 = (Direction:Dot(To.Tangent)) < 0 and -To.ZRotation or To.ZRotation
+		local Rotation = Math:AngleLerp(A1, A2, T)
+		return self:CreateCFrame(Position, Direction, Rotation)
+	end
+	local Position, Tangent = Math:ArcLerp(From.Position, To.Position, From.Tangent, T, true)
+	local Direction = (To.Position - From.Position).Unit
+	local A1 = (Direction:Dot(From.Tangent)) < 0 and -From.ZRotation or From.ZRotation
+	local A2 = (Direction:Dot(To.Tangent)) < 0 and -To.ZRotation or To.ZRotation
+	local Rotation = Math:AngleLerp(A1, A2, T)
+	return self:CreateCFrame(Position, Tangent, Rotation)
+end
+
+function NetNav:GetVecPos(Pos: Types.TrainPosType): Vector3
+	local From = Networks:GetNode(Pos.From, Pos.Network)
+	local To = Networks:GetNode(Pos.To, Pos.Network)
 	if From == nil then
 		return To.Tangent * Pos.T + To.Position
 	end
 	if To == nil then
 		return From.Tangent * Pos.T + From.Position
 	end
-	if not NetNav.IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
-		return Math.ArcLerp(From.Position, To.Position, From.Tangent, Pos.T)
-	end
-	if To == nil then
-		return From.Tangent * Pos.T + From.Position
-	end
-	if From == nil then
-		return To.Tangent * Pos.T + To.Position
+	if not self:IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
+		return Math:ArcLerp(From.Position, To.Position, From.Tangent, Pos.T)
 	end
 	return From.Position:Lerp(To.Position, Pos.T)
 end
 
-function NetNav.PositionInRadiusBackwards(
+function NetNav:PositionInRadiusBackwards(
 	TrainPos: Types.TrainPosType,
 	Position: Vector3,
 	Radius: number,
 	AlternateRadius: number,
 	TrainId: number
 )
-	local Net = Networks.GetNetwork(TrainPos.Network)
+	local Net = Networks:GetNetwork(TrainPos.Network)
 	local Backwards = {
 		[1] = TrainPos.To,
 		[2] = TrainPos.From,
@@ -90,7 +117,7 @@ function NetNav.PositionInRadiusBackwards(
 		repeat
 			if Iteration ~= 1 then
 				Backwards[Iteration + 1] =
-					NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
+					self:GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
 			end
 			local StartNode = Backwards[Iteration + 1]
 			local EndNode = Backwards[Iteration]
@@ -99,7 +126,7 @@ function NetNav.PositionInRadiusBackwards(
 				local Direction = Net[EndNode].Tangent
 				local Offset = Iteration == 1 and TrainPos.T or 0
 				local Intersection =
-					Math.SemiGradSphereIntersection(P + Direction * Offset, Direction, Position, Radius, false)
+					Math:SemiGradSphereIntersection(P + Direction * Offset, Direction, Position, Radius, false)
 				if Intersection then
 					return NetPosition.new(nil, EndNode, Intersection + Offset, TrainPos.Network)
 				else
@@ -110,7 +137,7 @@ function NetNav.PositionInRadiusBackwards(
 				local P = Net[StartNode].Position
 				local Direction = Net[StartNode].Tangent
 				local Intersection =
-					Math.LineSphereIntersection(P, P + Direction.Unit * TrainPos.T, Position, Radius, true, false)
+					Math:LineSphereIntersection(P, P + Direction.Unit * TrainPos.T, Position, Radius, true, false)
 				if Intersection then
 					return NetPosition.new(StartNode, nil, Intersection, TrainPos.Network)
 				end
@@ -125,10 +152,10 @@ function NetNav.PositionInRadiusBackwards(
 			local End = Net[EndNode].Position
 			local Tangent = Net[StartNode].Tangent
 			local Intersection = nil
-			if NetNav.IsLine(Start, End, Tangent, 0.001) then
-				Intersection = Math.LineSphereIntersection(Start, End, Position, Radius, true)
+			if self:IsLine(Start, End, Tangent, 0.001) then
+				Intersection = Math:LineSphereIntersection(Start, End, Position, Radius, true)
 			else
-				Intersection = Math.ArcSphereIntersection(Start, End, Tangent, Position, Radius)
+				Intersection = Math:ArcSphereIntersection(Start, End, Tangent, Position, Radius)
 			end
 			if Intersection then
 				return NetPosition.new(StartNode, EndNode, Intersection, TrainPos.Network)
@@ -137,13 +164,13 @@ function NetNav.PositionInRadiusBackwards(
 			Iteration += 1
 		until Iteration > 10
 	end
-	local AlternatePosition = NetNav.GetVecPos(TrainPos)
+	local AlternatePosition = self:GetVecPos(TrainPos)
 	Radius = AlternateRadius
 	Iteration = 1
 	repeat
 		if Iteration ~= 1 and Position == nil then
 			Backwards[Iteration + 1] =
-				NetNav.GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
+				self:GetNextNode(Backwards[Iteration - 1], Backwards[Iteration], TrainId, TrainPos.Network)
 		end
 		local StartNode = Backwards[Iteration + 1]
 		local EndNode = Backwards[Iteration]
@@ -152,7 +179,7 @@ function NetNav.PositionInRadiusBackwards(
 			local Direction = Net[EndNode].Tangent
 			local Offset = Iteration == 1 and TrainPos.T or 0
 			local Intersection =
-				Math.SemiGradSphereIntersection(P + Direction * Offset, Direction, AlternatePosition, Radius, false)
+				Math:SemiGradSphereIntersection(P + Direction * Offset, Direction, AlternatePosition, Radius, false)
 			if Intersection then
 				return NetPosition.new(nil, EndNode, Intersection + Offset, TrainPos.Network)
 			else
@@ -163,7 +190,7 @@ function NetNav.PositionInRadiusBackwards(
 			local P = Net[StartNode].Position
 			local Direction = Net[StartNode].Tangent
 			local Intersection =
-				Math.LineSphereIntersection(P, P + Direction * TrainPos.T, AlternatePosition, Radius, true, false)
+				Math:LineSphereIntersection(P, P + Direction * TrainPos.T, AlternatePosition, Radius, true, false)
 			if Intersection then
 				return NetPosition.new(StartNode, nil, Intersection, TrainPos.Network)
 			end
@@ -178,10 +205,10 @@ function NetNav.PositionInRadiusBackwards(
 		local End = Net[EndNode].Position
 		local Tangent = Net[StartNode].Tangent
 		local Intersection = nil
-		if NetNav.IsLine(Start, End, Tangent, 0.001) then
-			Intersection = Math.LineSphereIntersection(Start, End, AlternatePosition, Radius, true)
+		if self:IsLine(Start, End, Tangent, 0.001) then
+			Intersection = Math:LineSphereIntersection(Start, End, AlternatePosition, Radius, true)
 		else
-			Intersection = Math.ArcSphereIntersection(Start, End, Tangent, AlternatePosition, Radius)
+			Intersection = Math:ArcSphereIntersection(Start, End, Tangent, AlternatePosition, Radius)
 		end
 		if Intersection then
 			return NetPosition.new(StartNode, EndNode, Intersection, TrainPos.Network)
@@ -194,4 +221,4 @@ function NetNav.PositionInRadiusBackwards(
 	until Iteration > 10
 end
 
-return table.freeze(NetNav)
+return NetNav

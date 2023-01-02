@@ -24,7 +24,7 @@ function Module.Alpha(From: number, To: number, T: number)
 			Node.Pre = i - 1
 			Net[i - 1].Fol = i
 
-			Node.Tangent = Math.GetNextTangent(Net[i - 1].Position, Node.Position, Net[i - 1].Tangent)
+			Node.Tangent = Math:GetNextTangent(Net[i - 1].Position, Node.Position, Net[i - 1].Tangent)
 		end
 		Net[i] = Node
 	end
@@ -36,10 +36,10 @@ function Module.Alpha(From: number, To: number, T: number)
 		local Pos: Vector3 = v.Position
 		local LPos: Vector3 = Net[i - 1].Position
 		local LTan = Net[i - 1].Tangent
-		if NetNav.IsLine(LPos, Pos, LTan, 0.001) then
+		if NetNav:IsLine(LPos, Pos, LTan, 0.001) then
 			continue
 		end
-		local Position, Radius = Math.SphereFromArc(LPos, Pos, LTan)
+		local Position, Radius = Math:SphereFromArc(LPos, Pos, LTan)
 		local Up = (LPos - Position):Cross(Pos - Position).Unit
 		local CF = (CFrame.lookAt(Vector3.zero, Up) * CFrame.fromEulerAnglesXYZ(0, math.pi / 2, 0)) + Position
 		local Size = Vector3.new(0.001, Radius * 2, Radius * 2)
@@ -49,15 +49,15 @@ function Module.Alpha(From: number, To: number, T: number)
 		Copy.Parent = Circles
 	end
 	local Radius = Sphere.Size.X / 2
-	local NetworkId = Networks.Add(Net)
+	local NetworkId = Networks:Add(Net)
 	local Pos: Types.TrainPosType = {}
 	Pos.From = From
 	Pos.Network = NetworkId
 	Pos.T = T
 	Pos.To = To
-	local Intersection = NetNav.PositionInRadiusBackwards(Pos, Sphere.Position, Radius, Radius, 1)
-	Result.Position = NetNav.GetVecPos(Intersection)
-	Networks.Remove(NetworkId)
+	local Intersection = NetNav:PositionInRadiusBackwards(Pos, Sphere.Position, Radius, Radius, 1)
+	Result.Position = NetNav:GetVecPos(Intersection)
+	Networks:Remove(NetworkId)
 end
 
 return Module
