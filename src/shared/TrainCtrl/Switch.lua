@@ -2,7 +2,7 @@ local SwitchModule = {}
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 
 local SwitchNetworks = {} --Array of networks where switchs are stored for this network
-SwitchNetworks.__index = function(T, index)
+SwitchNetworks.__index = function(_, index)
 	SwitchNetworks[index] = {}
 end
 
@@ -25,13 +25,13 @@ function SwitchModule:Update(Update: Types.SwitchUpdateType)
 	end
 end
 
-function SwitchModule:GetNextNode(NodeId: number, Direction: boolean, TrainId: number, Network: number)
+function SwitchModule:GetSwitchConnection(NodeId: number, Direction: boolean, TrainId: number, Network: number)
 	if not (SwitchNetworks[Network] and SwitchNetworks[Network][NodeId]) then
 		return
 	end
 	local Switch: Types.SwitchType = SwitchNetworks[Network][NodeId]
 	local SwitchSide = Switch[Direction and "Fol" or "Pre"]
-	if SwitchSide.Individ and SwitchSide.Individ[TrainId] then
+	if TrainId and SwitchSide.Individ and SwitchSide.Individ[TrainId] then
 		return SwitchSide.Individ[TrainId]
 	end
 	return SwitchSide.Visual

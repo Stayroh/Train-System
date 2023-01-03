@@ -27,12 +27,11 @@ end
 
 function NetNav:IsLine(Start: Vector3, End: Vector3, Tangent: Vector3, Tolerance: number): boolean
 	local Deviation = math.abs(Tangent:Dot((End - Start).Unit))
-	print(Deviation)
 	return Deviation >= 1 - Tolerance
 end
 
 function NetNav:GetNextNode(From: number?, To: number, TrainId: number, Network: number): number?
-	local Net = Networks.GetNetwork(Network)
+	local Net = Networks:GetNetwork(Network)
 	if not Net then
 		return
 	end
@@ -49,7 +48,7 @@ function NetNav:GetNextNode(From: number?, To: number, TrainId: number, Network:
 	if type(NextNode) ~= "table" then
 		return NextNode
 	end
-	local SwitchReturn = TrainSwitch:GetNextNode(To, Direction, TrainId, Network)
+	local SwitchReturn = TrainSwitch:GetSwitchConnection(To, Direction, TrainId, Network)
 	return SwitchReturn and SwitchReturn or NextNode[1]
 end
 
@@ -113,7 +112,7 @@ function NetNav:PositionInRadiusBackwards(
 		[2] = TrainPos.From,
 	}
 	local Iteration = 1
-	if Position ~= nil then
+	if Position then
 		repeat
 			if Iteration ~= 1 then
 				Backwards[Iteration + 1] =
