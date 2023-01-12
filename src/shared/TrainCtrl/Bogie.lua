@@ -15,6 +15,11 @@ function Bogie:GetPivot(IsFront: boolean): Vector3?
 	return Pivot
 end
 
+function Bogie:SetCFrame(CFrame: CFrame)
+	self.CFrame = CFrame
+	self.Model:SetPrimaryPartCFrame(CFrame)
+end
+
 local Cons = {}
 function Cons.new(Series: number, Reference: Model)
 	local self = setmetatable({}, Bogie)

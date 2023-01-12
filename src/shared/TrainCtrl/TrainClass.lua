@@ -13,7 +13,9 @@ function Train:Update(Position: Types.TrainPosType)
 		local WasDouble = false
 		if i == 1 then
 			Car.frontBogie.Position = Position
-			Car.frontBogie.CFrame = NetNav:GetCFrame(Position)
+			Car.frontBogie:SetCFrame(NetNav:GetCFrame(Position))
+			Car.frontBogie.Model:SetPrimaryPartCFrame(NetNav:GetCFrame(Position))
+			Car.frontBogie.Model.PrimaryPart.Color = Color3.new(0, 0, 0)
 		elseif self.Cars[i - 1].rearBogie:GetPivot(false) == nil then
 			local Lastfront = self.Cars[i - 1].frontBogie
 			local Lastrear = self.Cars[i - 1].rearBogie
@@ -39,20 +41,23 @@ function Train:Update(Position: Types.TrainPosType)
 			local AlternatePos = self.Cars[i - 1].rearBogie.Position
 			local Radius =
 				math.abs((Car.Model.PrimaryPart.Size.Z / 2) - (Car.frontJoint.Z - Car.frontBogie:GetPivot(true).Z))
+			print(Radius)
 			local AlternateRadius = Radius
 				+ (PriPart.Size.Z / 2 + (self.Cars[i - 1].rearJoint.Z - self.Cars[i - 1].rearBogie:GetPivot(true).Z))
+			print(AlternateRadius)
 			Car.frontBogie.Position =
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
-			Car.frontBogie.CFrame = NetNav:GetCFrame(Car.frontBogie.Position)
+			Car.frontBogie:SetCFrame(NetNav:GetCFrame(Car.frontBogie.Position))
 			WasDouble = true
 		end
 		local Radius = math.abs(
 			(Car.frontJoint.Z - Car.frontBogie:GetPivot(not WasDouble).Z)
 				- (Car.rearJoint.Z - Car.rearBogie:GetPivot(true).Z)
 		)
+		print(Radius)
 		Car.rearBogie.Position =
 			NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
-		Car.rearBogie.CFrame = NetNav:GetCFrame(Car.rearBogie.Position)
+		Car.rearBogie:SetCFrame(NetNav:GetCFrame(Car.rearBogie.Position))
 		Car:Update()
 	end
 end
