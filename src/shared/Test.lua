@@ -4,9 +4,23 @@ local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
 local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 local NetPosition = require(game.ReplicatedStorage.source.TrainCtrl.NetPosition)
+local TrainClass = require(game.ReplicatedStorage.source.TrainCtrl.TrainClass)
 
-function Module.Alpha(From: number, To: number, T: number, Radien: number, Steps)
+function Module.Alpha(From: number, To: number, T: number, Description: Types.TrainDescription)
 	local Points = workspace.Nodes:GetChildren()
+	function search(name)
+		for _, v in pairs(Points) do
+			if v.Name == name then
+				return v
+			end
+		end
+	end
+	local Po = {}
+	local index = 1
+	while search(tostring(index)) do
+		Po[index] = search(tostring(index))
+		index += 1
+	end
 	local SampleDisc = workspace.Disc
 	local Circles = workspace.Circles
 	local CartSample = workspace.CartSample
@@ -14,7 +28,7 @@ function Module.Alpha(From: number, To: number, T: number, Radien: number, Steps
 	Carts:ClearAllChildren()
 	Circles:ClearAllChildren()
 	local Net: Types.NetworkType = {}
-	for i, v in pairs(Points) do
+	for i, v in pairs(Po) do
 		local Node = {}
 		if i == 1 then
 			local Tan: Vector3 = (Points[2].Position - v.Position).Unit
@@ -51,14 +65,8 @@ function Module.Alpha(From: number, To: number, T: number, Radien: number, Steps
 		Copy.Parent = Circles
 	end
 	local NetworkId = Networks:Add(Net)
-	local Pos = nil
-	for step = 1, Steps do
-		local StepPart = CartSample:Clone()
-		Pos = Pos and NetNav:PositionInRadiusBackwards(Pos, nil, nil, Radien, 1)
-			or NetPosition.new(From, To, T, NetworkId)
-		StepPart.CFrame = NetNav:GetCFrame(Pos)
-		StepPart.Parent = Carts
-	end
+	local Pos = NetPosition.new(From, To, T, NetworkId)
+	local Train = TrainClass.fromDescription(Description, Pos)
 	Networks:Remove(NetworkId)
 end
 

@@ -1,0 +1,22 @@
+local Bogies = {}
+local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+
+Bogies.ICE_Main = {
+	frontPivot = Vector3.new(0, 1, 2),
+}
+
+Bogies.TGV_Double = {
+	frontPivot = Vector3.new(0, 1, 0.5),
+	rearPivot = Vector3.new(0, 1, -0.5),
+}
+
+Bogies.test = {
+	frontPivot = Vector3.new(0, 3, 0),
+}
+
+Bogies.test_double = {
+	frontPivot = Vector3.new(0, 3, 4),
+	rearPivot = Vector3.new(0, 3, -4),
+}
+
+return Bogies

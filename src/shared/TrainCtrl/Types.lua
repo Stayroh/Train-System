@@ -27,18 +27,22 @@ export type NetworkSwitches = { [number]: SwitchType } --Array of SwitchUpdates 
 
 export type SwitchUpdateType = { [number]: NetworkSwitches } --Dictonary for each NetworkId
 
-export type WagonDecleration = {
-	WagonSeries: string,
-	WagonReference: Folder,
+export type CarDescription = {
+	CarSeries: string,
+	CarReference: Folder,
 } --Stores reference to the model in workspace and wagon type for this wagon
 
-export type TrainLineType = { [number]: WagonDecleration } --Array of wagons which form a train
+export type TrainDescription = {
+	Cars: { [number]: CarDescription },
+	Bogies: { [number]: Model },
+	TrainId: number,
+}
 
 export type TrainPosType = {
 	From: number?,
 	To: number?,
 	T: number,
 	Network: number,
-} --Gives information about a trains position in percetual from, to manner and on which network it is
+} --Gives information about a trains position in percetual "from, to" manner and on which network it is on
 
 return Types
