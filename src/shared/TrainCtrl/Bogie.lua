@@ -1,4 +1,6 @@
 local Bogies = require(game.ReplicatedStorage.source.TrainCtrl.Bogies)
+local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Bogie = {}
 Bogie.__index = Bogie
 
@@ -13,6 +15,11 @@ function Bogie:GetPivot(IsFront: boolean): Vector3?
 	end
 	Pivot = self.Reverse and Vector3.new(Pivot.X, Pivot.Y, -Pivot.Z) or Pivot
 	return Pivot
+end
+
+function Bogie:SetPosition(Position: Types.TrainPosType)
+	self.Position = Position
+	self:SetCFrame(NetNav:GetCFrame(Position))
 end
 
 function Bogie:SetCFrame(CFrame: CFrame)

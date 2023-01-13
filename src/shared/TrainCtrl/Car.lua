@@ -30,6 +30,7 @@ function Cons.fromDescription(Description: Types.CarDescription, frontBogie, rea
 		self.rearJoint,
 		0.5
 	)):Inverse()
+	print(self)
 	return self
 end
 

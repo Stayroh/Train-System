@@ -23,9 +23,6 @@ function Module.Alpha(From: number, To: number, T: number, Description: Types.Tr
 	end
 	local SampleDisc = workspace.Disc
 	local Circles = workspace.Circles
-	local CartSample = workspace.CartSample
-	local Carts = workspace.Carts
-	Carts:ClearAllChildren()
 	Circles:ClearAllChildren()
 	local Net: Types.NetworkType = {}
 	for i, v in pairs(Po) do

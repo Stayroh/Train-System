@@ -30,8 +30,7 @@ function Train:Update(Position: Types.TrainPosType)
 	for i, Car in pairs(self.Cars) do
 		local WasDouble = false
 		if i == 1 then
-			Car.frontBogie.Position = Position
-			Car.frontBogie:SetCFrame(NetNav:GetCFrame(Position))
+			Car.frontBogie:SetPosition(Position)
 			Car.frontBogie.Model:SetPrimaryPartCFrame(NetNav:GetCFrame(Position))
 			Car.frontBogie.Model.PrimaryPart.Color = Color3.new(0, 0, 0)
 		elseif self.Cars[i - 1].rearBogie:GetPivot(false) == nil then
@@ -63,9 +62,9 @@ function Train:Update(Position: Types.TrainPosType)
 			local AlternateRadius = Radius
 				+ (PriPart.Size.Z / 2 + (self.Cars[i - 1].rearJoint.Z - self.Cars[i - 1].rearBogie:GetPivot(true).Z))
 			print(AlternateRadius)
-			Car.frontBogie.Position =
+			Car.frontBogie:SetPosition(
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
-			Car.frontBogie:SetCFrame(NetNav:GetCFrame(Car.frontBogie.Position))
+			)
 			WasDouble = true
 		end
 		local Radius = math.abs(
@@ -73,9 +72,9 @@ function Train:Update(Position: Types.TrainPosType)
 				- (Car.rearJoint.Z - Car.rearBogie:GetPivot(true).Z)
 		)
 		print(Radius)
-		Car.rearBogie.Position =
+		Car.rearBogie:SetPosition(
 			NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
-		Car.rearBogie:SetCFrame(NetNav:GetCFrame(Car.rearBogie.Position))
+		)
 		Car:Update()
 	end
 end
@@ -88,24 +87,32 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 	self.TrainId = Description.TrainId
 	local requiredBogies = 1
 	for i, CarDescription in pairs(Description.Cars) do
+		print("Now for car: " .. i)
+		print("Front Bogie", requiredBogies)
 		local frontBogie = nil
 		if self.Cars[i - 1] and self.Cars[i - 1].rearBogie:GetPivot(false) then
 			frontBogie = self.Cars[i - 1].rearBogie
+			print(frontBogie)
 		else
 			frontBogie = BogieClass.new(Cars[CarDescription.CarSeries].frontBogie, Description.Bogies[requiredBogies])
 			requiredBogies += 1
+			print(frontBogie)
 		end
+		print("Rear Bogie", requiredBogies)
 		local rearBogie = BogieClass.new(Cars[CarDescription.CarSeries].rearBogie, Description.Bogies[requiredBogies])
 		requiredBogies += 1
 		if rearBogie:GetPivot(false) == nil then
 			rearBogie.Reversed = true
 		end
+		print(rearBogie)
+		print("f", frontBogie)
+		print("r", rearBogie)
 		local Car = CarClass.fromDescription(CarDescription, frontBogie, rearBogie)
 
 		self.Cars[i] = Car
 	end
 	self.Position = Position
-	print(TableToString(self, 1))
+	print(self)
 	self:Update(Position)
 	return self
 end
