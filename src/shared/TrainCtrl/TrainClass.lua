@@ -8,6 +8,24 @@ local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Train = {}
 Train.__index = Train
 
+function TableToString(t, Iteration)
+	local str = "{\n"
+	for i, v in pairs(t) do
+		if i == "__index" then
+			continue
+		end
+		local Entre = nil
+		if type(v) == "table" and Iteration <= 5 then
+			Entre = TableToString(v, Iteration + 1)
+		else
+			Entre = tostring(v)
+		end
+		str = str .. i .. " = " .. Entre .. ",\n"
+	end
+	str = str .. "\n}"
+	return str
+end
+
 function Train:Update(Position: Types.TrainPosType)
 	for i, Car in pairs(self.Cars) do
 		local WasDouble = false
@@ -87,6 +105,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		self.Cars[i] = Car
 	end
 	self.Position = Position
+	print(TableToString(self, 1))
 	self:Update(Position)
 	return self
 end
