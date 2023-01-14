@@ -5,7 +5,8 @@ local Bogie = {}
 Bogie.__index = Bogie
 
 function Bogie:GetPivot(IsFront: boolean): Vector3?
-	if self.rearBogie then
+	if self.rearPivot then
+		print("Has rear bogie!")
 		local Direction = self.Reversed and not IsFront or IsFront
 		local Pivot = Direction and self.frontPivot or self.rearPivot
 		Pivot = self.Reverse and Vector3.new(Pivot.X, Pivot.Y, -Pivot.Z) or Pivot

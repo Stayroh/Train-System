@@ -36,4 +36,11 @@ Cars.TestCarBeta2 = {
 	rearBogie = "test2",
 }
 
+Cars.TestCarGamma2 = {
+	Front = Vector3.new(0, -0.5, 29),
+	Rear = Vector3.new(0, -0.5, -29),
+	frontBogie = "test_double2",
+	rearBogie = "test_double2",
+}
+
 return Cars
