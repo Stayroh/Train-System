@@ -31,9 +31,9 @@ function Train:Update(Position: Types.TrainPosType)
 		local WasDouble = false
 		if i == 1 then
 			Car.frontBogie:SetPosition(Position)
-			Car.frontBogie.Model:SetPrimaryPartCFrame(NetNav:GetCFrame(Position))
-			Car.frontBogie.Model.PrimaryPart.Color = Color3.new(0, 0, 0)
-		elseif self.Cars[i - 1].rearBogie:GetPivot(false) == nil then
+		elseif self.Cars[i - 1].rearBogie == Car.frontBogie then
+			WasDouble = true
+		else
 			local Lastfront = self.Cars[i - 1].frontBogie
 			local Lastrear = self.Cars[i - 1].rearBogie
 			local MiddleCFrame = (CFrame.lookAt(
@@ -50,7 +50,7 @@ function Train:Update(Position: Types.TrainPosType)
 				),
 				0.5
 			)
-			local PriPart = self.Cars[i - 1].Model.PrimaryPart.CFrame
+			local PriPart = self.Cars[i - 1].Model.PrimaryPart
 			local LocalPos = MiddleCFrame:VectorToObjectSpace(
 				PriPart.CFrame.Position + PriPart.CFrame.LookVector * (-PriPart.Size.Z / 2)
 			)
@@ -65,12 +65,12 @@ function Train:Update(Position: Types.TrainPosType)
 			Car.frontBogie:SetPosition(
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
 			)
-			WasDouble = true
 		end
 		local Radius = math.abs(
 			(Car.frontJoint.Z - Car.frontBogie:GetPivot(not WasDouble).Z)
 				- (Car.rearJoint.Z - Car.rearBogie:GetPivot(true).Z)
 		)
+		print(Car.frontBogie:GetPivot(not WasDouble), Car.rearBogie:GetPivot(true))
 		print(Radius)
 		Car.rearBogie:SetPosition(
 			NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
@@ -91,9 +91,11 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		print("Front Bogie", requiredBogies)
 		local frontBogie = nil
 		if self.Cars[i - 1] and self.Cars[i - 1].rearBogie:GetPivot(false) then
+			print("got double")
 			frontBogie = self.Cars[i - 1].rearBogie
 			print(frontBogie)
 		else
+			print("Created new")
 			frontBogie = BogieClass.new(Cars[CarDescription.CarSeries].frontBogie, Description.Bogies[requiredBogies])
 			requiredBogies += 1
 			print(frontBogie)

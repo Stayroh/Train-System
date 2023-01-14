@@ -5,10 +5,12 @@ local Car = {}
 Car.__index = Car
 
 function Car:Update()
-	local FrontCFrame: CFrame = self.frontBogie.Model.PrimaryPart.CFrame
-	local RearCFrame: CFrame = self.rearBogie.Model.PrimaryPart.CFrame
-	local FrontPoint = FrontCFrame:VectorToWorldSpace(self.frontBogie:GetPivot(not self.frontBogie.IsDouble))
-	local RearPoint = RearCFrame:VectorToWorldSpace(self.rearBogie:GetPivot(true))
+	local FrontCFrame: CFrame = self.frontBogie.CFrame
+	local RearCFrame: CFrame = self.rearBogie.CFrame
+	local IsDouble = self.frontBogie:GetPivot(false) and true or false
+	local FrontPoint = FrontCFrame:PointToWorldSpace(self.frontBogie:GetPivot(not IsDouble))
+	local RearPoint = RearCFrame:PointToWorldSpace(self.rearBogie:GetPivot(true))
+	print(FrontPoint, RearPoint)
 	local FCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, FrontCFrame.UpVector) + FrontPoint
 	local RCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, RearCFrame.UpVector) + RearPoint
 	self.CFrame = FCF:Lerp(RCF, 0.5) * self.InverseOffset
