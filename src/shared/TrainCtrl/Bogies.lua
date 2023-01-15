@@ -24,8 +24,8 @@ Bogies.test2 = {
 }
 
 Bogies.test_double2 = {
-	frontPivot = Vector3.new(0, 3.5, 5),
-	rearPivot = Vector3.new(0, 3.5, -5),
+	frontPivot = Vector3.new(0, 3.5, -5),
+	rearPivot = Vector3.new(0, 3.5, 5),
 }
 
 return Bogies

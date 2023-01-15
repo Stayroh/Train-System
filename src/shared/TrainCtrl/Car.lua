@@ -15,7 +15,7 @@ function Car:Update()
 	print(FrontPoint, RearPoint)
 	local FCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, FrontCFrame.UpVector) + FrontPoint
 	local RCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, RearCFrame.UpVector) + RearPoint
-	self.CFrame = FCF:Lerp(RCF, 0.5) -- * self.InverseOffset
+	self.CFrame = FCF:Lerp(RCF, 0.5) * self.InverseOffset
 	print(self.InverseOffset)
 
 	self.Model:SetPrimaryPartCFrame(self.CFrame)

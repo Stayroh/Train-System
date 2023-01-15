@@ -23,15 +23,15 @@ Cars.TestCarBeta = {
 }
 
 Cars.TestCarAlpha2 = {
-	Front = Vector3.new(0, -0.5, 24),
-	Rear = Vector3.new(0, -0.5, -29),
+	Front = Vector3.new(0, -0.5, -24),
+	Rear = Vector3.new(0, -0.5, 29),
 	frontBogie = "test2",
 	rearBogie = "test_double2",
 }
 
 Cars.TestCarBeta2 = {
-	Front = Vector3.new(0, -0.5, 29),
-	Rear = Vector3.new(0, -0.5, -24),
+	Front = Vector3.new(0, -0.5, -29),
+	Rear = Vector3.new(0, -0.5, 24),
 	frontBogie = "test_double2",
 	rearBogie = "test2",
 }
