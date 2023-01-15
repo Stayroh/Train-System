@@ -6,7 +6,6 @@ Bogie.__index = Bogie
 
 function Bogie:GetPivot(IsFront: boolean): Vector3?
 	if self.rearPivot then
-		print("Has rear bogie!")
 		local Direction = self.Reversed and not IsFront or IsFront
 		local Pivot = Direction and self.frontPivot or self.rearPivot
 		Pivot = self.Reverse and Vector3.new(Pivot.X, Pivot.Y, -Pivot.Z) or Pivot
@@ -16,7 +15,7 @@ function Bogie:GetPivot(IsFront: boolean): Vector3?
 		return nil
 	end
 	local Pivot = self.frontPivot
-	Pivot = self.Reverse and Vector3.new(Pivot.X, Pivot.Y, -Pivot.Z) or Pivot
+	Pivot = self.Reversed and Vector3.new(Pivot.X, Pivot.Y, -Pivot.Z) or Pivot
 	return Pivot
 end
 
@@ -25,9 +24,10 @@ function Bogie:SetPosition(Position: Types.TrainPosType)
 	self:SetCFrame(NetNav:GetCFrame(Position))
 end
 
-function Bogie:SetCFrame(CFrame: CFrame)
-	self.CFrame = CFrame
-	self.Model:SetPrimaryPartCFrame(CFrame)
+function Bogie:SetCFrame(CF: CFrame)
+	self.CFrame = CF
+
+	self.Model:SetPrimaryPartCFrame(self.Reversed and CF * CFrame.Angles(0, math.pi, 0) or CF)
 end
 
 local Cons = {}

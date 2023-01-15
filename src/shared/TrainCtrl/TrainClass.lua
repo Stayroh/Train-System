@@ -8,24 +8,6 @@ local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Train = {}
 Train.__index = Train
 
-function TableToString(t, Iteration)
-	local str = "{\n"
-	for i, v in pairs(t) do
-		if i == "__index" then
-			continue
-		end
-		local Entre = nil
-		if type(v) == "table" and Iteration <= 5 then
-			Entre = TableToString(v, Iteration + 1)
-		else
-			Entre = tostring(v)
-		end
-		str = str .. i .. " = " .. Entre .. ",\n"
-	end
-	str = str .. "\n}"
-	return str
-end
-
 function Train:Update(Position: Types.TrainPosType)
 	for i, Car in pairs(self.Cars) do
 		local WasDouble = false
@@ -34,6 +16,7 @@ function Train:Update(Position: Types.TrainPosType)
 		elseif self.Cars[i - 1].rearBogie == Car.frontBogie then
 			WasDouble = true
 		else
+			print("Get FrontBogie of next Car")
 			local Lastfront = self.Cars[i - 1].frontBogie
 			local Lastrear = self.Cars[i - 1].rearBogie
 			local MiddleCFrame = (CFrame.lookAt(
@@ -51,23 +34,24 @@ function Train:Update(Position: Types.TrainPosType)
 				0.5
 			)
 			local PriPart = self.Cars[i - 1].Model.PrimaryPart
-			local LocalPos = MiddleCFrame:VectorToObjectSpace(
+			local LocalPos = MiddleCFrame:PointToObjectSpace(
 				PriPart.CFrame.Position + PriPart.CFrame.LookVector * (-PriPart.Size.Z / 2)
 			)
-			local GlobalPos = MiddleCFrame:VectorToWorldSpace(Vector3.new(LocalPos.X, 0, LocalPos.Z))
+			local GlobalPos = MiddleCFrame:PointToWorldSpace(Vector3.new(LocalPos.X, 0, LocalPos.Z))
+			workspace.Marker.Position = GlobalPos
 			local AlternatePos = self.Cars[i - 1].rearBogie.Position
 			local Radius =
-				math.abs((Car.Model.PrimaryPart.Size.Z / 2) - (Car.frontJoint.Z - Car.frontBogie:GetPivot(true).Z))
+				math.abs(Car.Model.PrimaryPart.Size.Z / 2 + Car.frontJoint.Z - Car.frontBogie:GetPivot(true).Z)
 			local AlternateRadius = Radius
-				+ (PriPart.Size.Z / 2 + (self.Cars[i - 1].rearJoint.Z - self.Cars[i - 1].rearBogie:GetPivot(true).Z))
+				+ (PriPart.Size.Z / 2 - self.Cars[i - 1].rearJoint.Z + self.Cars[i - 1].rearBogie:GetPivot(true).Z)
 			Car.frontBogie:SetPosition(
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
 			)
 		end
-		local Radius = math.abs(
-			(Car.frontJoint.Z - Car.frontBogie:GetPivot(not WasDouble).Z)
-				- (Car.rearJoint.Z - Car.rearBogie:GetPivot(true).Z)
-		)
+		local Radius = math.abs(Car.frontJoint.Z - Car.rearJoint.Z)
+			+ Car.frontBogie:GetPivot(not WasDouble).Z
+			- Car.rearBogie:GetPivot(true).Z
+
 		Car.rearBogie:SetPosition(
 			NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
 		)
@@ -84,20 +68,12 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 	local requiredBogies = 1
 	for i, CarDescription in pairs(Description.Cars) do
 		local frontBogie = nil
-		print("Front")
-		if self.Cars[i - 1] then
-			print(self.Cars[i - 1].rearBogie)
-			print(self.Cars[i - 1].rearBogie:GetPivot(false))
-		end
 		if self.Cars[i - 1] and self.Cars[i - 1].rearBogie:GetPivot(false) then
 			frontBogie = self.Cars[i - 1].rearBogie
-			print("double")
 		else
 			frontBogie = BogieClass.new(Cars[CarDescription.CarSeries].frontBogie, Description.Bogies[requiredBogies])
 			requiredBogies += 1
-			print("single")
 		end
-		print("Rear")
 		local rearBogie = BogieClass.new(Cars[CarDescription.CarSeries].rearBogie, Description.Bogies[requiredBogies])
 		requiredBogies += 1
 		if rearBogie:GetPivot(false) == nil then

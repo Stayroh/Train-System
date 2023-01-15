@@ -25,14 +25,14 @@ function Module.Alpha(From: number, To: number, T: number, Description: Types.Tr
 	local Circles = workspace.Circles
 	Circles:ClearAllChildren()
 	local Net: Types.NetworkType = {}
-	for i, v in pairs(Po) do
+	for i, v: BasePart in pairs(Po) do
 		local Node = {}
 		if i == 1 then
 			local Tan: Vector3 = (Points[2].Position - v.Position).Unit
 			Node.Tangent = Tan
 		end
 		Node.Position = v.Position
-		Node.ZRotation = 0
+		Node.ZRotation = math.rad(v:GetAttribute("ZRotation"))
 		if Net[i - 1] ~= nil then
 			Node.Pre = i - 1
 			Net[i - 1].Fol = i

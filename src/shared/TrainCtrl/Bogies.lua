@@ -28,4 +28,12 @@ Bogies.test_double2 = {
 	rearPivot = Vector3.new(0, 3.5, 5),
 }
 
+Bogies.FreightFront = {
+	frontPivot = Vector3.new(0, 5.5, 3),
+}
+
+Bogies.FreightRear = {
+	frontPivot = Vector3.new(0, 5.5, 4.5),
+}
+
 return Bogies
