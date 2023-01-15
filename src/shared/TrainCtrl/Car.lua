@@ -1,6 +1,5 @@
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 local Cars = require(game.ReplicatedStorage.source.TrainCtrl.Cars)
-local Bogies = require(game.ReplicatedStorage.source.TrainCtrl.Bogies)
 local Car = {}
 Car.__index = Car
 
@@ -8,16 +7,11 @@ function Car:Update()
 	local FrontCFrame: CFrame = self.frontBogie.CFrame
 	local RearCFrame: CFrame = self.rearBogie.CFrame
 	local IsDouble = self.frontBogie:GetPivot(false) and true or false
-	print(IsDouble)
 	local FrontPoint = FrontCFrame:PointToWorldSpace(self.frontBogie:GetPivot(not IsDouble))
 	local RearPoint = RearCFrame:PointToWorldSpace(self.rearBogie:GetPivot(true))
-	print(self.rearBogie:GetPivot(true))
-	print(FrontPoint, RearPoint)
 	local FCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, FrontCFrame.UpVector) + FrontPoint
 	local RCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, RearCFrame.UpVector) + RearPoint
 	self.CFrame = FCF:Lerp(RCF, 0.5) * self.InverseOffset
-	print(self.InverseOffset)
-
 	self.Model:SetPrimaryPartCFrame(self.CFrame)
 end
 
