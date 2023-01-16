@@ -15,7 +15,10 @@ function Bogie:GetPivot(IsFront: boolean): Vector3?
 		return nil
 	end
 	local Pivot = self.frontPivot
+	print(self.Model)
+	print(Pivot)
 	Pivot = self.Reversed and Vector3.new(Pivot.X, Pivot.Y, -Pivot.Z) or Pivot
+	print(Pivot)
 	return Pivot
 end
 

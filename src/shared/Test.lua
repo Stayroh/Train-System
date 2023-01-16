@@ -43,7 +43,7 @@ function Module.Alpha(From: number, To: number, T: number, Description: Types.Tr
 	end
 	Net[1].Tangent = -Net[1].Tangent
 	for i, v in pairs(Net) do
-		if i == 1 then
+		if i <= 2 then
 			continue
 		end
 		local Pos: Vector3 = v.Position
