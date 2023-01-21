@@ -66,6 +66,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 	self.Cars = {}
 	self.TrainId = Description.TrainId
 	local requiredBogies = 1
+
 	for i, CarDescription in pairs(Description.Cars) do
 		local frontBogie = nil
 		if self.Cars[i - 1] and self.Cars[i - 1].rearBogie:GetPivot(false) then
