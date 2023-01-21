@@ -58,8 +58,8 @@ Cars.Submarine = {
 }
 
 Cars.LocomotiveJB = {
-	Front = Vector3.new(0, 3.75, -24.037),
-	Rear = Vector3.new(0, 3.75, 24.037),
+	Front = Vector3.new(0, 3.75, -22.714),
+	Rear = Vector3.new(0, 3.75, 22.714),
 	frontBogie = "LocomotiveJB",
 	rearBogie = "LocomotiveJB",
 }
