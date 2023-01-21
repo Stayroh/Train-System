@@ -50,4 +50,18 @@ Cars.FreightTrain = {
 	rearBogie = "FreightRear",
 }
 
+Cars.Submarine = {
+	Front = Vector3.new(0, 0, -80),
+	Rear = Vector3.new(0, 0, 80),
+	frontBogie = "Sub",
+	rearBogie = "Sub",
+}
+
+Cars.LocomotiveJB = {
+	Front = Vector3.new(0, 3.75, -24.037),
+	Rear = Vector3.new(0, 3.75, 24.037),
+	frontBogie = "LocomotiveJB",
+	rearBogie = "LocomotiveJB",
+}
+
 return Cars

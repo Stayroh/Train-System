@@ -30,6 +30,7 @@ export type SwitchUpdateType = { [number]: NetworkSwitches } --Dictonary for eac
 export type CarDescription = {
 	CarSeries: string,
 	CarReference: Folder,
+	Reversed: boolean?,
 } --Stores reference to the model in workspace and wagon type for this wagon
 
 export type TrainDescription = {
