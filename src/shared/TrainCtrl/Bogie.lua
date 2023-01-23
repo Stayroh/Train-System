@@ -24,7 +24,6 @@ end
 function Bogie:SetCFrame(CF: CFrame)
 	self.CFrame = CF
 	print(self.Model.Name .. tostring(self.Reversed))
-	workspace.Marker.Position = CF.Position
 	self.Model:SetPrimaryPartCFrame(self.Reversed and CF * CFrame.Angles(0, math.pi, 0) or CF)
 end
 

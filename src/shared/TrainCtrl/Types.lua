@@ -45,5 +45,22 @@ export type TrainPosType = {
 	T: number,
 	Network: number,
 } --Gives information about a trains position in percetual "from, to" manner and on which network it is on
+export type CarsDataType = {
+	Front: Vector3,
+	Rear: Vector3,
+	frontBogie: string,
+	rearBogie: string,
+	frontReversed: boolean?,
+	rearReversed: boolean?,
+}
+
+export type CarsDataListType = { [string]: CarsDataType }
+
+export type BogiesDataType = {
+	frontPivot: Vector3,
+	rearPivot: Vector3?,
+}
+
+export type BogiesDataListType = { [string]: BogiesDataType }
 
 return Types

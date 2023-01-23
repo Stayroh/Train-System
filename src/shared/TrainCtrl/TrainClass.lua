@@ -1,6 +1,5 @@
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 local CarClass = require(game.ReplicatedStorage.source.TrainCtrl.Car)
-local Bogies = require(game.ReplicatedStorage.source.TrainCtrl.Bogies)
 local BogieClass = require(game.ReplicatedStorage.source.TrainCtrl.Bogie)
 local Cars = require(game.ReplicatedStorage.source.TrainCtrl.Cars)
 local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
@@ -16,44 +15,21 @@ function Train:Update(Position: Types.TrainPosType)
 		elseif self.Cars[i - 1].rearBogie == Car.frontBogie then
 			WasDouble = true
 		else
-			print("Get FrontBogie of next Car")
-			local Lastfront = self.Cars[i - 1].frontBogie
-			local Lastrear = self.Cars[i - 1].rearBogie
-			local MiddleCFrame = (CFrame.lookAt(
-				Vector3.zero,
-				Lastrear.CFrame.Position - Lastfront.CFrame.Position,
-				Lastfront.CFrame.UpVector
-			) + Lastfront.CFrame.Position):Lerp(
-				(
-					CFrame.lookAt(
-						Vector3.zero,
-						Lastrear.CFrame.Position - Lastfront.CFrame.Position,
-						Lastrear.CFrame.UpVector
-					) + Lastrear.CFrame.Position
-				),
-				0.5
-			)
+			local Lastfront = self.Cars[i - 1].frontBogie.CFrame
+			local Lastrear = self.Cars[i - 1].rearBogie.CFrame
 			local PriPart = self.Cars[i - 1].Model.PrimaryPart
-			local LocalPos = MiddleCFrame:PointToObjectSpace(
-				PriPart.CFrame.Position + PriPart.CFrame.LookVector * (-PriPart.Size.Z / 2)
-			)
-			local GlobalPos = MiddleCFrame:PointToWorldSpace(Vector3.new(LocalPos.X, 0, LocalPos.Z))
+			local GlobalPos = (Lastrear.Position - Lastfront.Position).Unit
+					* (PriPart.Size.Z / 2 - self.Cars[i - 1].rearJoint.Z + self.Cars[i - 1].rearBogie.frontPivot.Z)
+				+ Lastrear.Position
 			workspace.Marker.Position = GlobalPos
 			local AlternatePos = self.Cars[i - 1].rearBogie.Position
-			local Radius =
-				math.abs(Car.Model.PrimaryPart.Size.Z / 2 + Car.frontJoint.Z - Car.frontBogie:GetPivot(true).Z)
+			local Radius = math.abs(Car.Model.PrimaryPart.Size.Z / 2 + Car.frontJoint.Z - Car.frontBogie.frontPivot.Z)
 			local AlternateRadius = Radius
-				+ (PriPart.Size.Z / 2 - self.Cars[i - 1].rearJoint.Z + self.Cars[i - 1].rearBogie:GetPivot(true).Z)
+				+ (PriPart.Size.Z / 2 - self.Cars[i - 1].rearJoint.Z + self.Cars[i - 1].rearBogie.frontPivot.Z)
 			Car.frontBogie:SetPosition(
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
 			)
 		end
-		print(
-			Car.frontJoint.Z,
-			Car.frontBogie:GetPivot(not WasDouble).Z,
-			Car.rearJoint.Z,
-			Car.rearBogie:GetPivot(true).Z
-		)
 		local Radius = math.abs(
 			(Car.frontJoint.Z - Car.frontBogie:GetPivot(not WasDouble).Z)
 				- (Car.rearJoint.Z - Car.rearBogie:GetPivot(true).Z)
@@ -95,7 +71,6 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		self.Cars[i] = Car
 	end
 	self.Position = Position
-	print(self)
 	self:Update(Position)
 	return self
 end

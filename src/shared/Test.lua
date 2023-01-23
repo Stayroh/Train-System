@@ -63,7 +63,7 @@ function Module.Alpha(From: number, To: number, T: number, Description: Types.Tr
 	end
 	local NetworkId = Networks:Add(Net)
 	local Pos = NetPosition.new(From, To, T, NetworkId)
-	local Train = TrainClass.fromDescription(Description, Pos)
+	TrainClass.fromDescription(Description, Pos)
 	Networks:Remove(NetworkId)
 end
 

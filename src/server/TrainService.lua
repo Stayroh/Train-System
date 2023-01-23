@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.knit)
-local Types = require(ReplicatedStorage.source.TrainCtrl.Types)
 
 local TrainService = Knit.CreateService({
 	Name = "TrainService",
