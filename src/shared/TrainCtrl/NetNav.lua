@@ -56,6 +56,69 @@ function NetNav:CreateCFrame(Position, Tangent, Rotation): CFrame
 	return CFrame.lookAt(Vector3.zero, Tangent):ToWorldSpace(CFrame.Angles(0, 0, Rotation)) + Position
 end
 
+function NetNav:StepDistance(Position: Types.TrainPosType, Distance: number, TrainId: number): Types.TrainPosType
+	local Rest = Position.T
+	local From, To = Position.From, Position.To
+	local ToGo = Distance
+	local Flip = false
+	if Distance < 0 then
+		ToGo *= -1
+		From, To = To, From
+		if From ~= nil and To ~= nil then
+			Rest = 1 - Rest
+		end
+		Flip = true
+	end
+	print(From, To, Rest, Flip)
+	local Pos
+	while true do
+		if To == nil then
+			local D = Rest + ToGo
+			Pos = NetPosition.new(From, To, D, Position.Network)
+			break
+		end
+		if From == nil then
+			if Rest >= ToGo then
+				local D = Rest - ToGo
+				Pos = NetPosition.new(From, To, D, Position.Network)
+				break
+			else
+				ToGo -= Rest
+				From, To = To, self:GetNextNode(From, To, TrainId, Position.Network)
+				Rest = 0
+				continue
+			end
+		end
+		local Lenght = self:GetArcLenght(From, To, Position.Network)
+		if (1 - Rest) * Lenght >= ToGo then
+			local D = ToGo / Lenght + Rest
+			D = Flip and 1 - D or D
+			Pos = NetPosition.new(From, To, D, Position.Network)
+			break
+		else
+			ToGo -= (1 - Rest) * Lenght
+			From, To = To, self:GetNextNode(From, To, TrainId, Position.Network)
+			Rest = 0
+		end
+	end
+
+	if Flip then
+		return NetPosition.new(Pos.To, Pos.From, Pos.T, Pos.Network)
+	end
+	return Pos
+end
+
+function NetNav:GetArcLenght(From: number, To: number, NetworkId: number)
+	local N1 = Networks:GetNode(From, NetworkId)
+	local N2 = Networks:GetNode(To, NetworkId)
+	local P1, P2, T = N1.Position, N2.Position, N1.Tangent
+	if self:IsLine(P1, P2, T, 0.01) then
+		return (P1 - P2).Magnitude
+	end
+	local Origin, Radius = Math:SphereFromArc(P1, P2, T)
+	return Radius * math.acos((P1 - Origin).Unit:Dot((P2 - Origin).Unit))
+end
+
 function NetNav:GetCFrame(Pos: Types.TrainPosType): CFrame
 	local From = Networks:GetNode(Pos.From, Pos.Network)
 	local To = Networks:GetNode(Pos.To, Pos.Network)
