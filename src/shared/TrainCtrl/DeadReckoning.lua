@@ -1,4 +1,5 @@
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+local Config = require(game.ReplicatedStorage.source.TrainCtrl.Config)
 type SnapQueueElement = {
 	Position: Types.TrainPosType,
 	Velocity: number,
@@ -7,6 +8,16 @@ type SnapQueueElement = {
 }
 local DR = {}
 DR.__index = DR
+
+function DR:Update(DeltaTime)
+	if #self.InBound > 0 then
+	end
+	self.LastTime += DeltaTime
+	self.T = self.LastTime / (1 / Config.TrainSnapshotsPerSec)
+
+	if self.OldPosition == nil or self.T >= 1 then
+	end
+end
 
 function DR:AddSnapshot(Snapshot: Types.SnapshotType)
 	local Element: SnapQueueElement = {}
@@ -25,9 +36,13 @@ function Cons.new(TrainId: number, Position: Types.TrainPosType, Velocity: numbe
 	self.InBound = {}
 	self.IsTP = false
 	self.LastPosition = Position
+	self.CurrentPosition = Position
+	self.CurrentVelocity = Velocity or 0
 	self.LastVelocity = Velocity or 0
 	self.LastAcceleration = Acceleraction or 0
 	self.TrainId = TrainId
+	self.LastTime = 0
+	self.T = 0
 	return self
 end
 
