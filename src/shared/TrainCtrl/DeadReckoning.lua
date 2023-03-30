@@ -1,5 +1,6 @@
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 local Config = require(game.ReplicatedStorage.source.TrainCtrl.Config)
+local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 type SnapQueueElement = {
 	Position: Types.TrainPosType,
 	Velocity: number,
@@ -11,12 +12,30 @@ DR.__index = DR
 
 function DR:Update(DeltaTime)
 	if #self.InBound > 0 then
+		--New Snapshot
 	end
-	self.LastTime += DeltaTime
-	self.T = self.LastTime / (1 / Config.TrainSnapshotsPerSec)
+	self.Time += DeltaTime
+	self.Alpha = self.Time / (1 / Config.TrainSnapshotsPerSec)
+	local Lenght
+	local Velocity
+	if self.Lenght ~= nil then
+		local ClampedAlpha = math.min(self.Alpha, 1)
+		local VelBlend = (self.StartVelocity or 0) * (1 - ClampedAlpha) + (self.EndVelocity or 0) * ClampedAlpha
+		local StartLenght = VelBlend * self.Time + self.Time ^ 2 * (self.Acceleraction or 0) / 2
+		local EndLeght = self.Lenght
+			+ (self.EndVelocity or 0) * self.Time
+			+ self.Time ^ 2 * (self.Acceleraction or 0) / 2
+		Lenght = StartLenght * (1 - ClampedAlpha) + EndLeght * ClampedAlpha
+		Velocity = VelBlend * (1 - ClampedAlpha)
+			+ (self.EndVelocity or 0) * ClampedAlpha
+			+ (self.Acceleraction or 0) * self.Time
+	else
+		Lenght = (self.StartVelocity or 0) * self.Time + self.Time ^ 2 * (self.Acceleraction or 0) / 2
+		Velocity = (self.Acceleraction or 0) * self.Time + (self.StartVelocity or 0)
+	end
+	self.CurrentVelocity = Velocity
 
-	if self.OldPosition == nil or self.T >= 1 then
-	end
+	return self.CurrentPosition
 end
 
 function DR:AddSnapshot(Snapshot: Types.SnapshotType)

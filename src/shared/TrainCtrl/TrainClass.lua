@@ -47,13 +47,13 @@ local Constructors = {}
 function Constructors.fromDescription(Description: Types.TrainDescription, Position: Types.TrainPosType)
 	local self = setmetatable({}, Train)
 	self.Cars = {}
-	self.TrainId = Description.TrainId
+	self.TrainId = Description.Id
 	local requiredBogies = 1
 
 	for i, CarDescription in pairs(Description.Cars) do
 		local IsReversed = CarDescription.Reversed or false
 		local frontBogie, rearBogie = nil, nil
-		local CarData = Cars[CarDescription.CarSeries]
+		local CarData = Cars[CarDescription.Series]
 		local FrontBogieSeries = IsReversed and CarData.rearBogie or CarData.frontBogie
 		local RearBogieSeries = IsReversed and CarData.frontBogie or CarData.rearBogie
 		local FrontReversed = IsReversed and not (CarData.rearReversed or false) or (CarData.frontReversed or false)

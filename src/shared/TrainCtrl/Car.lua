@@ -29,8 +29,8 @@ function Cons.fromDescription(Description: Types.CarDescription, frontBogie, rea
 	self.Reversed = IsReversed
 	self.frontBogie = frontBogie
 	self.rearBogie = rearBogie
-	self.Model = Description.CarReference
-	self.Series = Description.CarSeries
+	self.Model = Description.Reference
+	self.Series = Description.Series
 	local FrontJoint = Cars[self.Series].Front
 	local RearJoint = Cars[self.Series].Rear
 	self.frontJoint = IsReversed and MirrorZ(RearJoint) or FrontJoint
