@@ -6,6 +6,8 @@ local Types = require(TrainSystem.Types)
 local Math = require(SharedSource.Math)
 local NetPosition = require(TrainSystem.NetPosition)
 
+local LineTolerance = 0.0001
+
 local NetNav = {}
 
 function SearchTroughConnection(Connection: number | table | nil, Value: number)
@@ -112,7 +114,7 @@ function NetNav:GetArcLenght(From: number, To: number, NetworkId: number)
 	local N1 = Networks:GetNode(From, NetworkId)
 	local N2 = Networks:GetNode(To, NetworkId)
 	local P1, P2, T = N1.Position, N2.Position, N1.Tangent
-	if self:IsLine(P1, P2, T, 0.01) then
+	if self:IsLine(P1, P2, T, LineTolerance) then
 		return (P1 - P2).Magnitude
 	end
 	local Origin, Radius = Math:SphereFromArc(P1, P2, T)
@@ -131,7 +133,7 @@ function NetNav:GetCFrame(Pos: Types.TrainPosType): CFrame
 		local Position = From.Tangent * T + From.Position
 		return self:CreateCFrame(Position, From.Tangent, From.ZRotation)
 	end
-	if self:IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
+	if self:IsLine(From.Position, To.Position, From.Tangent, LineTolerance) and From and To then
 		local Position = From.Position:Lerp(To.Position, T)
 		local Direction = (To.Position - From.Position).Unit
 		local A1 = (Direction:Dot(From.Tangent)) < 0 and -From.ZRotation or From.ZRotation
@@ -156,7 +158,7 @@ function NetNav:GetVecPos(Pos: Types.TrainPosType): Vector3
 	if To == nil then
 		return From.Tangent * Pos.T + From.Position
 	end
-	if not self:IsLine(From.Position, To.Position, From.Tangent, 0.01) and From and To then
+	if not self:IsLine(From.Position, To.Position, From.Tangent, LineTolerance) and From and To then
 		return Math:ArcLerp(From.Position, To.Position, From.Tangent, Pos.T)
 	end
 	return From.Position:Lerp(To.Position, Pos.T)

@@ -29,7 +29,6 @@ end
 
 local Cons = {}
 function Cons.new(Series: number, Reference: Model, IsReversed: boolean?)
-	print(Series, Reference, IsReversed)
 	local self = setmetatable({}, Bogie)
 	IsReversed = IsReversed or false
 	self.Reversed = IsReversed
