@@ -1,12 +1,13 @@
+local LocalizationService = game:GetService("LocalizationService")
 local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
 local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 type self = {}
-local Navigation = {} :: self
+local Navigation = {}
 Navigation.__index = Navigation
 
 export type Navigation = typeof(setmetatable({} :: self, Navigation))
 
-function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types.TrainPosType)
+function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types.TrainPosType): { number }?
 	if Start.Network ~= Target.Network then
 		warn("Tried to find path between points in different networks.")
 		return
@@ -14,8 +15,13 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 	--ToDo
 	local Network = Networks:GetNetwork(Start.Network)
 	local Stack = {}
-	Stack[1] = { Start.From }
-	Stack[2] = { Start.To }
+	if Start.From then
+		Stack[#Stack + 1] = { Start.From }
+	end
+	if Start.To then
+		Stack[#Stack + 1] = { Start.To }
+	end
+
 	local Index = 1
 	local Goal
 	local function CheckTarget(Node): boolean
@@ -29,6 +35,9 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 		end
 	end
 	if CheckTarget(Start.From) then
+		if CheckTarget(Start.To) then
+			return { Start.From, Start.To }
+		end
 		Goal = { Start.From }
 	elseif CheckTarget(Start.To) then
 		Goal = { Start.To }
@@ -75,6 +84,27 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 	if not Goal then
 		return nil
 	end
+	local Path = {}
+	while Goal do
+		Path[#Path + 1] = Goal[1]
+		Goal = Stack[Goal[2]]
+	end
+	if Path[#Path] == Start.From then
+		Path[#Path + 1] = Start.To
+	else
+		Path[#Path + 1] = Start.From
+	end
+	local ReversedPath = {}
+	local PathLength = #Path
+	for i = 1, PathLength do
+		ReversedPath[PathLength - i + 1] = Path[i]
+	end
+	if ReversedPath[#ReversedPath] == Target.From then
+		ReversedPath[#ReversedPath + 1] = Target.To
+	else
+		ReversedPath[#ReversedPath + 1] = Target.From
+	end
+	return ReversedPath
 end
 
 local Constructors = {}
