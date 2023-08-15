@@ -67,7 +67,6 @@ export type SnapshotType = {
 	Position: TrainPosType,
 	Velocity: number,
 	Acceleraction: number,
-	PassedNodes: { [number]: number },
 	TP: boolean,
 }
 
