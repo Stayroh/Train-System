@@ -88,33 +88,67 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 			return false
 		end
 	end
-	for i = 1, #NavigationPath do
-		local NodeId: number | string = NavigationPath[i]
-		if i == #NavigationPath then
-			Path[i] = { NodeId }
-			continue
+	local Inverse = false
+	local Single = false
+	if #NavigationPath == 2 and NavigationPath[1] == "nil" then
+		Single = true
+		local IsReverse = DidReverse(1)
+		local TargetDistance = self.TargetPosition.T
+		local CurrentDistance = self.CurrentPosition.T
+		local Delta = TargetDistance - CurrentDistance
+		if math.sign(Delta) == -1 then
+			Inverse = true
 		end
-		local IsReverse = DidReverse(i)
-		if NavigationPath[i - 1] then
-			local PreviousReverse = Path[i - 1][3]
-			IsReverse = (PreviousReverse and not IsReverse) or (not PreviousReverse and IsReverse)
+		local Length = math.abs(Delta)
+		Path[1] = { "nil", Length, IsReverse }
+		Path[2] = { NavigationPath[2] }
+		PathLength = Length
+	elseif #NavigationPath == 2 then
+		Single = true
+		local IsReverse = DidReverse(1)
+		local TargetDistance = IsReverse and 1 - self.TargetPosition.T or self.TargetPosition.T
+		local CurrentDistance = NavigationPath[1] == self.CurrentPosition.From and self.CurrentPosition.T
+			or 1 - self.CurrentPosition.T
+		local Delta = CurrentDistance - TargetDistance
+		if math.sign(Delta) == -1 then
+			Inverse = true
 		end
-		local Length = 1
-		if NodeId ~= "nil" and NavigationPath[i + 1] ~= "nil" then
-			Length = NetNav:GetArcLenght(NodeId, NavigationPath[i + 1], self.TargetPosition.Network)
+		local Length = NetNav:GetArcLenght(NavigationPath[1], NavigationPath[2], self.TargetPosition.Network)
+		Length *= math.abs(Delta)
+		Path[1] = { NavigationPath[1], Length, IsReverse }
+		Path[2] = { NavigationPath[2] }
+		PathLength = Length
+	else
+		for i = 1, #NavigationPath do
+			local NodeId: number | string = NavigationPath[i]
+			if i == #NavigationPath then
+				Path[i] = { NodeId }
+				continue
+			end
+			local IsReverse = DidReverse(i)
+			if NavigationPath[i - 1] then
+				local PreviousReverse = Path[i - 1][3]
+				IsReverse = (PreviousReverse and not IsReverse) or (not PreviousReverse and IsReverse)
+			end
+			local Length = 1
+			if NodeId ~= "nil" and NavigationPath[i + 1] ~= "nil" then
+				Length = NetNav:GetArcLenght(NodeId, NavigationPath[i + 1], self.TargetPosition.Network)
+			end
+
+			if i == 1 then
+				Length = (IsReverse or NodeId == "nil") and Length * self.TargetPosition.T
+					or Length * (1 - self.TargetPosition.T)
+			elseif i == #NavigationPath - 1 then
+				Length = (NodeId == self.CurrentPosition.From or NavigationPath[i + 1] == "nil")
+						and Length * self.CurrentPosition.T
+					or Length * (1 - self.CurrentPosition.T)
+			end
+			Path[i] = { NodeId, Length, IsReverse }
+			PathLength += Length
 		end
-		if i == 1 then
-			Length = (IsReverse or NodeId == "nil") and Length * self.TargetPosition.T
-				or Length * (1 - self.TargetPosition.T)
-		end
-		if i == #NavigationPath - 1 then
-			Length = (NodeId == self.CurrentPosition.From or NavigationPath[i + 1] == "nil")
-					and Length * self.CurrentPosition.T
-				or Length * (1 - self.CurrentPosition.T)
-		end
-		Path[i] = { NodeId, Length, IsReverse }
 	end
-	print(Path)
+
+	print(Path, PathLength, Inverse, Single)
 	self.Path = Path
 end
 
