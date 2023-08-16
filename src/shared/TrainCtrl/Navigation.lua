@@ -21,7 +21,6 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 	if Start.From then
 		Stack[#Stack + 1] = { Start.From }
 	end
-	print(Stack)
 	local Index = 1
 	local Goal
 	local function CheckTarget(Node): boolean
@@ -45,7 +44,6 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 	elseif CheckTarget(Start.To) then
 		Goal = { Start.To }
 	end
-	print(Goal)
 	if not Goal then
 		while true do
 			if not Stack[Index] then
