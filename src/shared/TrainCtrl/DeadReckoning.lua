@@ -2,13 +2,15 @@ local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
 local Navigation = require(game.ReplicatedStorage.source.TrainCtrl.Navigation)
 local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
 local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
+local Config = require(game.ReplicatedStorage.source.TrainCtrl.Config)
 type self = {
 	CurrentPosition: Types.TrainPosType,
 	CurrentVelocity: number,
 	CurrentAcceleration: number,
+	StartPosition: Types.TrainPosType,
+	StartVelocity: number,
 	TargetPosition: Types.TrainPosType | nil,
 	TargetVelocity: number?,
-	TargetAcceleration: number?,
 	Path: { { any } }?,
 	PathLength: number?,
 	UpdateTime: number,
@@ -23,9 +25,11 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 	if self.CurrentPosition.Network ~= Snapshot.Position.Network then
 		Snapshot.TP = true
 	end
+	self.StartPosition = self.CurrentPosition
+	self.StartVelocity = self.CurrentVelocity
 	self.TargetPosition = Snapshot.Position
 	self.TargetVelocity = Snapshot.Velocity
-	self.TargetAcceleration = Snapshot.Acceleraction
+	self.CurrentAcceleration = Snapshot.Acceleraction
 	local NavigationPath
 	local function CalculatePath()
 		NavigationPath = Navigation:ComputeShortestPath(self.TargetPosition, self.CurrentPosition)
@@ -35,12 +39,14 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 		self.CurrentPosition = Snapshot.Position
 		self.CurrentVelocity = Snapshot.Velocity
 		self.CurrentAcceleration = Snapshot.Acceleraction
+		self.StartPosition = Snapshot.Position
+		self.StartVelocity = Snapshot.Velocity
 		self.TargetPosition = nil
+		self.TargetVelocity = nil
 		self.Path = nil
 		self.PathLength = nil
 		return Snapshot.Position
 	end
-	print(NavigationPath)
 	local PathLength = 0
 	local Path = {}
 	local Network = Networks:GetNetwork(self.TargetPosition.Network)
@@ -139,17 +145,41 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 				Length = (IsReverse or NodeId == "nil") and Length * self.TargetPosition.T
 					or Length * (1 - self.TargetPosition.T)
 			elseif i == #NavigationPath - 1 then
-				Length = (NodeId == self.CurrentPosition.From or NavigationPath[i + 1] == "nil")
-						and Length * self.CurrentPosition.T
+				local StartMatch = NodeId == self.CurrentPosition.From
+				Length = (StartMatch or NavigationPath[i + 1] == "nil") and Length * self.CurrentPosition.T
 					or Length * (1 - self.CurrentPosition.T)
+				if StartMatch then
+					self.StartVelocity *= -1
+				end
 			end
 			Path[i] = { NodeId, Length, IsReverse }
 			PathLength += Length
 		end
 	end
 
-	print(Path, PathLength, Inverse, Single)
+	self.PathLength = PathLength
 	self.Path = Path
+end
+
+function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
+	self = self :: self
+	self.UpdateTime += DeltaTime
+	local TimeSquared = self.UpdateTime ^ 2
+	local AlphaTime = math.clamp(self.UpdateTime / (1 / Config.TrainSnapshotsPerSec), 0, 1)
+	local Position
+	if self.PathLength and AlphaTime ~= 1 then
+		local VelocityBlend = self.StartVelocity * (1 - AlphaTime) + self.TargetVelocity * AlphaTime
+		local StartProjection = (TimeSquared * self.CurrentAcceleration) / 2 + VelocityBlend * self.UpdateTime
+		local TargetProjection = (TimeSquared * self.CurrentAcceleration) / 2
+			+ self.TargetVelocity * self.UpdateTime
+			+ self.PathLength
+		local ProjectionBlend = StartProjection * (1 - AlphaTime) + TargetProjection * TargetProjection
+		self.CurrentVelocity = VelocityBlend + self.CurrentAcceleration + self.UpdateTime
+	else
+		Position = (TimeSquared * self.CurrentAcceleration) / 2
+			+ (self.TargetVelocity or self.StartVelocity) * self.UpdateTime
+			+ (AlphaTime == 1 and self.PathLength or 0)
+	end
 end
 
 local Constructors = {}
@@ -159,6 +189,8 @@ function Constructors.new(Position: Types.TrainPosType, Velocity: number, Accele
 		CurrentPosition = Position,
 		CurrentVelocity = Velocity,
 		CurrentAcceleration = Acceleraction,
+		StartPosition = Position,
+		StartVelocity = Velocity,
 		UpdateTime = 0,
 	} :: self, DeadReckoning)
 	return self

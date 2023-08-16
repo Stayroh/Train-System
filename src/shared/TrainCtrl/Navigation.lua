@@ -44,7 +44,6 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 	elseif CheckTarget(Start.To) then
 		Goal = { Start.To }
 	end
-	print(Goal)
 	if not Goal then
 		while true do
 			if not Stack[Index] then
@@ -106,13 +105,10 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 		ReversedPath[PathLength - i + 1] = Path[i]
 	end
 	if ReversedPath[#ReversedPath] == Target.From and Target.To then
-		print("1")
 		ReversedPath[#ReversedPath + 1] = Target.To
 	elseif ReversedPath[#ReversedPath] == Target.To and Target.From then
-		print("2")
 		ReversedPath[#ReversedPath + 1] = Target.From
 	elseif not (#ReversedPath == 2 and ReversedPath[1] == "nil") then
-		print("3")
 		ReversedPath[#ReversedPath + 1] = "nil"
 	end
 	return ReversedPath
