@@ -148,15 +148,14 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 				local StartMatch = NodeId == self.CurrentPosition.From
 				Length = (StartMatch or NavigationPath[i + 1] == "nil") and Length * self.CurrentPosition.T
 					or Length * (1 - self.CurrentPosition.T)
-				if StartMatch then
-					self.StartVelocity *= -1
-				end
 			end
 			Path[i] = { NodeId, Length, IsReverse }
 			PathLength += Length
 		end
 	end
-
+	if Path[#Path - 1] == self.CurrentPosition.From then
+		self.StartVelocity *= -1
+	end
 	self.PathLength = PathLength
 	self.Path = Path
 end
@@ -167,6 +166,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 	local TimeSquared = self.UpdateTime ^ 2
 	local AlphaTime = math.clamp(self.UpdateTime / (1 / Config.TrainSnapshotsPerSec), 0, 1)
 	local Position
+	local CurrentVelocity
 	if self.PathLength and AlphaTime ~= 1 then
 		local VelocityBlend = self.StartVelocity * (1 - AlphaTime) + self.TargetVelocity * AlphaTime
 		local StartProjection = (TimeSquared * self.CurrentAcceleration) / 2 + VelocityBlend * self.UpdateTime
@@ -174,11 +174,15 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			+ self.TargetVelocity * self.UpdateTime
 			+ self.PathLength
 		local ProjectionBlend = StartProjection * (1 - AlphaTime) + TargetProjection * TargetProjection
-		self.CurrentVelocity = VelocityBlend + self.CurrentAcceleration + self.UpdateTime
+		CurrentVelocity = VelocityBlend + self.CurrentAcceleration * self.UpdateTime
 	else
 		Position = (TimeSquared * self.CurrentAcceleration) / 2
 			+ (self.TargetVelocity or self.StartVelocity) * self.UpdateTime
-			+ (AlphaTime == 1 and self.PathLength or 0)
+			+ (self.PathLength or 0)
+		CurrentVelocity = (self.TargetVelocity or self.StartVelocity) + self.CurrentAcceleration * self.UpdateTime
+	end
+	if self.PathLength then
+	else
 	end
 end
 
