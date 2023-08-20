@@ -4,6 +4,7 @@ local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
 local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Config = require(game.ReplicatedStorage.source.TrainCtrl.Config)
 type self = {
+	TrainId: number,
 	CurrentPosition: Types.TrainPosType,
 	CurrentVelocity: number,
 	CurrentAcceleration: number,
@@ -181,15 +182,41 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			+ (self.PathLength or 0)
 		CurrentVelocity = (self.TargetVelocity or self.StartVelocity) + self.CurrentAcceleration * self.UpdateTime
 	end
-	if self.PathLength then
+	if self.PathLength and (self.PathLength - Position) > 0 then
+		local ReversedPosition = self.PathLength - Position
+		local ToGO = ReversedPosition
+		local Index = 0
+		while ToGO > 0 and Index < #self.Path - 1 do
+			Index += 1
+		end
 	else
+		local StepStart = self.TargetPosition or self.StartPosition
+		local StepDistance = self.PathLength and self.PathLength - Position or Position
+		if self.Path and self.Path[1][3] then
+			if self.Path[1][3] then
+				StepStart.From, StepStart.To = StepStart.To, StepStart.From
+				if StepStart.From and StepStart.To then
+					StepStart.T = 1 - StepStart.T
+				end
+			else
+				CurrentVelocity *= -1
+			end
+		end
+		self.CurrentPosition = NetNav:StepDistance(StepStart, StepDistance, self.TrainId)
+		self.CurrentVelocity = CurrentVelocity
 	end
 end
 
 local Constructors = {}
 
-function Constructors.new(Position: Types.TrainPosType, Velocity: number, Acceleraction: number): DeadReckoning
+function Constructors.new(
+	Position: Types.TrainPosType,
+	Velocity: number,
+	Acceleraction: number,
+	TrainId: number
+): DeadReckoning
 	local self = setmetatable({
+		TrainId = TrainId,
 		CurrentPosition = Position,
 		CurrentVelocity = Velocity,
 		CurrentAcceleration = Acceleraction,
