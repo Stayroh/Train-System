@@ -29,7 +29,7 @@ function Math:LineSphereIntersection(
 	IsPercentage = IsPercentage == nil and true or IsPercentage
 	End -= Start
 	Sphere_Pos -= Start
-	local Lenght = End.Magnitude
+	local Length = End.Magnitude
 	local Direction = End.Unit
 	local Center = Direction:Dot(Sphere_Pos)
 	local CenterPos = Center * Direction
@@ -39,8 +39,8 @@ function Math:LineSphereIntersection(
 	end
 	local X = math.sqrt(Radius ^ 2 - NearRadius ^ 2)
 	local T = FirstIntersection and Center - X or Center + X
-	if T >= 0 and T <= Lenght then
-		return IsPercentage and T / Lenght or T
+	if T >= 0 and T <= Length then
+		return IsPercentage and T / Length or T
 	end
 end
 
