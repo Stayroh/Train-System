@@ -46,6 +46,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 		self.TargetVelocity = nil
 		self.Path = nil
 		self.PathLength = nil
+		print(self)
 		return Snapshot.Position
 	end
 	local PathLength = 0
@@ -154,11 +155,16 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 			PathLength += Length
 		end
 	end
-	if Path[#Path - 1] == self.CurrentPosition.From then
+	if Path[#Path - 1][1] == self.CurrentPosition.From then
+		print("Hi")
 		self.StartVelocity *= -1
+	end
+	if not Path[#Path - 1][3] then
+		self.CurrentVelocity = -self.StartVelocity
 	end
 	self.PathLength = PathLength
 	self.Path = Path
+	print(self)
 end
 
 function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
