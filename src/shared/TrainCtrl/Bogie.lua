@@ -23,8 +23,7 @@ end
 
 function Bogie:SetCFrame(CF: CFrame)
 	self.CFrame = CF
-	print(self.Model.Name .. tostring(self.Reversed))
-	self.Model:SetPrimaryPartCFrame(self.Reversed and CF * CFrame.Angles(0, math.pi, 0) or CF)
+	self.Model:PivotTo(self.Reversed and CF * CFrame.Angles(0, math.pi, 0) or CF)
 end
 
 local Cons = {}

@@ -18,7 +18,7 @@ function Car:Update()
 	local CF = FCF:Lerp(RCF, 0.5) * self.InverseOffset
 	CF = self.Reversed and CF * CFrame.Angles(0, math.pi, 0) or CF
 	self.CFrame = CF
-	self.Model:SetPrimaryPartCFrame(self.CFrame)
+	self.Model:PivotTo(self.CFrame)
 end
 
 local Cons = {}

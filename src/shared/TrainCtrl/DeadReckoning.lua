@@ -3,6 +3,7 @@ local Navigation = require(game.ReplicatedStorage.source.TrainCtrl.Navigation)
 local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
 local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
 local Config = require(game.ReplicatedStorage.source.TrainCtrl.Config)
+local NetPosition = require(game.ReplicatedStorage.source.TrainCtrl.NetPosition)
 type self = {
 	TrainId: number,
 	CurrentPosition: Types.TrainPosType,
@@ -180,7 +181,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		local TargetProjection = (TimeSquared * self.CurrentAcceleration) / 2
 			+ self.TargetVelocity * self.UpdateTime
 			+ self.PathLength
-		local ProjectionBlend = StartProjection * (1 - AlphaTime) + TargetProjection * TargetProjection
+		Position = StartProjection * (1 - AlphaTime) + TargetProjection * TargetProjection
 		CurrentVelocity = VelocityBlend + self.CurrentAcceleration * self.UpdateTime
 	else
 		Position = (TimeSquared * self.CurrentAcceleration) / 2
@@ -188,12 +189,32 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			+ (self.PathLength or 0)
 		CurrentVelocity = (self.TargetVelocity or self.StartVelocity) + self.CurrentAcceleration * self.UpdateTime
 	end
+
 	if self.PathLength and (self.PathLength - Position) > 0 then
 		local ReversedPosition = self.PathLength - Position
-		local ToGO = ReversedPosition
+		local ToGo = math.abs(ReversedPosition)
 		local Index = 0
-		while ToGO > 0 and Index < #self.Path - 1 do
+		local SegmentPosition = 0
+		while ToGo > 0 and Index < #self.Path - 1 do
 			Index += 1
+			local SegmentLength = self.Path[Index][2]
+			SegmentPosition = math.min(ToGo, SegmentLength)
+			ToGo -= SegmentPosition
+		end
+		local Start = self.Path[Index]
+		local End = self.Path[Index + 1]
+		if Start[1] == "nil" or End[1] == "nil" then
+			local T = Start[1] == "nil" and Start[2] - SegmentPosition or SegmentPosition
+			local StartNode = Start[1]
+			local EndNode = End[1]
+			if StartNode[3] then
+				StartNode, EndNode = EndNode, StartNode
+			else
+				CurrentVelocity *= -1
+			end
+			self.CurrentPosition = NetPosition.new(StartNode, EndNode, T, self.StartPosition.Network)
+			self.CurrentVelocity = CurrentVelocity
+		else
 		end
 	else
 		local StepStart = self.TargetPosition or self.StartPosition
