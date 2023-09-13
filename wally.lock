@@ -8,13 +8,18 @@ version = "4.0.0"
 dependencies = []
 
 [[package]]
+name = "roblox/roact"
+version = "1.4.4"
+dependencies = []
+
+[[package]]
 name = "sleitnick/comm"
 version = "0.3.1"
-dependencies = [["Option", "sleitnick/option@1.0.4"], ["Promise", "evaera/promise@4.0.0"], ["Signal", "sleitnick/signal@1.2.1"]]
+dependencies = [["Option", "sleitnick/option@1.0.4"], ["Promise", "evaera/promise@4.0.0"], ["Signal", "sleitnick/signal@1.5.0"]]
 
 [[package]]
 name = "sleitnick/knit"
-version = "1.4.7"
+version = "1.5.1"
 dependencies = [["Comm", "sleitnick/comm@0.3.1"], ["Promise", "evaera/promise@4.0.0"]]
 
 [[package]]
@@ -24,10 +29,10 @@ dependencies = []
 
 [[package]]
 name = "sleitnick/signal"
-version = "1.2.1"
+version = "1.5.0"
 dependencies = []
 
 [[package]]
 name = "stayroh/train-system"
 version = "0.1.0"
-dependencies = [["knit", "sleitnick/knit@1.4.7"]]
+dependencies = [["knit", "sleitnick/knit@1.5.1"], ["roact", "roblox/roact@1.4.4"]]

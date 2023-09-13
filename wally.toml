@@ -6,3 +6,4 @@ realm = "shared"
 
 [dependencies]
 knit = "sleitnick/knit@^1.2"
+roact = "roblox/roact@^1.4.4"
