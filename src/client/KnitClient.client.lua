@@ -3,11 +3,11 @@ if not game:IsLoaded() then
 end
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local source = ReplicatedStorage.source
+local src = ReplicatedStorage.src
 local Knit = require(ReplicatedStorage.Packages.knit)
 
 local Controllers = {
-	source.TrainCtrl,
+	src.TrainCtrl,
 }
 
 for _, v in pairs(Controllers) do

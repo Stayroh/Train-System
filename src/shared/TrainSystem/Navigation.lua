@@ -1,4 +1,4 @@
-local TrainSystem = game.ReplicatedStorage.source.TrainSystem
+local TrainSystem = game.ReplicatedStorage.src.TrainSystem
 local LocalizationService = game:GetService("LocalizationService")
 local Networks = require(TrainSystem.Networks)
 local Types = require(TrainSystem.Types)

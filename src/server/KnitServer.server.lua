@@ -1,11 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local source = ServerScriptService.source
+local src = ServerScriptService.src
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 
 local Services = {
-	source.TrainService,
+	src.TrainService,
 }
 
 for _, v in pairs(Services) do

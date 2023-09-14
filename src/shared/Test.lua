@@ -1,4 +1,4 @@
-local TrainSystem = game.ReplicatedStorage.source.TrainSystem
+local TrainSystem = game.ReplicatedStorage.src.TrainSystem
 local Module = {}
 local Math = require(TrainSystem.Math)
 local Networks = require(TrainSystem.Networks)
