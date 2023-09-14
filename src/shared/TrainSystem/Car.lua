@@ -1,5 +1,6 @@
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
-local Cars = require(game.ReplicatedStorage.source.TrainCtrl.Cars)
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
+local Types = require(TrainSystem.Types)
+local Cars = require(TrainSystem.Cars)
 local Car = {}
 Car.__index = Car
 

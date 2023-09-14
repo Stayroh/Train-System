@@ -1,6 +1,7 @@
-local Bogies = require(game.ReplicatedStorage.source.TrainCtrl.Bogies)
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
-local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
+local Bogies = require(TrainSystem.Bogies)
+local Types = require(TrainSystem.Types)
+local NetNav = require(TrainSystem.NetNav)
 local Bogie = {}
 Bogie.__index = Bogie
 

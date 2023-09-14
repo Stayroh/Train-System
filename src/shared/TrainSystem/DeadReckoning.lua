@@ -1,9 +1,10 @@
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
-local Navigation = require(game.ReplicatedStorage.source.TrainCtrl.Navigation)
-local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
-local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
-local Config = require(game.ReplicatedStorage.source.TrainCtrl.Config)
-local NetPosition = require(game.ReplicatedStorage.source.TrainCtrl.NetPosition)
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
+local Types = require(TrainSystem.Types)
+local Navigation = require(TrainSystem.Navigation)
+local Networks = require(TrainSystem.Networks)
+local NetNav = require(TrainSystem.NetNav)
+local Config = require(TrainSystem.Config)
+local NetPosition = require(TrainSystem.NetPosition)
 type self = {
 	TrainId: number,
 	CurrentPosition: Types.TrainPosType,

@@ -1,9 +1,8 @@
-local SharedSource = game.ReplicatedStorage.source
-local TrainSystem = SharedSource.TrainCtrl
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
 local Networks = require(TrainSystem.Networks)
 local TrainSwitch = require(TrainSystem.Switch)
 local Types = require(TrainSystem.Types)
-local Math = require(SharedSource.Math)
+local Math = require(TrainSystem.Math)
 local NetPosition = require(TrainSystem.NetPosition)
 
 local LineTolerance = 0.0001

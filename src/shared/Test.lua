@@ -1,10 +1,11 @@
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
 local Module = {}
-local Math = require(game.ReplicatedStorage.source.Math)
-local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
-local NetNav = require(game.ReplicatedStorage.source.TrainCtrl.NetNav)
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
-local NetPosition = require(game.ReplicatedStorage.source.TrainCtrl.NetPosition)
-local TrainClass = require(game.ReplicatedStorage.source.TrainCtrl.TrainClass)
+local Math = require(TrainSystem.Math)
+local Networks = require(TrainSystem.Networks)
+local NetNav = require(TrainSystem.NetNav)
+local Types = require(TrainSystem.Types)
+local NetPosition = require(TrainSystem.NetPosition)
+local TrainClass = require(TrainSystem.TrainClass)
 local RunService = game:GetService("RunService")
 
 function Module.Alpha(From: number, To: number, T: number, Description: Types.TrainDescription)

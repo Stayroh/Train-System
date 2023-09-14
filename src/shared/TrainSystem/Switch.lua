@@ -1,5 +1,6 @@
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
 local SwitchModule = {}
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+local Types = require(TrainSystem.Types)
 
 local SwitchNetworks = {} --Array of networks where switchs are stored for this network
 SwitchNetworks.__index = function(_, index)

@@ -1,4 +1,5 @@
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
+local Types = require(TrainSystem.Types)
 local Cars: Types.CarsDataListType = {}
 
 Cars.FreightTrain = {

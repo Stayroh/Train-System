@@ -1,6 +1,7 @@
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
 local LocalizationService = game:GetService("LocalizationService")
-local Networks = require(game.ReplicatedStorage.source.TrainCtrl.Networks)
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+local Networks = require(TrainSystem.Networks)
+local Types = require(TrainSystem.Types)
 type self = {}
 local Navigation = {}
 Navigation.__index = Navigation

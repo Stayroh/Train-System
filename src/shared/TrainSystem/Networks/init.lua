@@ -1,5 +1,6 @@
+local TrainSystem = game.ReplicatedStorage.source.TrainSystem
 local NetworkInit = {}
-local Types = require(game.ReplicatedStorage.source.TrainCtrl.Types)
+local Types = require(TrainSystem.Types)
 
 local Selection = {
 	[1] = script.NetworkAlpha,
