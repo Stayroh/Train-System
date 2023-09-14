@@ -3,16 +3,10 @@ if not game:IsLoaded() then
 end
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local src = ReplicatedStorage.src
+local Controllers = ReplicatedStorage.src.Controllers
 local Knit = require(ReplicatedStorage.Packages.knit)
 
-local Controllers = {
-	src.TrainCtrl,
-}
-
-for _, v in pairs(Controllers) do
-	require(v)
-end
+Knit.AddControllers(Controllers)
 
 Knit:Start()
 	:andThen(function()

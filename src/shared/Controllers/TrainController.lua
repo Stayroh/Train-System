@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.knit)
-local SwitchModule = require(script.Switch)
+local SwitchModule = require(ReplicatedStorage.src.TrainSystem.Switch)
 local RunService = game:GetService("RunService")
 
 local TrainController = Knit.CreateController({
