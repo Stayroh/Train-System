@@ -190,7 +190,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			+ (self.PathLength or 0)
 		CurrentVelocity = (self.TargetVelocity or self.StartVelocity) + self.CurrentAcceleration * self.UpdateTime
 	end
-
+	print(self)
 	if self.PathLength and (self.PathLength - Position) > 0 then
 		local ReversedPosition = self.PathLength - Position
 		local ToGo = math.abs(ReversedPosition)
