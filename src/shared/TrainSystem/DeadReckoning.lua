@@ -177,7 +177,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 	local Position
 	local CurrentVelocity
 	if self.PathLength and AlphaTime ~= 1 then
-		local VelocityBlend = self.StartVelocity * (1 - AlphaTime) + self.TargetVelocity * AlphaTime
+		local VelocityBlend = self.StartVelocity + (self.TargetVelocity - self.StartVelocity) * AlphaTime
 		local StartProjection = (TimeSquared * self.CurrentAcceleration) / 2 + VelocityBlend * self.UpdateTime
 		local TargetProjection = (TimeSquared * self.CurrentAcceleration) / 2
 			+ self.TargetVelocity * self.UpdateTime
@@ -193,7 +193,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 	print(self)
 	if self.PathLength and (self.PathLength - Position) > 0 then
 		local ReversedPosition = self.PathLength - Position
-		local ToGo = math.abs(ReversedPosition)
+		local ToGo = ReversedPosition
 		local Index = 0
 		local SegmentPosition = 0
 		while ToGo > 0 and Index < #self.Path - 1 do
@@ -208,9 +208,9 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			local T = Start[1] == "nil" and Start[2] - SegmentPosition or SegmentPosition
 			local StartNode = Start[1]
 			local EndNode = End[1]
-			if StartNode[3] then
+			if Start[3] then --If reversed then change start and end node
 				StartNode, EndNode = EndNode, StartNode
-			else
+			else --If not reversed the velocity has to be inverted, because it was calculated for the athor direction
 				CurrentVelocity *= -1
 			end
 			self.CurrentPosition = NetPosition.new(StartNode, EndNode, T, self.StartPosition.Network)
@@ -219,17 +219,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		end
 	else
 		local StepStart = self.TargetPosition or self.StartPosition
-		local StepDistance = self.PathLength and self.PathLength - Position or Position
-		if self.Path and self.Path[1][3] then
-			if self.Path[1][3] then
-				StepStart.From, StepStart.To = StepStart.To, StepStart.From
-				if StepStart.From and StepStart.To then
-					StepStart.T = 1 - StepStart.T
-				end
-			else
-				CurrentVelocity *= -1
-			end
-		end
+		local StepDistance = self.PathLength and Position - self.PathLength or Position
 		self.CurrentPosition = NetNav:StepDistance(StepStart, StepDistance, self.TrainId)
 		self.CurrentVelocity = CurrentVelocity
 	end
