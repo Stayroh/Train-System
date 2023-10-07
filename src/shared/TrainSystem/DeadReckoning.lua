@@ -223,6 +223,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		self.CurrentPosition = NetNav:StepDistance(StepStart, StepDistance, self.TrainId)
 		self.CurrentVelocity = CurrentVelocity
 	end
+	return self.CurrentPosition
 end
 
 local Constructors = {}
