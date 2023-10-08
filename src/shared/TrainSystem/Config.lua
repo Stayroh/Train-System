@@ -1,5 +1,5 @@
 local Config = {}
 
-Config.TrainSnapshotsPerSec = 5
+Config.TrainSnapshotsPerSec = 1
 
 return Config

@@ -81,7 +81,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		self.Cars[i] = Car
 	end
 	self.Position = Position
-	self.NetworkController = DeadReckoning.new(self.Position,0,0,self.TrainId)
+	self.NetworkController = DeadReckoning.new(self.Position, 0, 0, self.TrainId)
 	self:Update(Position)
 	return self
 end

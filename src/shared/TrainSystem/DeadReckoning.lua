@@ -181,15 +181,16 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		local TargetProjection = (TimeSquared * self.CurrentAcceleration) / 2
 			+ self.TargetVelocity * self.UpdateTime
 			+ self.PathLength
-		Position = StartProjection * (1 - AlphaTime) + TargetProjection * TargetProjection
+		Position = StartProjection + (TargetProjection - StartProjection) * AlphaTime
 		CurrentVelocity = VelocityBlend + self.CurrentAcceleration * self.UpdateTime
+		print(VelocityBlend, StartProjection, TargetProjection)
 	else
 		Position = (TimeSquared * self.CurrentAcceleration) / 2
 			+ (self.TargetVelocity or self.StartVelocity) * self.UpdateTime
 			+ (self.PathLength or 0)
 		CurrentVelocity = (self.TargetVelocity or self.StartVelocity) + self.CurrentAcceleration * self.UpdateTime
 	end
-	print(self)
+
 	if self.PathLength and (self.PathLength - Position) > 0 then
 		local ReversedPosition = self.PathLength - Position
 		local ToGo = ReversedPosition
@@ -215,17 +216,17 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 				CurrentVelocity *= -1
 			end
 		else
-			local SegmentLength = NetNav:GetArcLenght(Start[1],End[1],self.TargetPosition.Network)
-			T = T/SegmentLength
+			local SegmentLength = NetNav:GetArcLenght(Start[1], End[1], self.TargetPosition.Network)
+			T = T / SegmentLength
 			if Start[3] then
-				StepStart,StepEnd = StepEnd,StepStart
-				T = 1-T
+				StepStart, StepEnd = StepEnd, StepStart
+				T = 1 - T
 				StepDistance *= -1
 			else
 				CurrentVelocity *= -1
 			end
 		end
-		local StepPosition = NetPosition.new(StepStart[1],StepEnd[1],T,self.TargetPosition.Network)
+		local StepPosition = NetPosition.new(StepStart[1], StepEnd[1], T, self.TargetPosition.Network)
 		if StepDistance == 0 then
 			self.CurrentPosition = StepPosition
 			self.CurrentVelocity = CurrentVelocity

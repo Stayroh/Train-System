@@ -3,6 +3,7 @@ local Knit = require(ReplicatedStorage.Packages.knit)
 local SwitchModule = require(ReplicatedStorage.src.TrainSystem.Switch)
 local RunService = game:GetService("RunService")
 local TrainClass = require(game.ReplicatedStorage.src.TrainSystem.TrainClass)
+local Types = require(game.ReplicatedStorage.src.TrainSystem.Types)
 
 local TrainController = Knit.CreateController({
 	Name = "TrainController",
@@ -16,17 +17,22 @@ function TrainController:SwitchUpdates(UpdateState)
 	SwitchModule:Update(UpdateState)
 end
 
-function TrainController:Stepped(time, deltaTime)
+function TrainController:Stepped(DeltaTime)
 	for TrainId, Train in pairs(self.Trains) do
-		Train:Step(deltaTime)
+		Train:Step(DeltaTime)
 	end
 end
 
-function TrainController:CreateTrain(Description: Types.TrainDescription)
-	if self.Trains[CarDescription.Id] then
+function TrainController:ApplySnapshot(Snapshot: Types.SnapshotType, TrainId: number)
+	self.Trains[TrainId]:ApplySnapshot(Snapshot)
+end
+
+function TrainController:CreateTrain(Description: Types.TrainDescription, Position: Types.TrainPosType)
+	if self.Trains[Description.Id] then
 		warn("An already existing train was overridden")
 	end
-	self.Trains[Description.Id] = TrainClass.fromDescription(Description)
+	local Train = TrainClass.fromDescription(Description, Position)
+	self.Trains[Description.Id] = Train
 end
 
 function TrainController:KnitInit()
@@ -37,8 +43,9 @@ function TrainController:KnitInit()
 			TrainController:SwitchUpdates(update)
 		end)
 	end)
-	RunService.Stepped:Connect(function(time, deltaTime)
-		self:Stepped(time, deltaTime)
+
+	RunService.Stepped:Connect(function(_, DeltaTime)
+		self:Stepped(DeltaTime)
 	end)
 end
 
