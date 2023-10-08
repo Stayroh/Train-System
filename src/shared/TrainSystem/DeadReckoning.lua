@@ -158,7 +158,6 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 		end
 	end
 	if Path[#Path - 1][1] == self.CurrentPosition.From then
-		print("Hi")
 		self.StartVelocity *= -1
 	end
 	if not Path[#Path - 1][3] then
@@ -204,11 +203,33 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		end
 		local Start = self.Path[Index]
 		local End = self.Path[Index + 1]
-		
-		if ToGO <= 0 then --In case of overshooting the path length
-			
+		local StepStart = Start
+		local StepEnd = End
+		local T = SegmentPosition
+		local StepDistance = ToGo
+		if Start == nil or End == nil then
+			if Start[3] then
+				StepStart, StepEnd = StepEnd, StepStart
+				StepDistance *= -1
+			else
+				CurrentVelocity *= -1
+			end
+		else
+			local SegmentLength = NetNav:GetArcLenght(Start[1],End[1],self.TargetPosition.Network)
+			T = T/SegmentLength
+			if Start[3] then
+				StepStart,StepEnd = StepEnd,StepStart
+				T = 1-T
+				StepDistance *= -1
+			else
+				CurrentVelocity *= -1
+			end
 		end
-		
+		local StepPosition = NetPosition.new(StepStart[1],StepEnd[1],T,self.TargetPosition.Network)
+		if StepDistance == 0 then
+			self.CurrentPosition = StepPosition
+			self.CurrentVelocity = CurrentVelocity
+		end
 	else
 		local StepStart = self.TargetPosition or self.StartPosition
 		local StepDistance = self.PathLength and Position - self.PathLength or Position
