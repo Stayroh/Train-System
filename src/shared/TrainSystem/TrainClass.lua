@@ -4,6 +4,7 @@ local CarClass = require(TrainSystem.Car)
 local BogieClass = require(TrainSystem.Bogie)
 local Cars = require(TrainSystem.Cars)
 local NetNav = require(TrainSystem.NetNav)
+local DeadReckoning = require(game.ReplicatedStorage.src.TrainSystem.DeadReckoning)
 
 local Train = {}
 Train.__index = Train
@@ -43,6 +44,14 @@ function Train:Update(Position: Types.TrainPosType)
 	end
 end
 
+function Train:Step(DeltaTime: number)
+	self:Update(self.NetworkController:Step(DeltaTime))
+end
+
+function Train:ApplySnapshot(Snapshot: Types.SnapshotType)
+	self.NetworkController:Update(Snapshot)
+end
+
 local Constructors = {}
 
 function Constructors.fromDescription(Description: Types.TrainDescription, Position: Types.TrainPosType)
@@ -72,6 +81,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		self.Cars[i] = Car
 	end
 	self.Position = Position
+	self.NetworkController = DeadReckoning.new(self.Position,0,0,self.TrainId)
 	self:Update(Position)
 	return self
 end
