@@ -60,7 +60,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 			if NodeId == "nil" then
 				return self.TargetPosition.To == nil
 			end
-			return NavigationPath[Index] == self.TargetPosition.To
+			return NodeId == self.TargetPosition.To
 		end
 		if NavigationPath[Index - 1] == "nil" then
 			if NavigationPath[Index + 1] == "nil" then
@@ -204,19 +204,11 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		end
 		local Start = self.Path[Index]
 		local End = self.Path[Index + 1]
-		if Start[1] == "nil" or End[1] == "nil" then
-			local T = Start[1] == "nil" and Start[2] - SegmentPosition or SegmentPosition
-			local StartNode = Start[1]
-			local EndNode = End[1]
-			if Start[3] then --If reversed then change start and end node
-				StartNode, EndNode = EndNode, StartNode
-			else --If not reversed the velocity has to be inverted, because it was calculated for the athor direction
-				CurrentVelocity *= -1
-			end
-			self.CurrentPosition = NetPosition.new(StartNode, EndNode, T, self.StartPosition.Network)
-			self.CurrentVelocity = CurrentVelocity
-		else
+		
+		if ToGO <= 0 then --In case of overshooting the path length
+			
 		end
+		
 	else
 		local StepStart = self.TargetPosition or self.StartPosition
 		local StepDistance = self.PathLength and Position - self.PathLength or Position
