@@ -23,6 +23,7 @@ DeadReckoning.__index = DeadReckoning
 export type DeadReckoning = typeof(setmetatable({} :: self, DeadReckoning))
 
 function DeadReckoning:Update(Snapshot: Types.SnapshotType)
+	print(Snapshot)
 	self = self :: self
 	self.UpdateTime = 0
 	if self.CurrentPosition.Network ~= Snapshot.Position.Network then
@@ -32,7 +33,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 	self.StartVelocity = self.CurrentVelocity
 	self.TargetPosition = Snapshot.Position
 	self.TargetVelocity = Snapshot.Velocity
-	self.CurrentAcceleration = Snapshot.Acceleraction
+	self.CurrentAcceleration = Snapshot.Acceleration
 	local NavigationPath
 	local function CalculatePath()
 		NavigationPath = Navigation:ComputeShortestPath(self.TargetPosition, self.CurrentPosition)
@@ -41,7 +42,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 	if Snapshot.TP or CalculatePath() then
 		self.CurrentPosition = Snapshot.Position
 		self.CurrentVelocity = Snapshot.Velocity
-		self.CurrentAcceleration = Snapshot.Acceleraction
+		self.CurrentAcceleration = Snapshot.Acceleration
 		self.StartPosition = Snapshot.Position
 		self.StartVelocity = Snapshot.Velocity
 		self.TargetPosition = nil
@@ -175,6 +176,8 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 	local AlphaTime = math.clamp(self.UpdateTime / (1 / Config.TrainSnapshotsPerSec), 0, 1)
 	local Position
 	local CurrentVelocity
+	print(self)
+	print(AlphaTime)
 	if self.PathLength and AlphaTime ~= 1 then
 		local VelocityBlend = self.StartVelocity + (self.TargetVelocity - self.StartVelocity) * AlphaTime
 		local StartProjection = (TimeSquared * self.CurrentAcceleration) / 2 + VelocityBlend * self.UpdateTime
@@ -183,7 +186,6 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			+ self.PathLength
 		Position = StartProjection + (TargetProjection - StartProjection) * AlphaTime
 		CurrentVelocity = VelocityBlend + self.CurrentAcceleration * self.UpdateTime
-		print(VelocityBlend, StartProjection, TargetProjection)
 	else
 		Position = (TimeSquared * self.CurrentAcceleration) / 2
 			+ (self.TargetVelocity or self.StartVelocity) * self.UpdateTime
@@ -245,14 +247,14 @@ local Constructors = {}
 function Constructors.new(
 	Position: Types.TrainPosType,
 	Velocity: number,
-	Acceleraction: number,
+	Acceleration: number,
 	TrainId: number
 ): DeadReckoning
 	local self = setmetatable({
 		TrainId = TrainId,
 		CurrentPosition = Position,
 		CurrentVelocity = Velocity,
-		CurrentAcceleration = Acceleraction,
+		CurrentAcceleration = Acceleration,
 		StartPosition = Position,
 		StartVelocity = Velocity,
 		UpdateTime = 0,

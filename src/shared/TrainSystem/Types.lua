@@ -66,7 +66,7 @@ export type BogiesDataListType = { [string]: BogiesDataType }
 export type SnapshotType = {
 	Position: TrainPosType,
 	Velocity: number,
-	Acceleraction: number,
+	Acceleration: number,
 	TP: boolean,
 }
 
