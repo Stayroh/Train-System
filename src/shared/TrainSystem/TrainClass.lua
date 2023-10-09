@@ -10,6 +10,7 @@ local Train = {}
 Train.__index = Train
 
 function Train:Update(Position: Types.TrainPosType)
+	self.Position = Position
 	for i, Car in pairs(self.Cars) do
 		local WasDouble = false
 		if i == 1 then
@@ -45,7 +46,11 @@ function Train:Update(Position: Types.TrainPosType)
 end
 
 function Train:Step(DeltaTime: number)
-	self:Update(self.NetworkController:Step(DeltaTime))
+	local NewPosition = self.NetworkController:Step(DeltaTime)
+	if NewPosition == self.Position then
+		return
+	end
+	self:Update(NewPosition)
 end
 
 function Train:ApplySnapshot(Snapshot: Types.SnapshotType)
