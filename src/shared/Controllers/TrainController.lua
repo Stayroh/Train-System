@@ -29,7 +29,7 @@ end
 
 function TrainController:CreateTrain(Description: Types.TrainDescription, Position: Types.TrainPosType)
 	if self.Trains[Description.Id] then
-		warn("An already existing train was overridden")
+		warn("An already existing train has been overridden")
 	end
 	local Train = TrainClass.fromDescription(Description, Position)
 	self.Trains[Description.Id] = Train
