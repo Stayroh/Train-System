@@ -4,10 +4,21 @@ local TrainController = Knit.GetController("TrainController")
 local T = workspace.Trains
 local Pos = require(game.ReplicatedStorage.src.TrainSystem.NetPosition).new(1, 2, 0.5, 1)
 local Description = {
-	Bogies = { T.FrontBogie1, T.RearBogie1, T.RearBogie2, T.FrontBogie2 },
+	Bogies = {
+		T.FrontBogie1,
+		T.RearBogie1,
+		T.RearBogie2,
+		T.FrontBogie2,
+		T.FrontBogie3,
+		T.RearBogie3,
+		T.RearBogie4,
+		T.FrontBogie4,
+	},
 	Cars = {
 		{ Series = "FreightTrain", Reference = T.FreightTrain1 },
 		{ Series = "FreightTrain", Reference = T.FreightTrain2, Reversed = true },
+		{ Series = "FreightTrain", Reference = T.FreightTrain3 },
+		{ Series = "FreightTrain", Reference = T.FreightTrain4, Reversed = true },
 	},
 	Id = 1,
 }
