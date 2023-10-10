@@ -23,7 +23,6 @@ DeadReckoning.__index = DeadReckoning
 export type DeadReckoning = typeof(setmetatable({} :: self, DeadReckoning))
 
 function DeadReckoning:Update(Snapshot: Types.SnapshotType)
-	print(Snapshot)
 	self = self :: self
 	self.UpdateTime = 0
 	if self.CurrentPosition.Network ~= Snapshot.Position.Network then
@@ -49,7 +48,6 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 		self.TargetVelocity = nil
 		self.Path = nil
 		self.PathLength = nil
-		print(self)
 		return Snapshot.Position
 	end
 	local PathLength = 0
@@ -176,8 +174,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 	local AlphaTime = math.clamp(self.UpdateTime / (1 / Config.TrainSnapshotsPerSec), 0, 1)
 	local Position
 	local CurrentVelocity
-	print(self)
-	print(AlphaTime)
+
 	if self.PathLength and AlphaTime ~= 1 then
 		local VelocityBlend = self.StartVelocity + (self.TargetVelocity - self.StartVelocity) * AlphaTime
 		local StartProjection = (TimeSquared * self.CurrentAcceleration) / 2 + VelocityBlend * self.UpdateTime

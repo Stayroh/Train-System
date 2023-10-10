@@ -31,8 +31,8 @@ local Module = {
 		Position = Vector3.new(450, 0, 250),
 		Tangent = Vector3.new(0, 0, 1),
 		ZRotation = 0,
-		Pre = 6,
-		Fol = nil,
+		Pre = 4,
+		Fol = 6,
 	},
 	[6] = {
 		Position = Vector3.new(450, 0, 450),
