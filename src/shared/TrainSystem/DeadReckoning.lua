@@ -192,6 +192,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 
 	if self.PathLength and (self.PathLength - Position) > 0 then
 		local ReversedPosition = self.PathLength - Position
+		print(ReversedPosition)
 		local ToGo = ReversedPosition
 		local Index = 0
 		local SegmentPosition = 0
