@@ -263,6 +263,10 @@ function Module.Delta()
 		local Up = (LPos - Position):Cross(Pos - Position).Unit
 		local CF = (CFrame.lookAt(Vector3.zero, Up) * CFrame.fromEulerAnglesXYZ(0, math.pi / 2, 0)) + Position
 		local Size = Vector3.new(0.001, Radius * 2, Radius * 2)
+		local Copy: Part = SampleDisc:Clone()
+		Copy.Size = Size
+		Copy.CFrame = CF
+		Copy.Parent = Circles
 	end
 	return Networks:Add(Net)
 end

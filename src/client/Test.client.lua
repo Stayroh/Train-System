@@ -2,7 +2,9 @@ local Knit = require(game.ReplicatedStorage.Packages.knit)
 Knit.OnStart():await()
 local TrainController = Knit.GetController("TrainController")
 local T = workspace.Trains
-local Pos = require(game.ReplicatedStorage.src.TrainSystem.NetPosition).new(1, 2, 0.5, 1)
+local Test = require(game.ReplicatedStorage.src.Test)
+local NetworkId = Test.Delta()
+local Pos = require(game.ReplicatedStorage.src.TrainSystem.NetPosition).new(1, 2, 0.5, NetworkId)
 local Description = {
 	Bogies = {
 		T.FrontBogie1,
