@@ -62,7 +62,7 @@ function NetNav:StepDistance(Position: Types.TrainPosType, Distance: number, Tra
 	local From, To = Position.From, Position.To
 	local ToGo = Distance
 	local Flip = false
-	if Distance < 0 thenbreak
+	if Distance < 0 then
 		ToGo *= -1
 		From, To = To, From
 		if From ~= nil and To ~= nil then
