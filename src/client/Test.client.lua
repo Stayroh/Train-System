@@ -1,3 +1,4 @@
+--[[
 local Knit = require(game.ReplicatedStorage.Packages.knit)
 Knit.OnStart():await()
 local TrainController = Knit.GetController("TrainController")
@@ -30,3 +31,4 @@ local Event = Instance.new("BindableEvent", game.ReplicatedStorage)
 Event.Event:Connect(function(Snapshot)
 	TrainController:ApplySnapshot(Snapshot, 1)
 end)
+]]
