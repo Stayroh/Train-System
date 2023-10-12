@@ -122,7 +122,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 		if math.sign(Delta) == -1 then
 			Inverse = true
 		end
-		local Length = NetNav:GetArcLenght(NavigationPath[1], NavigationPath[2], self.TargetPosition.Network)
+		local Length = NetNav:GetArcLength(NavigationPath[1], NavigationPath[2], self.TargetPosition.Network)
 		Length *= math.abs(Delta)
 		Path[1] = { NavigationPath[1], Length, IsReverse }
 		Path[2] = { NavigationPath[2] }
@@ -141,7 +141,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 			end
 			local Length = 1
 			if NodeId ~= "nil" and NavigationPath[i + 1] ~= "nil" then
-				Length = NetNav:GetArcLenght(NodeId, NavigationPath[i + 1], self.TargetPosition.Network)
+				Length = NetNav:GetArcLength(NodeId, NavigationPath[i + 1], self.TargetPosition.Network)
 			end
 
 			if i == 1 then
@@ -216,7 +216,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 				CurrentVelocity *= -1
 			end
 		else
-			local SegmentLength = NetNav:GetArcLenght(Start[1], End[1], self.TargetPosition.Network)
+			local SegmentLength = NetNav:GetArcLength(Start[1], End[1], self.TargetPosition.Network)
 			T = T / SegmentLength
 			if Start[3] then
 				StepStart, StepEnd = StepEnd, StepStart

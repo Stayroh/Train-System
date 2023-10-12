@@ -62,7 +62,7 @@ function NetNav:StepDistance(Position: Types.TrainPosType, Distance: number, Tra
 	local From, To = Position.From, Position.To
 	local ToGo = Distance
 	local Flip = false
-	if Distance < 0 then
+	if Distance < 0 thenbreak
 		ToGo *= -1
 		From, To = To, From
 		if From ~= nil and To ~= nil then
@@ -89,14 +89,14 @@ function NetNav:StepDistance(Position: Types.TrainPosType, Distance: number, Tra
 				continue
 			end
 		end
-		local Lenght = self:GetArcLenght(From, To, Position.Network)
-		if (1 - Rest) * Lenght >= ToGo then
-			local D = ToGo / Lenght + Rest
+		local Length = self:GetArcLength(From, To, Position.Network)
+		if (1 - Rest) * Length >= ToGo then
+			local D = ToGo / Length + Rest
 			D = Flip and 1 - D or D
 			Pos = NetPosition.new(From, To, D, Position.Network)
 			break
 		else
-			ToGo -= (1 - Rest) * Lenght
+			ToGo -= (1 - Rest) * Length
 			From, To = To, self:GetNextNode(From, To, TrainId, Position.Network)
 			Rest = 0
 		end
@@ -108,7 +108,7 @@ function NetNav:StepDistance(Position: Types.TrainPosType, Distance: number, Tra
 	return Pos
 end
 
-function NetNav:GetArcLenght(From: number, To: number, NetworkId: number)
+function NetNav:GetArcLength(From: number, To: number, NetworkId: number)
 	local N1 = Networks:GetNode(From, NetworkId)
 	local N2 = Networks:GetNode(To, NetworkId)
 	local P1, P2, T = N1.Position, N2.Position, N1.Tangent
