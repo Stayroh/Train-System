@@ -226,7 +226,12 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 				CurrentVelocity *= -1
 			end
 		end
-		local StepPosition = NetPosition.new(StepStart[1], StepEnd[1], T, self.TargetPosition.Network)
+		local StepPosition = NetPosition.new(
+			StepStart[1] ~= "nil" and StepStart[1] or nil,
+			StepEnd[1] ~= "nil" and StepEnd[1] or nil,
+			T,
+			self.TargetPosition.Network
+		)
 		if StepDistance == 0 then
 			self.CurrentPosition = StepPosition
 			self.CurrentVelocity = CurrentVelocity

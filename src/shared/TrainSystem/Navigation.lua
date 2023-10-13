@@ -39,7 +39,7 @@ function Navigation:ComputeShortestPath(Start: Types.TrainPosType, Target: Types
 	end
 	if CheckTarget(Start.From) then
 		if CheckTarget(Start.To) then
-			return Target.T >= Start.T and { Start.From, Start.To } or { Start.To, Start.From}
+			return Target.T >= Start.T and { Start.From, Start.To } or { Start.To, Start.From }
 		end
 		Goal = { Start.From }
 	elseif CheckTarget(Start.To) then
