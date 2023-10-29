@@ -17,6 +17,7 @@ type self = {
 	Path: { { any } }?,
 	PathLength: number?,
 	UpdateTime: number,
+	PathStart: number,
 }
 local DeadReckoning = {}
 DeadReckoning.__index = DeadReckoning
@@ -48,6 +49,7 @@ function DeadReckoning:Update(Snapshot: Types.SnapshotType)
 		self.TargetVelocity = nil
 		self.Path = nil
 		self.PathLength = nil
+		self.PathStart = nil
 		return Snapshot.Position
 	end
 	local PathLength = 0
@@ -192,7 +194,6 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 
 	if self.PathLength and (self.PathLength - Position) > 0 then
 		local ReversedPosition = self.PathLength - Position
-		print(ReversedPosition)
 		local ToGo = ReversedPosition
 		local Index = 0
 		local SegmentPosition = 0
@@ -217,7 +218,13 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 			end
 		else
 			local SegmentLength = NetNav:GetArcLength(Start[1], End[1], self.TargetPosition.Network)
-			T = T / SegmentLength
+			--T = Index < 2 and (self.Path[1][1] + T) / SegmentLength or T / SegmentLength
+			if Index < 2 then
+				T = (SegmentLength - self.Path[1][2] + T) / SegmentLength
+				print(self.Path[1][2], T)
+			else
+				T = T / SegmentLength
+			end
 			if Start[3] then
 				StepStart, StepEnd = StepEnd, StepStart
 				T = 1 - T
