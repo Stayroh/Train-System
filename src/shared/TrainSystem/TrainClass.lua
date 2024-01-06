@@ -45,17 +45,21 @@ function Train:Update(Position: Types.TrainPosType)
 	end
 end
 
-function Train:Step(DeltaTime: number)
-	local NewPosition = self.NetworkController:Step(DeltaTime)
+function Train:Step(DeltaTime: number, Acceleration: number)
+	local StepDistance = (DeltaTime ^ 2 * Acceleration) / 2 + self.Velocity * DeltaTime
+	self.Velocity += Acceleration * DeltaTime
+	local NewPosition = NetNav:StepDistance(self.Position, StepDistance, self.TrainId)
 	if NewPosition == self.Position then
 		return
 	end
 	self:Update(NewPosition)
 end
 
+--[[
 function Train:ApplySnapshot(Snapshot: Types.SnapshotType)
 	self.NetworkController:Update(Snapshot)
 end
+]]
 
 local Constructors = {}
 
@@ -64,6 +68,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 	self.Cars = {}
 	self.TrainId = Description.Id
 	local requiredBogies = 1
+	self.Velocity = 0
 
 	for i, CarDescription in pairs(Description.Cars) do
 		local IsReversed = CarDescription.Reversed or false
@@ -86,7 +91,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		self.Cars[i] = Car
 	end
 	self.Position = Position
-	self.NetworkController = DeadReckoning.new(self.Position, 0, 0, self.TrainId)
+	--	self.NetworkController = DeadReckoning.new(self.Position, 0, 0, self.TrainId)
 	self:Update(Position)
 	return self
 end
