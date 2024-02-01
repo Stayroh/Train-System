@@ -7,5 +7,6 @@
         "ma"
     ],
     "robloxLsp.completion.callParenthesess": true,
-    "robloxLsp.typeChecking.mode": "Non Strict"
+    "robloxLsp.typeChecking.mode": "Non Strict",
+    "stylua.targetReleaseVersion": "latest"
 }

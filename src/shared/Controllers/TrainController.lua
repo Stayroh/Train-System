@@ -44,7 +44,7 @@ function TrainController:KnitInit()
 		end)
 	end)
 
-	RunService.RenderStepped:Connect(function(DeltaTime)
+	RunService.Heartbeat:Connect(function(DeltaTime)
 		self:Stepped(DeltaTime)
 	end)
 end
