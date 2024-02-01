@@ -199,7 +199,7 @@ function DeadReckoning:Step(DeltaTime: number): Types.TrainPosType
 		local SegmentPosition = 0
 		while ToGo > 0 and Index < #self.Path - 1 do
 			Index += 1
-			local SegmentLength = self.Path[Index][2]
+			local SegmentLength = Index == 0 and self.Path[Index][2] - self.PathStart or self.Path[Index][2]
 			SegmentPosition = math.min(ToGo, SegmentLength)
 			ToGo -= SegmentPosition
 		end
