@@ -19,7 +19,7 @@ end
 
 function TrainController:Stepped(DeltaTime)
 	for TrainId, Train in pairs(self.Trains) do
-		Train:Step(DeltaTime, 10)
+		Train:Step(DeltaTime)
 	end
 end
 
