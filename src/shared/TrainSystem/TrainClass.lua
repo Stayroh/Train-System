@@ -11,10 +11,28 @@ Train.__index = Train
 
 function Train:Update(Position: Types.TrainPosType)
 	self.Position = Position
+	local ProjectionLength = 0
+	local StartHeight = 0
+	local EndHeight = 0
+	local LastCalculatedPoint: Vector2?
+	local function CalcNewProjectionDistance(P: Vector3)
+		local P_Projection = Vector2.new(P.X, P.Z)
+		if LastCalculatedPoint then
+			local Distance = (P_Projection - LastCalculatedPoint).Magnitude
+			LastCalculatedPoint = P_Projection
+			ProjectionLength += Distance
+		else
+			LastCalculatedPoint = P_Projection
+		end
+	end
 	for i, Car in pairs(self.Cars) do
 		local WasDouble = false
 		if i == 1 then
-			Car.frontBogie:SetPosition(Position)
+			local WorldCFrame = NetNav:GetCFrame(Position)
+			Car.frontBogie:SetCFrame(WorldCFrame)
+			Car.frontBogie.Position = Position
+			CalcNewProjectionDistance(WorldCFrame.Position)
+			StartHeight = WorldCFrame.Position.Y
 		elseif self.Cars[i - 1].rearBogie == Car.frontBogie then
 			WasDouble = true
 		else
@@ -24,40 +42,52 @@ function Train:Update(Position: Types.TrainPosType)
 			local GlobalPos = (Lastrear.Position - Lastfront.Position).Unit
 					* (PriPart.Size.Z / 2 - self.Cars[i - 1].rearJoint.Z + self.Cars[i - 1].rearBogie.frontPivot.Z)
 				+ Lastrear.Position
-			workspace.Marker.Position = GlobalPos
 			local AlternatePos = self.Cars[i - 1].rearBogie.Position
 			local Radius = math.abs(Car.Model.PrimaryPart.Size.Z / 2 + Car.frontJoint.Z - Car.frontBogie.frontPivot.Z)
 			local AlternateRadius = Radius
 				+ (PriPart.Size.Z / 2 - self.Cars[i - 1].rearJoint.Z + self.Cars[i - 1].rearBogie.frontPivot.Z)
-			Car.frontBogie:SetPosition(
+			local RadiusIntersectionPos =
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
-			)
+			local WorldCFrame = NetNav:GetCFrame(RadiusIntersectionPos)
+			Car.frontBogie:SetCFrame(WorldCFrame)
+			Car.frontBogie.Position = RadiusIntersectionPos
+			CalcNewProjectionDistance(WorldCFrame.Position)
 		end
 		local Radius = math.abs(
 			(Car.frontJoint.Z - Car.frontBogie:GetPivot(not WasDouble).Z)
 				- (Car.rearJoint.Z - Car.rearBogie:GetPivot(true).Z)
 		)
-
-		Car.rearBogie:SetPosition(
-			NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
-		)
+		local RearPosition = NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
+		local WorldCFrame = NetNav:GetCFrame(RearPosition)
+		Car.rearBogie:SetCFrame(WorldCFrame)
+		Car.rearBogie.Position = RearPosition
+		CalcNewProjectionDistance(WorldCFrame.Position)
+		if i == #self.Cars then
+			EndHeight = WorldCFrame.Position.Y
+		end
 		Car:Update()
 	end
+	local DeltaHeight = StartHeight - EndHeight
+	self.Angle = math.atan(DeltaHeight / ProjectionLength)
+	print(self.Angle)
 end
 
-function Train:Step(DeltaTime: number)
-	local NewPosition = self.NetworkController:Step(DeltaTime)
+function Train:Step(DeltaTime: number, Acceleration: number)
+	local StepDistance = (DeltaTime ^ 2 * Acceleration) / 2 + self.Velocity * DeltaTime
+	local GravityAcceleration = math.sin(self.Angle) * -40
+	self.Velocity += (Acceleration + GravityAcceleration) * DeltaTime
+	local NewPosition = NetNav:StepDistance(self.Position, StepDistance, self.TrainId)
 	if NewPosition == self.Position then
 		return
 	end
 	self:Update(NewPosition)
 end
 
-
+--[[
 function Train:ApplySnapshot(Snapshot: Types.SnapshotType)
 	self.NetworkController:Update(Snapshot)
 end
-
+]]
 
 local Constructors = {}
 
@@ -66,7 +96,8 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 	self.Cars = {}
 	self.TrainId = Description.Id
 	local requiredBogies = 1
-	self.Velocity = 0
+	self.Velocity = 100
+	self.Angle = 0
 
 	for i, CarDescription in pairs(Description.Cars) do
 		local IsReversed = CarDescription.Reversed or false
@@ -89,7 +120,7 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		self.Cars[i] = Car
 	end
 	self.Position = Position
-	self.NetworkController = DeadReckoning.new(self.Position, 0, 0, self.TrainId)
+	--	self.NetworkController = DeadReckoning.new(self.Position, 0, 0, self.TrainId)
 	self:Update(Position)
 	return self
 end

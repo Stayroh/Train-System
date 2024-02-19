@@ -27,6 +27,6 @@ local Description = {
 TrainController:CreateTrain(Description, Pos)
 print("EEEE")
 local Event = Instance.new("BindableEvent", game.ReplicatedStorage)
-Event.Event:Connect(function(Snapshot)
-	TrainController:ApplySnapshot(Snapshot, 1)
+Event.Event:Connect(function(Velocity)
+	TrainController.Trains[1].Velocity = Velocity
 end)
