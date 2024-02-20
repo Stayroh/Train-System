@@ -24,6 +24,13 @@ local function InsertCar(Car, FrontBogie,RearBogie, Series,Reversed)
 end
 
 InsertCar(Assets.FreightTrain,Assets.FreightTrainFront,Assets.FreightTrainRear, "FreightTrain")
+local CamPart = Instance.new("Part")
+CamPart.Anchored = true
+CamPart.CanCollide = false
+CamPart.Transparency = 1
+local CarCF = Cars[1].Reference.PrimaryPart
+CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0,10,0)))
+CamPart.Parent = Cars[1].Reference
 
 for i = 1,4 do
 	InsertCar(Assets.ClassicCarriage,Assets.ClassicCarriageBogie,Assets.ClassicCarriageBogie,"ClassicCarriage")
