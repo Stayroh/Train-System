@@ -21,8 +21,8 @@ for i = 1, 500 do
 	print(CurrentNode)
 	local CurrentPosition = CurrentNode.Position
 	local CurrentDirection = CurrentNode.Direction
-	local NewDirection = (Noise(CurrentPosition, 0.005) * 0.05 + CurrentDirection)
-	local Position = NewDirection * Vector3.new(20, 10, 20) + CurrentPosition + Vector3.new(0, -1, 0)
+	local NewDirection = (Noise(CurrentPosition, 0.01) * 0.05 + CurrentDirection).Unit
+	local Position = NewDirection * Vector3.new(10, 5, 10) + CurrentPosition + Vector3.new(0, -1, 0)
 	local Direction = Math:GetNextTangent(CurrentPosition, Position, CurrentDirection)
 	NodeList[i + 1] = {
 		Position = Position,
