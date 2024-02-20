@@ -10,6 +10,10 @@ Bogies.FreightRear = {
 	frontPivot = Vector3.new(0, 5.5, 4.5),
 }
 
+Bogies.ClassicCarriageBogie = {
+	frontPivot = Vector3.new(0, 4.75, 0),
+}
+
 Bogies.LocomotiveJB = {
 	frontPivot = Vector3.new(0, 3.75, 0),
 }
