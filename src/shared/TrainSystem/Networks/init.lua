@@ -3,7 +3,7 @@ local NetworkInit = {}
 local Types = require(TrainSystem.Types)
 
 local Selection = {
-	[1] = script.PerlinNetwork,
+	[1] = script.NetworkAlpha,
 }
 
 local Networks = {}
