@@ -28,7 +28,7 @@ local CamPart = Instance.new("Part")
 CamPart.Anchored = true
 CamPart.CanCollide = false
 CamPart.Transparency = 1
-local CarCF = Cars[1].Reference.PrimaryPart
+local CarCF = Cars[1].Reference.PrimaryPart.CFrame
 CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0,10,0)))
 CamPart.Parent = Cars[1].Reference
 
