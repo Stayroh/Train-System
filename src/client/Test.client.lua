@@ -30,8 +30,8 @@ for i = 1,4 do
 end
 
 local Description = {
-	Bogies = Bogies
-	Cars = Cars
+	Bogies = Bogies,
+	Cars = Cars,
 	Id = 1,
 }
 TrainController:CreateTrain(Description, Pos)
