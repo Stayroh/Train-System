@@ -32,6 +32,8 @@ local CarCF = Cars[1].Reference.PrimaryPart
 CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0,10,0)))
 CamPart.Parent = Cars[1].Reference
 
+
+
 for i = 1,4 do
 	InsertCar(Assets.ClassicCarriage,Assets.ClassicCarriageBogie,Assets.ClassicCarriageBogie,"ClassicCarriage")
 end
@@ -59,3 +61,6 @@ local Event = Instance.new("BindableEvent", game.ReplicatedStorage)
 Event.Event:Connect(function(Velocity)
 	TrainController.Trains[1].Velocity = Velocity
 end)
+
+wait(2)
+workspace.Camera.CameraSubject = CamPart
