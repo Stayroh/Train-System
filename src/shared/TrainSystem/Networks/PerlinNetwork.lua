@@ -3,7 +3,7 @@ local Math = require(TrainSystem.Math)
 
 local NodeList = {
 	[1] = {
-		Position = Vector3.new(0, 100, 0),
+		Position = Vector3.new(0, 200, 0),
 		Direction = Vector3.new(1, 0, 0),
 	},
 }
@@ -22,7 +22,7 @@ for i = 1, 500 do
 	local CurrentPosition = CurrentNode.Position
 	local CurrentDirection = CurrentNode.Direction
 	local NewDirection = (Noise(CurrentPosition, 0.01) * 0.05 + CurrentDirection).Unit
-	local Position = NewDirection * Vector3.new(10, 5, 10) + CurrentPosition + Vector3.new(0, -1, 0)
+	local Position = NewDirection * Vector3.new(10, 5, 10) + CurrentPosition + Vector3.new(0, -0.5, 0)
 	local Direction = Math:GetNextTangent(CurrentPosition, Position, CurrentDirection)
 	NodeList[i + 1] = {
 		Position = Position,

@@ -69,7 +69,6 @@ function Train:Update(Position: Types.TrainPosType)
 	end
 	local DeltaHeight = StartHeight - EndHeight
 	self.Angle = math.atan(DeltaHeight / ProjectionLength)
-	print(self.Angle)
 end
 
 function Train:Step(DeltaTime: number, Acceleration: number)
