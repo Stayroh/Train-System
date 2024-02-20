@@ -34,6 +34,7 @@ local Description = {
 	Cars = Cars,
 	Id = 1,
 }
+print(Description)
 TrainController:CreateTrain(Description, Pos)
 TrainController.Trains[1].Velocity = 2
 print("EEEE")
