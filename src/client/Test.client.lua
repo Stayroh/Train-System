@@ -34,7 +34,17 @@ local Description = {
 	Cars = Cars,
 	Id = 1,
 }
-print(Description)
+local function PrintTable(T)
+	for i,v in pairs(T) do
+		if type(v) == "table" then
+			print(i)
+			PrintTable(v)
+		else
+			print(i,v)
+		end
+	end
+end
+PrintTable(Description)
 TrainController:CreateTrain(Description, Pos)
 TrainController.Trains[1].Velocity = 2
 print("EEEE")
