@@ -7,7 +7,7 @@ T.Parent = workspace
 local Assets = game.ReplicatedStorage.assets.Trains
 local Test = require(game.ReplicatedStorage.src.Test)
 local NetworkId = 1
-local Pos = require(game.ReplicatedStorage.src.TrainSystem.NetPosition).new(1, 2, 0.5, NetworkId)
+local Pos = require(game.ReplicatedStorage.src.TrainSystem.NetPosition).new(1, 2, 0.1, NetworkId)
 local Bogies = {}
 local Cars = {}
 
