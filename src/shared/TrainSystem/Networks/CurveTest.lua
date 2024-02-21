@@ -1,7 +1,7 @@
 local Module = {}
 
 Module[1] = {
-    Position = Vector3.new(100,100,0),
+    Position = Vector3.new(1000,1000,0),
     Tangent = Vector3.new(0,0,1),
     ZRotation = 0,
     Pre = nil,
@@ -9,7 +9,7 @@ Module[1] = {
 }
 
 Module[2] = {
-    Position = Vector3.new(79.06,50,-79.06),
+    Position = Vector3.new(790.6,500,-790.6),
     Tangent = Vector3.new(-0.6937,-0.1937,-0.6937),
     ZRotation = 0,
     Pre = 1,
@@ -17,7 +17,7 @@ Module[2] = {
 }
 
 Module[3] = {
-    Position = Vector3.new(0,0,-100),
+    Position = Vector3.new(0,0,-1000),
     Tangent = Vector3.new(-1,0,0),
     ZRotation = 0,
     Pre = 2,
@@ -25,7 +25,7 @@ Module[3] = {
 }
 
 Module[4] = {
-    Position = Vector3.new(-79.06,50,-79.06),
+    Position = Vector3.new(-790.6,50,-790.6),
     Tangent = Vector3.new(-0.6937,0.1937,0.6937),
     ZRotation = 0,
     Pre = 3,
@@ -33,7 +33,7 @@ Module[4] = {
 }
 
 Module[5] = {
-    Position = Vector3.new(-100,100,0),
+    Position = Vector3.new(-1000,1000,0),
     Tangent = Vector3.new(0,0,1),
     ZRotation = 0,
     Pre = 4,
