@@ -8,6 +8,7 @@ function Biarc:GetConnectionPoint(P1: Vector3, T1: Vector3, P2: Vector3, T2: Vec
     local b = 2*v:Dot(DeltaT)
     local c = v:Dot(v)
     local d = (-b + math.sqrt(b^2 - 4*a*c))/(2*a)
+    print(d)
     local Q1 = T1 * d + P1
     local Q2 = T2 * d + P2
     local Pm = (Q2 + Q1) / 2
