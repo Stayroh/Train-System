@@ -11,9 +11,9 @@ end
 function Car:Update()
 	local FrontCFrame: CFrame = self.frontBogie.CFrame
 	local RearCFrame: CFrame = self.rearBogie.CFrame
-	local IsDouble = self.frontBogie:GetPivot(false) and true or false
-	local FrontPoint = FrontCFrame:PointToWorldSpace(self.frontBogie:GetPivot(not IsDouble))
-	local RearPoint = RearCFrame:PointToWorldSpace(self.rearBogie:GetPivot(true))
+	local IsDouble = self.frontBogie:GetPivot(false) ~= nil
+	local FrontPoint = FrontCFrame:PointToWorldSpace(self.frontBogie:GetSpringPivot(not IsDouble))
+	local RearPoint = RearCFrame:PointToWorldSpace(self.rearBogie:GetSpringPivot(true))
 	local FCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, FrontCFrame.UpVector) + FrontPoint
 	local RCF = CFrame.lookAt(Vector3.zero, FrontPoint - RearPoint, RearCFrame.UpVector) + RearPoint
 	local CF = FCF:Lerp(RCF, 0.5) * self.InverseOffset

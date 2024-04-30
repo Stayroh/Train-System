@@ -9,7 +9,7 @@ local DeadReckoning = require(game.ReplicatedStorage.src.TrainSystem.DeadReckoni
 local Train = {}
 Train.__index = Train
 
-function Train:Update(Position: Types.TrainPosType)
+function Train:Update(Position: Types.TrainPosType, DeltaTime: number)
 	self.Position = Position
 	local ProjectionLength = 0
 	local StartHeight = 0
@@ -29,7 +29,7 @@ function Train:Update(Position: Types.TrainPosType)
 		local WasDouble = false
 		if i == 1 then
 			local WorldCFrame = NetNav:GetCFrame(Position)
-			Car.frontBogie:SetCFrame(WorldCFrame)
+			Car.frontBogie:SetCFrame(WorldCFrame, DeltaTime)
 			Car.frontBogie.Position = Position
 			CalcNewProjectionDistance(WorldCFrame.Position)
 			StartHeight = WorldCFrame.Position.Y
@@ -49,7 +49,7 @@ function Train:Update(Position: Types.TrainPosType)
 			local RadiusIntersectionPos =
 				NetNav:PositionInRadiusBackwards(AlternatePos, GlobalPos, Radius, AlternateRadius, self.TrainId)
 			local WorldCFrame = NetNav:GetCFrame(RadiusIntersectionPos)
-			Car.frontBogie:SetCFrame(WorldCFrame)
+			Car.frontBogie:SetCFrame(WorldCFrame, DeltaTime)
 			Car.frontBogie.Position = RadiusIntersectionPos
 			CalcNewProjectionDistance(WorldCFrame.Position)
 		end
@@ -59,7 +59,7 @@ function Train:Update(Position: Types.TrainPosType)
 		)
 		local RearPosition = NetNav:PositionInRadiusBackwards(Car.frontBogie.Position, nil, nil, Radius, self.TrainId)
 		local WorldCFrame = NetNav:GetCFrame(RearPosition)
-		Car.rearBogie:SetCFrame(WorldCFrame)
+		Car.rearBogie:SetCFrame(WorldCFrame, DeltaTime)
 		Car.rearBogie.Position = RearPosition
 		CalcNewProjectionDistance(WorldCFrame.Position)
 		if i == #self.Cars then
@@ -79,7 +79,7 @@ function Train:Step(DeltaTime: number, Acceleration: number)
 	if NewPosition == self.Position then
 		return
 	end
-	self:Update(NewPosition)
+	self:Update(NewPosition, DeltaTime)
 end
 
 --[[

@@ -4,32 +4,46 @@ local Bogies: Types.BogiesDataListType = {}
 
 Bogies.FreightFront = {
 	frontPivot = Vector3.new(0, 5.5, 3),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 Bogies.FreightRear = {
 	frontPivot = Vector3.new(0, 5.5, 4.5),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 Bogies.ClassicCarriageBogie = {
 	frontPivot = Vector3.new(0, 4.75, 0),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 Bogies.LocomotiveJB = {
 	frontPivot = Vector3.new(0, 3.75, 0),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 Bogies.TestAlpha = {
 	frontPivot = Vector3.new(0, 3.5, -2),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 Bogies.TestBeta = {
 	frontPivot = Vector3.new(0, 3.5, -6),
 	rearPivot = Vector3.new(0, 3.5, 4),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 Bogies.TestGamma = {
 	frontPivot = Vector3.new(0, 3.5, -4),
 	rearPivot = Vector3.new(0, 3.5, 4),
+	Stiffness = 4,
+	Damping = 5,
 }
 
 return Bogies
