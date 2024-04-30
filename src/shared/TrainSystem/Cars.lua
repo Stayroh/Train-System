@@ -20,6 +20,15 @@ Cars.ClassicCarriage = {
 	rearReversed = true,
 }
 
+Cars.SovietCarriage = {
+	Front = Vector3.new(0, -0.687, -28.258),
+	Rear = Vector3.new(0, -0.687, 28.258),
+	frontBogie = "SovietCarriageB",
+	rearBogie = "SovietCarriageB",
+	frontReversed = false,
+	rearReversed = true,
+}
+
 Cars.LocomotiveJB = {
 	Front = Vector3.new(0, 3.75, -22.714),
 	Rear = Vector3.new(0, 3.75, 22.714),

@@ -11,10 +11,10 @@ local Pos = require(game.ReplicatedStorage.src.TrainSystem.NetPosition).new(1, 2
 local Bogies = {}
 local Cars = {}
 
-local function InsertCar(Car, FrontBogie,RearBogie, Series,Reversed)
+local function InsertCar(Car, FrontBogie, RearBogie, Series, Reversed)
 	local CarClone = Car:Clone()
 	CarClone.Parent = T
-	Cars[#Cars + 1] = { Series = Series, Reference = CarClone, Reversed = Reversed}
+	Cars[#Cars + 1] = { Series = Series, Reference = CarClone, Reversed = Reversed }
 	local frontBogieClone = FrontBogie:Clone()
 	frontBogieClone.Parent = T
 	Bogies[#Bogies + 1] = frontBogieClone
@@ -23,19 +23,17 @@ local function InsertCar(Car, FrontBogie,RearBogie, Series,Reversed)
 	Bogies[#Bogies + 1] = rearBogieClone
 end
 
-InsertCar(Assets.FreightTrain,Assets.FreightTrainFront,Assets.FreightTrainRear, "FreightTrain")
+InsertCar(Assets.FreightTrain, Assets.FreightTrainFront, Assets.FreightTrainRear, "FreightTrain")
 local CamPart = Instance.new("Part")
 CamPart.Anchored = true
 CamPart.CanCollide = false
 CamPart.Transparency = 1
 local CarCF = Cars[1].Reference.PrimaryPart.CFrame
-CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0,10,0)))
+CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0, 10, 0)))
 CamPart.Parent = Cars[1].Reference
 
-
-
-for i = 1,4 do
-	InsertCar(Assets.ClassicCarriage,Assets.ClassicCarriageBogie,Assets.ClassicCarriageBogie,"ClassicCarriage")
+for i = 1, 4 do
+	InsertCar(Assets.SovietCarriage, Assets.SovietCarriageB, Assets.SovietCarriageB, "SovietCarriage")
 end
 
 local Description = {
@@ -44,12 +42,12 @@ local Description = {
 	Id = 1,
 }
 local function PrintTable(T)
-	for i,v in pairs(T) do
+	for i, v in pairs(T) do
 		if type(v) == "table" then
 			print(i)
 			PrintTable(v)
 		else
-			print(i,v)
+			print(i, v)
 		end
 	end
 end
