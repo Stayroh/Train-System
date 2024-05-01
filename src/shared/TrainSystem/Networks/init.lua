@@ -3,7 +3,7 @@ local NetworkInit = {}
 local Types = require(TrainSystem.Types)
 
 local Selection = {
-	[1] = script.CurveTest,
+	[1] = script.DesertTrack,
 }
 
 local Networks = {}

@@ -109,7 +109,7 @@ function NetNav:StepDistance(Position: Types.TrainPosType, Distance: number, Tra
 end
 
 function NetNav:GetArcLength(From: number, To: number, NetworkId: number)
-	if From == "nil" or To == "nil" then
+	if From == "nil" or To == "nil" or From == nil or To == nil then
 		return 1
 	end
 	local N1 = Networks:GetNode(From, NetworkId)

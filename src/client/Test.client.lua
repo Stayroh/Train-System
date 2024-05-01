@@ -23,17 +23,27 @@ local function InsertCar(Car, FrontBogie, RearBogie, Series, Reversed)
 	Bogies[#Bogies + 1] = rearBogieClone
 end
 
-InsertCar(Assets.FreightTrain, Assets.FreightTrainFront, Assets.FreightTrainRear, "FreightTrain")
+InsertCar(
+	Assets.SovietCarriage.SovietCarriage,
+	Assets.SovietCarriage.SovietCarriageB,
+	Assets.SovietCarriage.SovietCarriageB,
+	"SovietCarriage"
+)
 local CamPart = Instance.new("Part")
 CamPart.Anchored = true
 CamPart.CanCollide = false
 CamPart.Transparency = 1
-local CarCF = Cars[1].Reference.PrimaryPart.CFrame
-CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0, 10, 0)))
-CamPart.Parent = Cars[1].Reference
+local CarCF = Bogies[2].PrimaryPart.CFrame
+CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0, 0, 0)))
+CamPart.Parent = Bogies[2]
 
 for i = 1, 4 do
-	InsertCar(Assets.SovietCarriage, Assets.SovietCarriageB, Assets.SovietCarriageB, "SovietCarriage")
+	InsertCar(
+		Assets.SovietCarriage.SovietCarriage,
+		Assets.SovietCarriage.SovietCarriageB,
+		Assets.SovietCarriage.SovietCarriageB,
+		"SovietCarriage"
+	)
 end
 
 local Description = {

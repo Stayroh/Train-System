@@ -19,12 +19,12 @@ end
 
 function Bogie:GetSpringPivot(IsFront: boolean): Vector3?
 	if IsFront then
-		return self.frontPivot + Vector3.new(0, 1, 0) * self.SpringDelta
+		return self.frontPivot + Vector3.new(0, 1, 0) * (self.SpringDelta + self.SpringOffset)
 	else
 		if not self.rearPivot then
 			return
 		end
-		return self.rearPivot + Vector3.new(0, 1, 0) * self.SpringDelta
+		return self.rearPivot + Vector3.new(0, 1, 0) * (self.SpringDelta + self.SpringOffset)
 	end
 end
 
@@ -47,6 +47,7 @@ function Bogie:UpdatePhysics(DeltaTime)
 		self.SpringPivot = self.CFrame.UpVector * self.SpringDelta + self.CFrame.Position
 	end
 	local DeltaHeight = self.CFrame.UpVector:Dot(self.SpringPivot - self.CFrame.Position)
+	DeltaHeight += (math.random() - 0.5) * DeltaTime
 	if DeltaHeight > 10 or DeltaHeight < -10 then
 		self.SpringVelocity = 0
 		DeltaHeight = math.clamp(DeltaHeight, -10, 10)
@@ -74,6 +75,7 @@ function Cons.new(Series: number, Reference: Model, IsReversed: boolean?)
 	self.Damping = Bogies[Series].Damping
 	self.SpringVelocity = 0
 	self.SpringDelta = 0
+	self.SpringOffset = Bogies[Series].SpringOffset
 	assert(FrontPivot, "Bogie does at least to have a front pivot")
 	if RearPivot then
 		self.frontPivot = IsReversed and MirrorZ(RearPivot) or FrontPivot
