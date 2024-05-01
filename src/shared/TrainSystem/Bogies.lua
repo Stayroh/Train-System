@@ -56,8 +56,9 @@ Bogies.TestGamma = {
 Bogies.SovietCarriageB = {
 	frontPivot = Vector3.new(0, 3.668, 0),
 	Stiffness = 5,
-	Damping = 10,
+	Damping = 6,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 return Bogies

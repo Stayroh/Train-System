@@ -3,7 +3,7 @@ local Module = {}
 Module[1] = {
 	Position = Vector3.new(0, 0, -500),
 	Tangent = Vector3.new(1, 0, 0),
-	ZRotation = math.rad(-6),
+	ZRotation = math.rad(-30),
 	Pre = nil,
 	Fol = 2,
 }
@@ -11,7 +11,7 @@ Module[1] = {
 Module[2] = {
 	Position = Vector3.new(500, 0, 0),
 	Tangent = Vector3.new(0, 0, 1),
-	ZRotation = math.rad(-6),
+	ZRotation = math.rad(-30),
 	Pre = 1,
 	Fol = 3,
 }

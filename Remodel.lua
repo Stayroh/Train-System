@@ -1,6 +1,6 @@
 local Args = table.pack(select(1, ...))
---local EnvironmentPlace = remodel.readPlaceAsset("13782599031")
-local AssetPlace = remodel.readPlaceAsset("5082085264")
+
+local AssetPlace = remodel.readPlaceAsset("14743863242")
 
 local DefaultSettings = true
 local InduvidualSettings = {
@@ -85,25 +85,25 @@ local function UnnistFolder(Folder)
 	end
 	return Children
 end
---[[
+
 --Lighting
 if CheckSetting("lighting") then
-	local Lighting = EnvironmentPlace:GetService("Lighting")
+	local Lighting = AssetPlace:GetService("Lighting")
 	remodel.writeModelFile("assets/Lighting.rbxm", Lighting)
 end
 
 --Terrain
 if CheckSetting("terrain") then
-	local Terrain = EnvironmentPlace:GetService("Workspace").Terrain
+	local Terrain = AssetPlace:GetService("Workspace").Terrain
 	remodel.writeModelFile("assets/Terrain.rbxm", Terrain)
 end
-]]
+
 --Map
 if CheckSetting("map") then
 	local Dir = "assets/Map"
 	remodel.removeDir(Dir)
 	remodel.createDirAll(Dir)
-	local Map = EnvironmentPlace:GetService("Workspace").Map
+	local Map = AssetPlace:GetService("Workspace").Map
 	FillDir(Map, Dir)
 end
 

@@ -30,6 +30,12 @@
       }
     },
 
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": true
+      }
+    },
+
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "src": {
@@ -44,6 +50,9 @@
       },
       "$properties": {
         "FilteringEnabled": true
+      },
+      "Map": {
+        "$path": "assets/Map"
       }
     },
     "Lighting": {
