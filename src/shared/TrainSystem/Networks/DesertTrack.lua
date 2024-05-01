@@ -58,7 +58,7 @@ Module[8] = {
 	Tangent = Vector3.new(0, 0, -1),
 	ZRotation = math.rad(-6),
 	Pre = 7,
-	Fol = 9,
+	Fol = nil,
 }
 
 return Module

@@ -109,13 +109,13 @@ function Constructors.fromDescription(Description: Types.TrainDescription, Posit
 		if self.Cars[i - 1] and self.Cars[i - 1].rearBogie:GetPivot(false) then
 			frontBogie = self.Cars[i - 1].rearBogie
 		else
-			frontBogie = BogieClass.new(FrontBogieSeries, Description.Bogies[requiredBogies], FrontReversed)
+			frontBogie = BogieClass.new(FrontBogieSeries, Description.Bogies[requiredBogies], self, FrontReversed)
 			requiredBogies += 1
 		end
-		rearBogie = BogieClass.new(RearBogieSeries, Description.Bogies[requiredBogies], RearReversed)
+		rearBogie = BogieClass.new(RearBogieSeries, Description.Bogies[requiredBogies], self, RearReversed)
 		requiredBogies += 1
 
-		local Car = CarClass.fromDescription(CarDescription, frontBogie, rearBogie, IsReversed)
+		local Car = CarClass.fromDescription(CarDescription, frontBogie, rearBogie, self, IsReversed)
 		self.Cars[i] = Car
 	end
 	self.Position = Position

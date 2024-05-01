@@ -47,7 +47,7 @@ function Bogie:UpdatePhysics(DeltaTime)
 		self.SpringPivot = self.CFrame.UpVector * self.SpringDelta + self.CFrame.Position
 	end
 	local DeltaHeight = self.CFrame.UpVector:Dot(self.SpringPivot - self.CFrame.Position)
-	DeltaHeight += (math.random() - 0.5) * DeltaTime
+	DeltaHeight += (math.random() - 0.5) * DeltaTime * self.Train.Velocity / 100 --(1 - (1 / (1 + (self.Train.Velocity / 20))))
 	if DeltaHeight > 10 or DeltaHeight < -10 then
 		self.SpringVelocity = 0
 		DeltaHeight = math.clamp(DeltaHeight, -10, 10)
@@ -64,9 +64,10 @@ function Bogie:UpdatePhysics(DeltaTime)
 end
 
 local Cons = {}
-function Cons.new(Series: number, Reference: Model, IsReversed: boolean?)
+function Cons.new(Series: number, Reference: Model, Train, IsReversed: boolean?)
 	local self = setmetatable({}, Bogie)
 	IsReversed = IsReversed or false
+	self.Train = Train
 	self.Reversed = IsReversed
 	assert(Bogies[Series], Series .. " was not found in the list of train bogies!")
 	local FrontPivot = Bogies[Series].frontPivot

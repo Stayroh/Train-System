@@ -24,9 +24,10 @@ end
 
 local Cons = {}
 
-function Cons.fromDescription(Description: Types.CarDescription, frontBogie, rearBogie, IsReversed: boolean?)
+function Cons.fromDescription(Description: Types.CarDescription, frontBogie, rearBogie, Train, IsReversed: boolean?)
 	IsReversed = IsReversed or false
 	local self = setmetatable({}, Car)
+	self.Train = Train
 	self.Reversed = IsReversed
 	self.frontBogie = frontBogie
 	self.rearBogie = rearBogie

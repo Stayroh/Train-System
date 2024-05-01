@@ -21,8 +21,8 @@ Cars.ClassicCarriage = {
 }
 
 Cars.SovietCarriage = {
-	Front = Vector3.new(0, -0.687, -28.258),
-	Rear = Vector3.new(0, -0.687, 28.258),
+	Front = Vector3.new(0, -0.687, -27.592),
+	Rear = Vector3.new(0, -0.687, 27.592),
 	frontBogie = "SovietCarriageB",
 	rearBogie = "SovietCarriageB",
 	frontReversed = false,
