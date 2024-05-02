@@ -5,3 +5,4 @@ Packages/
 /*.rbxlx.lock
 /*.rbxl.lock
 /*.rbxl
+deploy.sh
