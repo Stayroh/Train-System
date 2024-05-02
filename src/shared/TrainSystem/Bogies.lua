@@ -7,6 +7,7 @@ Bogies.FreightFront = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.FreightRear = {
@@ -14,6 +15,7 @@ Bogies.FreightRear = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.ClassicCarriageBogie = {
@@ -21,6 +23,7 @@ Bogies.ClassicCarriageBogie = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.LocomotiveJB = {
@@ -28,6 +31,7 @@ Bogies.LocomotiveJB = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.TestAlpha = {
@@ -35,6 +39,7 @@ Bogies.TestAlpha = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.TestBeta = {
@@ -43,6 +48,7 @@ Bogies.TestBeta = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.TestGamma = {
@@ -51,12 +57,13 @@ Bogies.TestGamma = {
 	Stiffness = 5,
 	Damping = 10,
 	SpringOffset = 0.5,
+	WheelCircumference = 1.5,
 }
 
 Bogies.SovietCarriageB = {
 	frontPivot = Vector3.new(0, 3.668, 0),
 	Stiffness = 5,
-	Damping = 6,
+	Damping = 10,
 	SpringOffset = 0.5,
 	WheelCircumference = 1.5,
 }

@@ -33,9 +33,9 @@ local CamPart = Instance.new("Part")
 CamPart.Anchored = true
 CamPart.CanCollide = false
 CamPart.Transparency = 1
-local CarCF = Bogies[2].PrimaryPart.CFrame
-CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0, 0, 0)))
-CamPart.Parent = Bogies[2]
+local CarCF = Bogies[1].PrimaryPart.CFrame
+CamPart.CFrame = CarCF:ToWorldSpace(CFrame.new(Vector3.new(0, 5, 0)))
+CamPart.Parent = Bogies[1]
 
 for i = 1, 4 do
 	InsertCar(

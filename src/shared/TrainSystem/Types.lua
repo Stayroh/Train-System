@@ -59,6 +59,10 @@ export type CarsDataListType = { [string]: CarsDataType }
 export type BogiesDataType = {
 	frontPivot: Vector3,
 	rearPivot: Vector3?,
+	Stiffness: number,
+	Damping: number,
+	SpringOffset: number,
+	WheelCircumference: number,
 }
 
 export type BogiesDataListType = { [string]: BogiesDataType }
