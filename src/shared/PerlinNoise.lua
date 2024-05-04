@@ -74,22 +74,26 @@ function PerlinNoise:OctavePerlin(input: Vector2, octaves: number, roughness: nu
 	local total = 0
 	local maxValue = 0
 	local global_gradient = Vector2.new(0, 0)
+	local col = Vector2.zero
 	for i = 1, octaves do
 		local influence = math.pow(roughness, i - 1)
 		local frequency = math.pow(lacunarity, i - 1)
 		local value, gradient = self:Compute(input * frequency)
 		if value < 0 then
 			value = -value
-			gradient = -gradient
 		end
 		local local_gradient = global_gradient + gradient
-		local slope = 1 / (1 + local_gradient.Magnitude * 1)
+
+		local slope = 1 / (1 + local_gradient.Magnitude * 2)
+		if i == 1 then
+			col = Vector2.one * slope
+		end
 		value = value * slope * influence
-		global_gradient = global_gradient + gradient * influence
+		global_gradient = global_gradient + gradient * influence * slope
 		total = total + value
 		maxValue = maxValue + influence
 	end
-	return total / maxValue, Color3.new(global_gradient.X / 2 + 0.5, 0, global_gradient.Y / 2 + 0.5)
+	return total / maxValue, col
 end
 
 return PerlinNoise
