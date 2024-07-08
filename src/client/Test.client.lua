@@ -1,3 +1,7 @@
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
 local Knit = require(game.ReplicatedStorage.Packages.knit)
 Knit.OnStart():await()
 local TrainController = Knit.GetController("TrainController")
@@ -63,11 +67,11 @@ local function PrintTable(T)
 end
 PrintTable(Description)
 TrainController:CreateTrain(Description, Pos)
-TrainController.Trains[1].Velocity = 2
-print("EEEE")
+TrainController.Trains[1].Velocity = 0
 local Event = Instance.new("BindableEvent", game.ReplicatedStorage)
 Event.Event:Connect(function(Velocity)
-	TrainController.Trains[1].Velocity = Velocity
+	TrainController.Trains[1].Cars[1].frontBogie.SpringVelocity = Velocity
+	--TrainController.Trains[1].Velocity = Velocity
 end)
 
 wait(2)

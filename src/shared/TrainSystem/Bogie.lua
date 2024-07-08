@@ -48,11 +48,13 @@ function Bogie:UpdatePhysics(DeltaTime)
 	end
 	local DeltaHeight = self.CFrame.UpVector:Dot(self.SpringPivot - self.CFrame.Position)
 	DeltaHeight += (math.random() - 0.5) * DeltaTime * self.Train.Velocity / 20 --(1 - (1 / (1 + (self.Train.Velocity / 20))))
+
 	if DeltaHeight > 10 or DeltaHeight < -10 then
 		self.SpringVelocity = 0
 		DeltaHeight = math.clamp(DeltaHeight, -10, 10)
 		return
 	end
+
 	local SpringAcceleration = -DeltaHeight * self.Stiffness
 	local DampingAcceleration = -self.SpringVelocity * self.Damping
 	local GravityAcceleration = -4 * Vector3.new(0, 1, 0):Dot(self.CFrame.UpVector)

@@ -6,3 +6,4 @@ Packages/
 /*.rbxl.lock
 /*.rbxl
 deploy.sh
+sourcemap.json

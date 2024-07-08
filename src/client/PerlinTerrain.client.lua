@@ -1,5 +1,5 @@
 --Instructions for Copilot: This script generates a 3D terrain using Robloxs built in terrain system. The terrain is generated using Perlin noise, which is a type of gradient noise used for procedural texture generation. The script creates a 1000x1000 grid of parts, where the height of each part is determined by the Perlin noise value at that point. The color of each part is determined by the gradient of the Perlin noise, creating a realistic looking terrain. The script uses the OctavePerlin function from the PerlinNoise module to generate the Perlin noise values. The script then creates a part for each point in the grid, setting the size and position of the part based on the Perlin noise value. The color of the part is set based on the gradient of the Perlin noise, creating a realistic looking terrain. The script then adds the part to a model in the workspace, creating a 3D terrain that can be explored in Roblox.
-
+--[[
 local PerlinNoise = require(game.ReplicatedStorage.src.PerlinNoise)
 
 if not game:IsLoaded() then
@@ -31,3 +31,4 @@ for x = 0, Resolution.X - 1 do
 	end
 	count += 1
 end
+]]
