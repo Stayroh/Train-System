@@ -1,12 +1,8 @@
 {
     "[lua]": {
-        "editor.defaultFormatter": "JohnnyMorganz.stylua",
-        "editor.formatOnSave": true
+        "editor.defaultFormatter": "JohnnyMorganz.luau-lsp",
+        "editor.formatOnSave": true,
     },
-    "robloxLsp.diagnostics.globals": [
-        "ma"
-    ],
-    "robloxLsp.completion.callParenthesess": true,
-    "robloxLsp.typeChecking.mode": "Non Strict",
-    "stylua.targetReleaseVersion": "latest"
+    "stylua.targetReleaseVersion": "latest",
+    "editor.formatOnSave": true 
 }
