@@ -62,14 +62,19 @@ function Spline:stepDistance(t: number, distance: number, substeps: number): (nu
 	if distance == 0 or substeps == 0 then
 		return t, false
 	end
+	distance = distance / substeps
 	for i = 1, substeps do
 		local speed = self:computeTangent(t).Magnitude
-		local deltaT = distance / speed / substeps
+		local deltaT = distance / speed
 		t += deltaT
 		if t >= 1 then
-			return t - 1, true
+			local limitedT = 1 - t + deltaT
+			local coveredDistance = (i - 1) * distance + limitedT * speed
+			return distance - coveredDistance, true
 		elseif t < 0 then
-			return t, true
+			local limitedT = -t + deltaT
+			local coveredDistance = (i - 1) * distance + limitedT * speed
+			return distance - coveredDistance, true
 		end
 	end
 	return t, false

@@ -18,7 +18,7 @@ function DrawSpline(Spline: Spline.Spline, Resolution: number, Color: Color3): n
 		local Part = Instance.new("Part")
 		Part.Shape = Enum.PartType.Ball
 		Part.Size = Vector3.new(0.25, 0.25, 0.25)
-		Part.Color = Color
+		Part.Color = Color:Lerp(Color3.fromRGB(0, 0, 0), (1 - t))
 		Part.Anchored = true
 		Part.Position = Point
 		Part.Parent = Folder
@@ -86,30 +86,30 @@ function DrawCurvatureSpline(Spline: Spline.Spline, Resolution: number, Color: C
 	return
 end
 
-local CurrentPosition = Vector3.new(0, 0, 0)
-local CurrentTangent = Vector3.new(10, 0, 0)
-local Positions = {
-	Vector3.new(10, 10, 0),
-	Vector3.new(0, 20, 0),
-	Vector3.new(-10, 10, 0),
-	Vector3.new(0, 0, 0),
-}
-local Tangents = {
-	Vector3.new(0, 10, 0),
-	Vector3.new(-10, 0, 0),
-	Vector3.new(0, -10, 0),
-	Vector3.new(10, 0, 0),
-}
+local mySpline = Spline.new(Vector3.new(0, 5, 0), Vector3.new(0, 5, 100), Vector3.new(0, 0, 5), Vector3.new(0, 0, 5))
 
-local TangentScale = 5.52284749831
+DrawSpline(mySpline, 100, Color3.fromRGB(255, 0, 0))
 
-for i = 1, 4 do
-	local SplineInstance =
-		Spline.new(CurrentPosition, Positions[i], CurrentTangent.Unit * TangentScale, Tangents[i].Unit * TangentScale)
-	DrawSpline(SplineInstance, 100, Color3.new(math.random(), math.random(), math.random()))
-	--_DrawTangentSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
-	--_DrawAccelerationSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
-	DrawCurvatureSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
-	CurrentPosition = Positions[i]
-	CurrentTangent = Tangents[i]
+wait(10)
+
+local Part = Instance.new("Part")
+Part.Size = Vector3.new(1, 0.5, 2)
+Part.Anchored = true
+Part.Parent = workspace
+
+local t = 0
+local lastPosition
+while t <= 1 do
+	local Position = mySpline:computePoint(t)
+	local Tangent = mySpline:computeTangent(t)
+	Part.CFrame = CFrame.lookAt(Position, Position + Tangent)
+	local deltaT = game:GetService("RunService").Heartbeat:Wait()
+	t = mySpline:stepDistance(t, deltaT * 10, 5)
+	if lastPosition then
+		local distance = (Position - lastPosition).Magnitude
+		print(distance / deltaT)
+		lastPosition = Position
+	else
+		lastPosition = Position
+	end
 end
