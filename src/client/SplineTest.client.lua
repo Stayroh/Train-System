@@ -86,30 +86,48 @@ function DrawCurvatureSpline(Spline: Spline.Spline, Resolution: number, Color: C
 	return
 end
 
-local mySpline = Spline.new(Vector3.new(0, 5, 0), Vector3.new(0, 5, 100), Vector3.new(0, 0, 5), Vector3.new(0, 0, 5))
+local spline1 =
+	Spline.new(Vector3.new(0, 10, 0), Vector3.new(20, 35, 100), Vector3.new(100, 0, 0), Vector3.new(50, 40, -20))
+local spline2 = Spline.new(spline1.EndPosition, spline1.StartPosition, spline1.EndTangent, spline1.StartTangent)
 
-DrawSpline(mySpline, 100, Color3.fromRGB(255, 0, 0))
+DrawSpline(spline1, 100, Color3.fromRGB(255, 0, 0))
+DrawSpline(spline2, 100, Color3.fromRGB(0, 255, 0))
 
-wait(10)
+wait(2)
+
+local subsamplingSteps = 4
 
 local Part = Instance.new("Part")
 Part.Size = Vector3.new(1, 0.5, 2)
+
 Part.Anchored = true
 Part.Parent = workspace
 
 local t = 0
-local lastPosition
-while t <= 1 do
-	local Position = mySpline:computePoint(t)
-	local Tangent = mySpline:computeTangent(t)
-	Part.CFrame = CFrame.lookAt(Position, Position + Tangent)
-	local deltaT = game:GetService("RunService").Heartbeat:Wait()
-	t = mySpline:stepDistance(t, deltaT * 10, 5)
-	if lastPosition then
-		local distance = (Position - lastPosition).Magnitude
-		print(distance / deltaT)
-		lastPosition = Position
-	else
-		lastPosition = Position
+local currentSpline = spline1
+local speed = 40
+
+workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+
+game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+	local slope = currentSpline:computeTangent(t).Unit:Dot(Vector3.new(0, 1, 0))
+	local acceleration = -20 * slope
+	local stepDistance = speed * deltaTime + 0.5 * acceleration * deltaTime ^ 2
+	speed += acceleration * deltaTime
+	local newT, didCross = currentSpline:stepDistance(t, stepDistance, subsamplingSteps)
+	while didCross do
+		if stepDistance > 0 then
+			t = 0
+		else
+			t = 1
+		end
+		currentSpline = currentSpline == spline1 and spline2 or spline1
+		stepDistance = newT
+		newT, didCross = currentSpline:stepDistance(t, stepDistance, subsamplingSteps)
 	end
-end
+	t = newT
+	local position = currentSpline:computePoint(t)
+	local CF = CFrame.lookAt(position, position + currentSpline:computeTangent(t))
+	Part.CFrame = CF
+	workspace.CurrentCamera.CFrame = CF
+end)
