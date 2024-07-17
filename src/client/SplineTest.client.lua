@@ -1,19 +1,20 @@
+--!strict
 local Spline = require(game.ReplicatedStorage.src.Spline)
 
-function Curvature(Spline: Spline.self, t: number): number
-	local Tangent = Spline:ComputeTangent(t)
-	local Acceleration = Spline:ComputeAcceleration(t)
+function getCurvature(Spline: Spline.Spline, t: number): number
+	local Tangent = Spline:computeTangent(t)
+	local Acceleration = Spline:computeAcceleration(t)
 	local Cross = Tangent:Cross(Acceleration)
 	return Cross.Magnitude / Tangent.Magnitude ^ 3
 end
 
-function DrawSpline(Spline: Spline.self, Resolution: number, Color: Color3): nil
+function DrawSpline(Spline: Spline.Spline, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
 	for i = 0, Resolution do
 		local t = i / Resolution
-		local Point = Spline:Compute(t)
+		local Point = Spline:computePoint(t)
 		local Part = Instance.new("Part")
 		Part.Shape = Enum.PartType.Ball
 		Part.Size = Vector3.new(0.25, 0.25, 0.25)
@@ -25,14 +26,14 @@ function DrawSpline(Spline: Spline.self, Resolution: number, Color: Color3): nil
 	return
 end
 
-function DrawTangentSpline(Spline: Spline.self, Resolution: number, Color: Color3): nil
+function _DrawTangentSpline(Spline: Spline.Spline, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
 	for i = 0, Resolution do
 		local t = i / Resolution
-		local Position = Spline:Compute(t)
-		local Tangent = Spline:ComputeTangent(t)
+		local Position = Spline:computePoint(t)
+		local Tangent = Spline:computeTangent(t)
 		local Part = Instance.new("Part")
 		Part.Size = Vector3.new(0.1, 0.1, Tangent.Magnitude)
 		Part.Color = Color
@@ -44,14 +45,14 @@ function DrawTangentSpline(Spline: Spline.self, Resolution: number, Color: Color
 	return
 end
 
-function DrawAccelerationSpline(Spline: Spline.self, Resolution: number, Color: Color3): nil
+function _DrawAccelerationSpline(Spline: Spline.Spline, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
 	for i = 0, Resolution do
 		local t = i / Resolution
-		local Position = Spline:Compute(t)
-		local Tangent = Spline:ComputeAcceleration(t)
+		local Position = Spline:computePoint(t)
+		local Tangent = Spline:computeAcceleration(t)
 		local Part = Instance.new("Part")
 		Part.Size = Vector3.new(0.1, 0.1, Tangent.Magnitude)
 		Part.Color = Color
@@ -63,15 +64,15 @@ function DrawAccelerationSpline(Spline: Spline.self, Resolution: number, Color: 
 	return
 end
 
-function DrawCurvatureSpline(Spline: Spline.self, Resolution: number, Color: Color3): nil
+function DrawCurvatureSpline(Spline: Spline.Spline, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
 	for i = 0, Resolution do
 		local t = i / Resolution
-		local Position = Spline:Compute(t)
-		local Curvature = Curvature(Spline, t) * 10
-		local Tangent = Spline:ComputeTangent(t)
+		local Position = Spline:computePoint(t)
+		local Curvature = getCurvature(Spline, t) * 10
+		local Tangent = Spline:computeAcceleration(t)
 		local Part = Instance.new("Part")
 		Part.Size = Vector3.new(0.1, 0.1, Curvature)
 		Part.Color = Color
@@ -106,8 +107,8 @@ for i = 1, 4 do
 	local SplineInstance =
 		Spline.new(CurrentPosition, Positions[i], CurrentTangent.Unit * TangentScale, Tangents[i].Unit * TangentScale)
 	DrawSpline(SplineInstance, 100, Color3.new(math.random(), math.random(), math.random()))
-	--DrawTangentSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
-	--DrawAccelerationSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
+	--_DrawTangentSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
+	--_DrawAccelerationSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
 	DrawCurvatureSpline(SplineInstance, 10, Color3.new(math.random(), math.random(), math.random()))
 	CurrentPosition = Positions[i]
 	CurrentTangent = Tangents[i]
