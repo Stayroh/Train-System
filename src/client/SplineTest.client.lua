@@ -1,5 +1,6 @@
 --!strict
 local Spline = require(game.ReplicatedStorage.src.Spline)
+local bSplineConversion = require(game.ReplicatedStorage.src.bSplineConversion)
 
 function getCurvature(Spline: Spline.Spline, t: number): number
 	local Tangent = Spline:computeTangent(t)
@@ -86,6 +87,27 @@ function DrawCurvatureSpline(Spline: Spline.Spline, Resolution: number, Color: C
 	return
 end
 
+local knotsFolder = workspace.knots
+local knots = {}
+do
+	local i = 1
+	while knotsFolder:FindFirstChild(tostring(i)) do
+		knots[i] = knotsFolder[tostring(i)].Position
+		i += 1
+	end
+end
+
+for i, v in pairs(knots) do
+	print(i, v)
+end
+
+local splines = bSplineConversion.bsplineToBezier(knots)
+
+for i, spline in pairs(splines) do
+	DrawSpline(spline, 100, Color3.fromRGB(255, 0, 0))
+end
+
+--[[
 local spline1 =
 	Spline.new(Vector3.new(0, 10, 0), Vector3.new(20, 35, 100), Vector3.new(100, 0, 0), Vector3.new(50, 40, -20))
 local spline2 = Spline.new(spline1.EndPosition, spline1.StartPosition, spline1.EndTangent, spline1.StartTangent)
@@ -131,3 +153,4 @@ game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
 	Part.CFrame = CF
 	workspace.CurrentCamera.CFrame = CF
 end)
+]]
