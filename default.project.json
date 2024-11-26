@@ -2,7 +2,6 @@
   "name": "Train-System",
   "tree": {
     "$className": "DataModel",
-
     "ReplicatedStorage": {
       "assets": {
         "$className": "Folder",
@@ -17,25 +16,21 @@
         "$path": "Packages"
       }
     },
-
     "ServerScriptService": {
       "src": {
         "$path": "./src/server"
       }
     },
-
     "ServerStorage": {
       "src": {
         "$path": "./src/storage"
       }
     },
-
     "Players": {
       "$properties": {
         "CharacterAutoLoads": true
       }
     },
-
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "src": {
@@ -43,7 +38,6 @@
         }
       }
     },
-
     "Workspace": {
       "Terrain": {
         "$path": "assets/Terrain.rbxm"
@@ -54,9 +48,6 @@
       "Map": {
         "$path": "assets/Map"
       }
-    },
-    "Lighting": {
-      "$path": "assets/Lighting.rbxm"
     },
     "SoundService": {
       "$properties": {
