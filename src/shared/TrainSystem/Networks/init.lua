@@ -4,7 +4,7 @@ local Network: NetworkClass = {} :: NetworkClass
 
 type NetworkClass = {
 	__index: NetworkClass,
-    getNode
+    getNode:(any) -> any
 	fromDescription: (description: { { position: Vector3, tangent: Vector3, roll: number, next: number, previous: number } }) -> Network,
     get:  (id: number) -> Network,
     remove: (id: number) -> nil,
