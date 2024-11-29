@@ -4,56 +4,45 @@ Spline.__index = Spline
 
 type SplineClass = {
 	__index: SplineClass,
-	computePoint: (self: Spline, t: number) -> Vector3,
-	computeTangent: (self: Spline, t: number) -> Vector3,
-	computeAcceleration: (self: Spline, t: number) -> Vector3,
+	getPoint: (self: Spline, t: number) -> Vector3,
+	getTangent: (self: Spline, t: number) -> Vector3,
+	getAcceleration: (self: Spline, t: number) -> Vector3,
 	stepDistance: (self: Spline, t: number, distance: number, substeps: number) -> (number, boolean),
 	new: (StartPosition: Vector3, EndPosition: Vector3, StartTangent: Vector3, EndTangent: Vector3) -> Spline,
 }
 
 export type Spline = typeof(setmetatable(
 	{} :: {
-		StartPosition: Vector3,
-		EndPosition: Vector3,
-		StartTangent: Vector3,
-		EndTangent: Vector3,
+		P0: Vector3,
+		P1: Vector3,
+		P2: Vector3,
+		P3: Vector3,
 	},
 	Spline
 ))
 
-function Spline:computePoint(t: number): Vector3
+function Spline:getPoint(t: number): Vector3
 	local t2 = t * t
 	local t3 = t2 * t
-	local P0 = self.StartPosition
-	local P1 = self.StartPosition + self.StartTangent
-	local P2 = self.EndPosition - self.EndTangent
-	local P3 = self.EndPosition
-	return P0 * (1 - t) ^ 3 + P1 * 3 * t * (1 - t) ^ 2 + P2 * 3 * t2 * (1 - t) + P3 * t3
+	return self.P0 * (1 - t) ^ 3 + self.P1 * 3 * t * (1 - t) ^ 2 + self.P2 * 3 * t2 * (1 - t) + self.P3 * t3
 end
 
-function Spline:computeTangent(t: number): Vector3
+function Spline:getTangent(t: number): Vector3
 	local t2 = t * t
 
-	local P0 = self.StartPosition
-	local P1 = self.StartPosition + self.StartTangent
-	local P2 = self.EndPosition - self.EndTangent
-	local P3 = self.EndPosition
-
-	local tangent = P0 * (-3 * (1 - t) ^ 2)
-		+ P1 * (3 * (1 - t) ^ 2 - 6 * t * (1 - t))
-		+ P2 * (6 * t * (1 - t) - 3 * t2)
-		+ P3 * (3 * t2)
+	local tangent = self.P0 * (-3 * (1 - t) ^ 2)
+		+ self.P1 * (3 * (1 - t) ^ 2 - 6 * t * (1 - t))
+		+ self.P2 * (6 * t * (1 - t) - 3 * t2)
+		+ self.P3 * (3 * t2)
 
 	return tangent
 end
 
-function Spline:computeAcceleration(t: number): Vector3
-	local P0 = self.StartPosition
-	local P1 = self.StartPosition + self.StartTangent
-	local P2 = self.EndPosition - self.EndTangent
-	local P3 = self.EndPosition
-
-	local acceleration = P0 * (6 * (1 - t)) + P1 * (-12 * (1 - t) + 6 * t) + P2 * (12 * (1 - t) - 6 * t) + P3 * (6 * t)
+function Spline:getAcceleration(t: number): Vector3
+	local acceleration = self.P0 * (6 * (1 - t))
+		+ self.P1 * (-12 * (1 - t) + 6 * t)
+		+ self.P2 * (12 * (1 - t) - 6 * t)
+		+ self.P3 * (6 * t)
 
 	return acceleration
 end
@@ -64,7 +53,7 @@ function Spline:stepDistance(t: number, distance: number, substeps: number): (nu
 	end
 	distance = distance / substeps
 	for i = 1, substeps do
-		local speed = self:computeTangent(t).Magnitude
+		local speed = self:getTangent(t).Magnitude
 		local deltaT = distance / speed
 		t += deltaT
 		if t >= 1 then
@@ -80,12 +69,19 @@ function Spline:stepDistance(t: number, distance: number, substeps: number): (nu
 	return t, false
 end
 
-function Spline.new(StartPosition: Vector3, EndPosition: Vector3, StartTangent: Vector3, EndTangent: Vector3): Spline
+function Spline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): Spline
 	local self = setmetatable({}, Spline) :: Spline
-	self.StartPosition = StartPosition
-	self.EndPosition = EndPosition
-	self.StartTangent = StartTangent
-	self.EndTangent = EndTangent
+	self.P0 = P0
+	self.P1 = P1
+	self.P2 = P2
+	self.P3 = P3
+	local matrixForm = {
+		{ 1, 0, 0, 0 },
+		{ -3, 3, 0, 0 },
+		{ 3, -6, 3, 0 },
+		{ -1, 3, -3, 1 },
+	}
+
 	return self
 end
 
