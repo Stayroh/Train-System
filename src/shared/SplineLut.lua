@@ -6,10 +6,10 @@ SplineLut.__index = SplineLut
 function SplineLut:sample(sampleCount: number)
 	local distance = 0
 	local samples = {}
-	local lastPos = self.Spline:computePoint(0)
+	local lastPos = self.Spline:getPoint(0)
 	for i = 1, sampleCount do
 		local t = i / sampleCount
-		local pos = self.Spline:computePoint(t)
+		local pos = self.Spline:getPoint(t)
 		distance += (pos - lastPos).magnitude
 		lastPos = pos
 		table.insert(samples, distance)

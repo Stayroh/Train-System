@@ -1,24 +1,24 @@
 --!strict
 local Matrix = require(game.ReplicatedStorage.src.Matrix)
 
-local Spline: SplineClass = {} :: SplineClass
-Spline.__index = Spline
+local BSpline: BSplineClass = {} :: BSplineClass
+BSpline.__index = BSpline
 
-type SplineClass = {
-	__index: SplineClass,
-	getPoint: (self: Spline, t: number) -> Vector3,
-	getTangent: (self: Spline, t: number) -> Vector3,
-	getAcceleration: (self: Spline, t: number) -> Vector3,
-	stepDistance: (self: Spline, t: number, distance: number, substeps: number) -> (number, boolean),
+type BSplineClass = {
+	__index: BSplineClass,
+	getPoint: (self: BSpline, t: number) -> Vector3,
+	getTangent: (self: BSpline, t: number) -> Vector3,
+	getAcceleration: (self: BSpline, t: number) -> Vector3,
+	stepDistance: (self: BSpline, t: number, distance: number, substeps: number) -> (number, boolean),
 	new: (
 		StartPosition: Vector3,
 		EndPosition: Vector3,
 		StartTangent: Vector3,
 		EndTangent: Vector3
-	) -> Spline,
+	) -> BSpline,
 }
 
-export type Spline = typeof(setmetatable(
+export type BSpline = typeof(setmetatable(
 	{} :: {
 		P0: Vector3,
 		P1: Vector3,
@@ -28,25 +28,25 @@ export type Spline = typeof(setmetatable(
 		dtMatrixFormParameterized: Matrix.Matrix,
 		dt2MatrixFormParameterized: Matrix.Matrix,
 	},
-	Spline
+	BSpline
 ))
 
-function Spline:getPoint(t: number): Vector3
+function BSpline:getPoint(t: number): Vector3
 	local tVector = Matrix.new({ { 1, t, t ^ 2, t ^ 3 } })
 	return (tVector * self.matrixFormParameterized):getAsVector3()
 end
 
-function Spline:getTangent(t: number): Vector3
+function BSpline:getTangent(t: number): Vector3
 	local tVector = Matrix.new({ { 1, t, t ^ 2, t ^ 3 } })
 	return (tVector * self.dtMatrixFormParameterized):getAsVector3()
 end
 
-function Spline:getAcceleration(t: number): Vector3
+function BSpline:getAcceleration(t: number): Vector3
 	local tVector = Matrix.new({ { 1, t, t ^ 2, t ^ 3 } })
 	return (tVector * self.dt2MatrixFormParameterized):getAsVector3()
 end
 
-function Spline:stepDistance(t: number, distance: number, substeps: number): (number, boolean)
+function BSpline:stepDistance(t: number, distance: number, substeps: number): (number, boolean)
 	if distance == 0 or substeps == 0 then
 		return t, false
 	end
@@ -68,32 +68,32 @@ function Spline:stepDistance(t: number, distance: number, substeps: number): (nu
 	return t, false
 end
 
-function Spline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): Spline
-	local self = setmetatable({}, Spline) :: Spline
+function BSpline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): BSpline
+	local self = setmetatable({}, BSpline) :: BSpline
 	self.P0 = P0
 	self.P1 = P1
 	self.P2 = P2
 	self.P3 = P3
 	local pointMatrix = Matrix.new({ P0, P1, P2, P3 })
 	self.matrixFormParameterized = Matrix.new({
-		{ 1, 0, 0, 0 },
-		{ -3, 3, 0, 0 },
+		{ 1, 4, 1, 0 },
+		{ -3, 0, 3, 0 },
 		{ 3, -6, 3, 0 },
 		{ -1, 3, -3, 1 },
-	}) * pointMatrix
+	}) * pointMatrix * (1 / 6)
 	self.dtMatrixFormParameterized = Matrix.new({
-		{ -3, 3, 0, 0 },
+		{ -3, 0, 3, 0 },
 		{ 6, -12, 6, 0 },
 		{ -3, 9, -9, 3 },
 		{ 0, 0, 0, 0 },
-	}) * pointMatrix
+	}) * pointMatrix * (1 / 6)
 	self.dt2MatrixFormParameterized = Matrix.new({
 		{ 6, -12, 6, 0 },
 		{ -6, 18, -18, 6 },
 		{ 0, 0, 0, 0 },
 		{ 0, 0, 0, 0 },
-	}) * pointMatrix
+	}) * pointMatrix * (1 / 6)
 	return self
 end
 
-return Spline
+return BSpline
