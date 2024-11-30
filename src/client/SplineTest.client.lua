@@ -1,4 +1,8 @@
 --!strict
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
 local Spline = require(game.ReplicatedStorage.src.Spline)
 local BSpline = require(game.ReplicatedStorage.src.BSpline)
 local SplineLut = require(game.ReplicatedStorage.src.SplineLut)
@@ -128,9 +132,9 @@ local Lut2 = SplineLut.generate(spline2, 100, 100)
 workspace.Start.Position = spline1.P0
 workspace.End.Position = spline1.P3
 
-local originalRail = workspace.Rail
+local originalRail = workspace.BakedRail
 
-local railSegmentLength = 8
+local railSegmentLength = 9.39116
 
 local railFolder = Instance.new("Folder")
 railFolder.Name = "Rail"
@@ -138,13 +142,11 @@ railFolder.Parent = workspace
 
 --Bone0 Position must be fixed
 
-local excpectedSpeed = 4
-
 local upVector = Vector3.new(0, 1, 0)
 
 local G = 40
 
-function getCFrame(position: Vector3, tangent: Vector3, acceleration: Vector3): CFrame
+function getCFrame(position: Vector3, tangent: Vector3, acceleration: Vector3, excpectedSpeed: number): CFrame
 	local normal = tangent:Cross(upVector).Unit
 	local curvatureVector = tangent:Cross(tangent:Cross(acceleration)) / tangent.Magnitude ^ 3
 	local k = -normal:Dot(curvatureVector)
@@ -159,7 +161,8 @@ function renderRailSegment(spline: Spline.Spline, Lut, t_start: number, t_end: n
 	local startCF = getCFrame(
 		spline:getPoint(correctedStartT),
 		spline:getTangent(correctedStartT),
-		spline:getAcceleration(correctedStartT)
+		spline:getAcceleration(correctedStartT),
+		3
 	)
 	local offset = CFrame.new(0, 0, 4)
 	segment.CFrame = startCF:ToWorldSpace(offset)
@@ -170,7 +173,7 @@ function renderRailSegment(spline: Spline.Spline, Lut, t_start: number, t_end: n
 		local t = t_start * (1 - alpha) + t_end * alpha
 		local correctedT = Lut:getCorrectetT(t)
 		local cf =
-			getCFrame(spline:getPoint(correctedT), spline:getTangent(correctedT), spline:getAcceleration(correctedT))
+			getCFrame(spline:getPoint(correctedT), spline:getTangent(correctedT), spline:getAcceleration(correctedT), 3)
 		bone.CFrame = startCF:ToObjectSpace(cf)
 	end
 	segment.Parent = railFolder
@@ -201,12 +204,15 @@ end
 
 local luts = {}
 
-for i = 1, #knots - 3 do
-	local P0, P1, P2, P3 = knots[i], knots[i + 1], knots[i + 2], knots[i + 3]
+for i = 1, #knots do
+	local P0, P1, P2, P3 =
+		knots[i],
+		knots[i + 1] or knots[i + 1 - #knots],
+		knots[i + 2] or knots[i + 2 - #knots],
+		knots[i + 3] or knots[i + 3 - #knots]
 	local spline = BSpline.new(P0, P1, P2, P3)
 	local Lut = SplineLut.generate(spline, 100, 100)
 	luts[i] = Lut
-	DrawSpline(spline, Lut, 100, Color3.fromRGB(0, 0, 255))
 
 	local segmentCount = math.round(Lut.length / railSegmentLength)
 	local segmentT = 1 / segmentCount
@@ -216,27 +222,60 @@ for i = 1, #knots - 3 do
 	end
 end
 
+task.wait(3)
+
+workspace.Sounds.Minecart:Play()
+workspace.Sounds.Wind:Play()
+
+task.spawn(function()
+	local songs = {
+		workspace.Music.RussianGun,
+		workspace.Music.Accordion,
+		workspace.Music.Moscow,
+		workspace.Music.FolkDance,
+	}
+	local currentSong = 1
+	while true do
+		local song = songs[currentSong]
+		song.TimePosition = 0
+		song:Play()
+		song.Ended:Wait()
+		currentSong = currentSong % #songs + 1
+	end
+end)
+
 workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 
 local currentDistance = 0
 local LutIndex = 1
 local speed = 0
+local power = 40
 
+local averageAcceleration = 0
+local lastSpeed = 0
+
+local totalTime = 0
 game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+	totalTime += deltaTime
 	local Lut = luts[LutIndex]
 	local spline = Lut.Spline
 	local correctedT = Lut:getCorrectetT(currentDistance / Lut.length)
 	local slope = spline:getTangent(correctedT).Unit:Dot(Vector3.new(0, 1, 0))
-	local acceleration = -G * slope
+	local acceleration = -G * slope + ((LutIndex < 2 or LutIndex > #luts - 1) and power or 0)
 	local stepDistance = speed * deltaTime + 0.5 * acceleration * deltaTime ^ 2
 	speed += acceleration * deltaTime
+	local blend = math.pow(0.5, deltaTime * 2)
+	averageAcceleration = averageAcceleration * blend + (speed - lastSpeed) / deltaTime * (1 - blend)
+	lastSpeed = speed
 	local newDistance = currentDistance + stepDistance
 	while newDistance > Lut.length or newDistance < 0 do
 		if newDistance > Lut.length then
 			if LutIndex == #luts then
-				newDistance = Lut.length
-				speed = 0
-				break
+				LutIndex = 1
+				newDistance -= Lut.length
+				Lut = luts[LutIndex]
+				print("Forwards loop")
+				continue
 			end
 			print("Forwards")
 			newDistance -= Lut.length
@@ -244,11 +283,14 @@ game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
 			Lut = luts[LutIndex]
 		else
 			if LutIndex == 1 then
-				newDistance = 0
-				speed = 0
-				break
+				LutIndex = #luts
+				newDistance += luts[LutIndex].length
+				Lut = luts[LutIndex]
+				print("Backwards loop")
+				continue
 			end
 			print("Backwards")
+
 			LutIndex -= 1
 			newDistance += luts[LutIndex].length
 			Lut = luts[LutIndex]
@@ -257,12 +299,21 @@ game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
 	spline = Lut.Spline
 	currentDistance = newDistance
 	correctedT = Lut:getCorrectetT(currentDistance / Lut.length)
-	local cf = getCFrame(spline:getPoint(correctedT), spline:getTangent(correctedT), spline:getAcceleration(correctedT))
-		* CFrame.Angles(0, math.pi, 0)
+	local cf = getCFrame(
+		spline:getPoint(correctedT),
+		spline:getTangent(correctedT),
+		spline:getAcceleration(correctedT),
+		speed / 50
+	) * CFrame.Angles(0, math.pi, 0)
 	cf = cf + cf.UpVector * 4
 	workspace.CurrentCamera.CFrame = cf
-	local absSpeed = math.abs(speed)
-	workspace.CurrentCamera.FieldOfView = 60 + 40 * absSpeed / (absSpeed + 100)
+	local volume = math.min(speed / 500, 1)
+	workspace.Sounds.Minecart.Volume = volume * 2
+	workspace.Sounds.Wind.Volume = volume * 4
+	local absAccel = math.max(0, averageAcceleration)
+	workspace.CurrentCamera.FieldOfView = 60 + 60 * absAccel / (absAccel + 30)
+	workspace.Particles.CFrame = cf + cf.LookVector * 24
+	workspace.Debris.CFrame = cf + cf.LookVector * 12 - cf.UpVector * 2
 end)
 
 --[[
