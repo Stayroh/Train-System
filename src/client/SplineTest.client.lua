@@ -138,13 +138,30 @@ railFolder.Parent = workspace
 
 --Bone0 Position must be fixed
 
+local excpectedSpeed = 100
+
+local upVector = Vector3.new(0, 1, 0)
+
+local G = 192
+
 function renderRailSegment(spline: Spline.Spline, Lut, t_start: number, t_end: number)
 	local segment = originalRail:Clone()
 	local bones = segment.Bone0:GetChildren()
 	local correctedStartT = Lut:getCorrectetT(t_start)
 	local startPosition = spline:getPoint(correctedStartT)
-	local startTangent = spline:getTangent(correctedStartT).Unit
-	local startCF = CFrame.lookAt(startPosition, startPosition - startTangent)
+	local startTangent = spline:getTangent(correctedStartT)
+	local startAcceleration = spline:getAcceleration(correctedStartT)
+	local startCurveRadius = startTangent.Magnitude ^ 3 / startTangent:Cross(startAcceleration).Magnitude
+	local startBank = math.atan(excpectedSpeed ^ 2 / (G * startCurveRadius))
+	local startNormal = upVector:Cross(startTangent).Unit
+	if startNormal:Dot(startAcceleration) < 0 then
+		startNormal = -startNormal
+	end
+	local startCF = CFrame.lookAt(
+		startPosition,
+		startPosition - startTangent,
+		math.sin(startBank) * startNormal + math.cos(startBank) * upVector
+	)
 	local offset = CFrame.new(0, 0, 4)
 	segment.CFrame = startCF:ToWorldSpace(offset)
 	segment.Bone0.WorldCFrame = startCF
@@ -154,8 +171,15 @@ function renderRailSegment(spline: Spline.Spline, Lut, t_start: number, t_end: n
 		local t = t_start * (1 - alpha) + t_end * alpha
 		local correctedT = Lut:getCorrectetT(t)
 		local position = spline:getPoint(correctedT)
-		local tangent = spline:getTangent(correctedT).Unit
-		local cf = CFrame.lookAt(position, position - tangent)
+		local tangent = spline:getTangent(correctedT)
+		local acceleration = spline:getAcceleration(correctedT)
+		local curveRadius = tangent.Magnitude ^ 3 / tangent:Cross(acceleration).Magnitude
+		local bank = math.atan(excpectedSpeed ^ 2 / (G * curveRadius))
+		local normal = upVector:Cross(tangent).Unit
+		if normal:Dot(acceleration) < 0 then
+			normal = -normal
+		end
+		local cf = CFrame.lookAt(position, position - tangent, math.sin(bank) * normal + math.cos(bank) * upVector)
 		bone.CFrame = startCF:ToObjectSpace(cf)
 	end
 	segment.Parent = railFolder
