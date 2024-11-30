@@ -138,29 +138,28 @@ railFolder.Parent = workspace
 
 --Bone0 Position must be fixed
 
-local excpectedSpeed = 100
+local excpectedSpeed = 4
 
 local upVector = Vector3.new(0, 1, 0)
 
-local G = 192
+local G = 40
+
+function getCFrame(position: Vector3, tangent: Vector3, acceleration: Vector3): CFrame
+	local normal = tangent:Cross(upVector).Unit
+	local curvatureVector = tangent:Cross(tangent:Cross(acceleration)) / tangent.Magnitude ^ 3
+	local k = -normal:Dot(curvatureVector)
+	local bankAngle = math.atan(excpectedSpeed ^ 2 * k / G)
+	return CFrame.lookAt(position, position - tangent, math.sin(bankAngle) * normal + math.cos(bankAngle) * upVector)
+end
 
 function renderRailSegment(spline: Spline.Spline, Lut, t_start: number, t_end: number)
 	local segment = originalRail:Clone()
 	local bones = segment.Bone0:GetChildren()
 	local correctedStartT = Lut:getCorrectetT(t_start)
-	local startPosition = spline:getPoint(correctedStartT)
-	local startTangent = spline:getTangent(correctedStartT)
-	local startAcceleration = spline:getAcceleration(correctedStartT)
-	local startCurveRadius = startTangent.Magnitude ^ 3 / startTangent:Cross(startAcceleration).Magnitude
-	local startBank = math.atan(excpectedSpeed ^ 2 / (G * startCurveRadius))
-	local startNormal = upVector:Cross(startTangent).Unit
-	if startNormal:Dot(startAcceleration) < 0 then
-		startNormal = -startNormal
-	end
-	local startCF = CFrame.lookAt(
-		startPosition,
-		startPosition - startTangent,
-		math.sin(startBank) * startNormal + math.cos(startBank) * upVector
+	local startCF = getCFrame(
+		spline:getPoint(correctedStartT),
+		spline:getTangent(correctedStartT),
+		spline:getAcceleration(correctedStartT)
 	)
 	local offset = CFrame.new(0, 0, 4)
 	segment.CFrame = startCF:ToWorldSpace(offset)
@@ -170,16 +169,8 @@ function renderRailSegment(spline: Spline.Spline, Lut, t_start: number, t_end: n
 		local alpha = i / #bones
 		local t = t_start * (1 - alpha) + t_end * alpha
 		local correctedT = Lut:getCorrectetT(t)
-		local position = spline:getPoint(correctedT)
-		local tangent = spline:getTangent(correctedT)
-		local acceleration = spline:getAcceleration(correctedT)
-		local curveRadius = tangent.Magnitude ^ 3 / tangent:Cross(acceleration).Magnitude
-		local bank = math.atan(excpectedSpeed ^ 2 / (G * curveRadius))
-		local normal = upVector:Cross(tangent).Unit
-		if normal:Dot(acceleration) < 0 then
-			normal = -normal
-		end
-		local cf = CFrame.lookAt(position, position - tangent, math.sin(bank) * normal + math.cos(bank) * upVector)
+		local cf =
+			getCFrame(spline:getPoint(correctedT), spline:getTangent(correctedT), spline:getAcceleration(correctedT))
 		bone.CFrame = startCF:ToObjectSpace(cf)
 	end
 	segment.Parent = railFolder
@@ -208,10 +199,13 @@ end
 
 ]]
 
+local luts = {}
+
 for i = 1, #knots - 3 do
 	local P0, P1, P2, P3 = knots[i], knots[i + 1], knots[i + 2], knots[i + 3]
 	local spline = BSpline.new(P0, P1, P2, P3)
 	local Lut = SplineLut.generate(spline, 100, 100)
+	luts[i] = Lut
 	DrawSpline(spline, Lut, 100, Color3.fromRGB(0, 0, 255))
 
 	local segmentCount = math.round(Lut.length / railSegmentLength)
@@ -221,6 +215,55 @@ for i = 1, #knots - 3 do
 		renderRailSegment(spline, Lut, (i - 1) * segmentT, i * segmentT)
 	end
 end
+
+workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+
+local currentDistance = 0
+local LutIndex = 1
+local speed = 0
+
+game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+	local Lut = luts[LutIndex]
+	local spline = Lut.Spline
+	local correctedT = Lut:getCorrectetT(currentDistance / Lut.length)
+	local slope = spline:getTangent(correctedT).Unit:Dot(Vector3.new(0, 1, 0))
+	local acceleration = -G * slope
+	local stepDistance = speed * deltaTime + 0.5 * acceleration * deltaTime ^ 2
+	speed += acceleration * deltaTime
+	local newDistance = currentDistance + stepDistance
+	while newDistance > Lut.length or newDistance < 0 do
+		if newDistance > Lut.length then
+			if LutIndex == #luts then
+				newDistance = Lut.length
+				speed = 0
+				break
+			end
+			print("Forwards")
+			newDistance -= Lut.length
+			LutIndex += 1
+			Lut = luts[LutIndex]
+		else
+			if LutIndex == 1 then
+				newDistance = 0
+				speed = 0
+				break
+			end
+			print("Backwards")
+			LutIndex -= 1
+			newDistance += luts[LutIndex].length
+			Lut = luts[LutIndex]
+		end
+	end
+	spline = Lut.Spline
+	currentDistance = newDistance
+	correctedT = Lut:getCorrectetT(currentDistance / Lut.length)
+	local cf = getCFrame(spline:getPoint(correctedT), spline:getTangent(correctedT), spline:getAcceleration(correctedT))
+		* CFrame.Angles(0, math.pi, 0)
+	cf = cf + cf.UpVector * 4
+	workspace.CurrentCamera.CFrame = cf
+	local absSpeed = math.abs(speed)
+	workspace.CurrentCamera.FieldOfView = 60 + 40 * absSpeed / (absSpeed + 100)
+end)
 
 --[[
 local subsamplingSteps = 4
