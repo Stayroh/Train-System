@@ -8,6 +8,10 @@ type MatrixClass = {
 	new: (values: { { number } } | { Vector3 } | { Vector2 } | Vector3 | Vector2 | number) -> Matrix,
 	getAsVector3: (self: Matrix) -> Vector3,
 	getAsVector2: (self: Matrix) -> Vector2,
+	getVector3FromRow: (self: Matrix, row: number) -> Vector3,
+	getVector2FromRow: (self: Matrix, row: number) -> Vector2,
+	getVector3FromColumn: (self: Matrix, column: number) -> Vector3,
+	getVector2FromColumn: (self: Matrix, column: number) -> Vector2,
 }
 
 export type Matrix = typeof(setmetatable({} :: { { any } }, Matrix))
@@ -72,6 +76,34 @@ function Matrix:getAsVector2(): Vector2
 	else
 		return Vector2.new(self[1][1], self[1][2] or 0)
 	end
+end
+
+function Matrix:getVector3FromRow(row: number): Vector3
+	if row > #self then
+		return Vector3.new()
+	end
+	return Vector3.new(self[row][1], self[row][2] or 0, self[row][3] or 0)
+end
+
+function Matrix:getVector2FromRow(row: number): Vector2
+	if row > #self then
+		return Vector2.new()
+	end
+	return Vector2.new(self[row][1], self[row][2] or 0)
+end
+
+function Matrix:getVector3FromColumn(column: number): Vector3
+	if column > #self[1] then
+		return Vector3.new()
+	end
+	return Vector3.new(self[1][column], self[2] and self[2][column] or 0, self[3] and self[3][column] or 0)
+end
+
+function Matrix:getVector2FromColumn(column: number): Vector2
+	if column > #self[1] then
+		return Vector2.new()
+	end
+	return Vector2.new(self[1][column], self[2] and self[2][column] or 0)
 end
 
 function Matrix.new(values: { { number } } | { Vector3 } | { Vector2 } | Vector3 | Vector2 | number): Matrix

@@ -3,16 +3,17 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
-local BSpline = require(game.ReplicatedStorage.src.BSpline)
+local BezierSpline = require(game.ReplicatedStorage.src.BezierSpline)
+local BezierConverter = require(game.ReplicatedStorage.src.BezierConverter)
 
-function getCurvature(Spline: BSpline.BSpline, t: number): number
+function getCurvature(Spline: BezierSpline.BezierSpline, t: number): number
 	local Tangent = Spline:getVelocity(t)
 	local Acceleration = Spline:getAcceleration(t)
 	local Cross = Tangent:Cross(Acceleration)
 	return Cross.Magnitude / Tangent.Magnitude ^ 3
 end
 
-function DrawSpline(Spline: BSpline.BSpline, Lut, Resolution: number, Color: Color3): nil
+function DrawSpline(Spline: BezierSpline.BezierSpline, Lut, Resolution: number, Color: Color3): nil
 	print(Lut)
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
@@ -44,7 +45,7 @@ function DrawSpline(Spline: BSpline.BSpline, Lut, Resolution: number, Color: Col
 	return
 end
 
-function _DrawTangentSpline(Spline: BSpline.BSpline, Lut, Resolution: number, Color: Color3): nil
+function _DrawTangentSpline(Spline: BezierSpline.BezierSpline, Lut, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
@@ -64,7 +65,7 @@ function _DrawTangentSpline(Spline: BSpline.BSpline, Lut, Resolution: number, Co
 	return
 end
 
-function _DrawAccelerationSpline(Spline: BSpline.BSpline, Resolution: number, Color: Color3): nil
+function _DrawAccelerationSpline(Spline: BezierSpline.BezierSpline, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
@@ -83,7 +84,7 @@ function _DrawAccelerationSpline(Spline: BSpline.BSpline, Resolution: number, Co
 	return
 end
 
-function DrawCurvatureSpline(Spline: BSpline.BSpline, Resolution: number, Color: Color3): nil
+function DrawCurvatureSpline(Spline: BezierSpline.BezierSpline, Resolution: number, Color: Color3): nil
 	local Folder = Instance.new("Folder")
 	Folder.Name = "Spline"
 	Folder.Parent = workspace
@@ -137,7 +138,7 @@ function getCFrame(position: Vector3, tangent: Vector3, acceleration: Vector3, e
 	return CFrame.lookAt(position, position - tangent, math.sin(bankAngle) * normal + math.cos(bankAngle) * upVector)
 end
 
-function renderRailSegment(spline: BSpline.BSpline, t_start: number, t_end: number)
+function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t_end: number)
 	local segment = originalRail:Clone()
 	local bones = segment.Bone0:GetChildren()
 	local correctedStartT = spline.lut:getCorrectetT(t_start)
@@ -191,13 +192,26 @@ end
 
 local splines = {}
 
+local railWidth = 9.338
+
+local boundsFolder = Instance.new("Folder")
+boundsFolder.Name = "Bounds"
+boundsFolder.Parent = workspace
+
 for i = 1, #knots do
 	local P0, P1, P2, P3 =
 		knots[i],
 		knots[i + 1] or knots[i + 1 - #knots],
 		knots[i + 2] or knots[i + 2 - #knots],
 		knots[i + 3] or knots[i + 3 - #knots]
-	local spline = BSpline.new(P0, P1, P2, P3)
+
+	local Conversion: BezierConverter.BezierConversion = BezierConverter:convert(P0, P1, P2, P3)
+	local spline = BezierSpline.new(
+		Conversion.startPosition,
+		Conversion.startPosition + Conversion.startHandle,
+		Conversion.endPosition + Conversion.endHandle,
+		Conversion.endPosition
+	)
 	splines[i] = spline
 
 	local segmentCount = math.round(spline.lut.length / railSegmentLength)
@@ -205,4 +219,16 @@ for i = 1, #knots do
 	for i = 1, segmentCount do
 		renderRailSegment(spline, (i - 1) * segmentT, i * segmentT)
 	end
+
+	--Create Bounding Box
+	local bounds = spline:getBounds()
+	local Part = Instance.new("Part")
+	Part.Anchored = true
+	Part.Size = bounds.Size + Vector3.one * railWidth
+	Part.CFrame = bounds.CFrame
+	Part.Material = Enum.Material.Neon
+	Part.BrickColor = BrickColor.random()
+	Part.Transparency = 0.5
+	Part.CanCollide = false
+	Part.Parent = boundsFolder
 end
