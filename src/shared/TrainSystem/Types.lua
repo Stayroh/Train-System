@@ -1,31 +1,14 @@
 local Types = {}
 
-export type NodeType = {
-	Position: Vector3,
-	Tangent: Vector3,
-	ZRotation: number,
-	Pre: number | { [number]: number } | nil,
-	Fol: number | { [number]: number } | nil,
+export type KnotType = {
+	position: Vector3,
+	tangent: Vector3,
+	targetSpeed: number,
+	successor: number | { [number]: number } | nil,
+	predecessor: number | { [number]: number } | nil,
 } --Stores the information data about Position, Tangent, Upvector and connections of this node
 
-export type NetworkType = { [number]: NodeType }
-
-export type SwitchType = {
-	Pre: {
-		Visual: number,
-		Individ: { [number]: number? },
-	},
-	Fol: {
-		Visual: number,
-		Individ: { [number]: number? },
-	},
-} --Gives information about the connections between nodes
---Visuel represents the visualy shown state / default value
---Individ is the individual direction for each Train passing that node for which this switch stands for
-
-export type NetworkSwitches = { [number]: SwitchType } --Array of SwitchUpdates for this NetworkId where index stands for the node Id
-
-export type SwitchUpdateType = { [number]: NetworkSwitches } --Dictonary for each NetworkId
+export type RouteNetworkType = { [number]: KnotType } --Array of Knots for this NetworkId where index stands for the node Id
 
 export type CarDescription = {
 	Series: string,

@@ -1,54 +1,41 @@
-local Spline = require(game.ReplicatedStorage.src.Spline)
+type SplineSuper = typeof(require(game.ReplicatedStorage.src.SplineSuper))
 
-local SplineLut = {}
+local SplineLut: SplineLutClass = {} :: SplineLutClass
 SplineLut.__index = SplineLut
 
-function SplineLut:sample(sampleCount: number)
-	local distance = 0
-	local samples = {}
-	local lastPos = self.Spline:getPoint(0)
-	for i = 1, sampleCount do
-		local t = i / sampleCount
-		local pos = self.Spline:getPoint(t)
-		distance += (pos - lastPos).magnitude
-		lastPos = pos
-		table.insert(samples, distance)
-	end
-	return samples
-end
+type SplineLutClass = {
+	__index: SplineLutClass,
+	getCorrectetT: (self: SplineLut, t: number) -> number,
+	getTFromDistance: (self: SplineLut, distance: number) -> number,
+	regenerate: (self: SplineLut, sampleCount: number, resolution: number) -> nil,
+	new: (Spline: SplineSuper) -> SplineLut,
+	generate: (Spline: SplineSuper, sampleCount: number, lutResolution: number) -> SplineLut,
+}
 
-function SplineLut:compute(resolution: number)
-	assert(self.samples and self.length, "Lut must be first sampled, before computing the Lut is possible.")
-	local Lut = {}
-	local step = self.length / resolution
-	local index = 1
-	for i = 1, resolution - 1 do
-		local distance = i * step
-		while distance > self.samples[index] and index <= #self.samples do
-			index += 1
-		end
-		local intervalStart = self.samples[index - 1] or 0
-		local interval = self.samples[index] - intervalStart
-		local intervalPos = (distance - intervalStart) / interval
-		local t = ((index - 1) * (1 - intervalPos) + index * intervalPos) / #self.samples
-		Lut[i] = t
-	end
-	Lut[resolution] = 1
-	return Lut
-end
+export type SplineLut = typeof(setmetatable(
+	{} :: {
+		spline: SplineSuper,
+		sampleCount: number,
+		resolution: number,
+		samples: { number },
+		length: number,
+		lut: { number },
+	},
+	SplineLut
+))
 
 function SplineLut:getCorrectetT(t: number): number
-	local lowerIndex = math.floor(t * #self.Lut)
-	local upperIndex = math.ceil(t * #self.Lut)
+	local lowerIndex = math.floor(t * #self.lut)
+	local upperIndex = math.ceil(t * #self.lut)
 	if lowerIndex == upperIndex then
 		if lowerIndex == 0 then
 			return 0
 		end
-		return self.Lut[lowerIndex]
+		return self.lut[lowerIndex]
 	end
-	local lowerT = self.Lut[lowerIndex] or 0
-	local upperT = self.Lut[upperIndex] or 0
-	local fraction = (t * #self.Lut) - lowerIndex
+	local lowerT = self.lut[lowerIndex] or 0
+	local upperT = self.lut[upperIndex] or 0
+	local fraction = (t * #self.lut) - lowerIndex
 	local returnValue = lowerT + (upperT - lowerT) * fraction
 	return returnValue
 end
@@ -58,22 +45,47 @@ function SplineLut:getTFromDistance(distance: number): number
 	return self:getCorrectetT(t)
 end
 
-function SplineLut:regenerate(sampleCout: number, lutResolution: number)
-	self.sampleCount = sampleCout
-	self.lutResolution = lutResolution
-	self.samples = self:sample(sampleCout)
+function SplineLut:regenerate(sampleCount: number, resolution: number)
+	self.sampleCount = sampleCount
+	self.resolution = resolution
+	local distance = 0
+	local samples = {}
+	local lastPos = self.spline:getPoint(0)
+	for i = 1, sampleCount do
+		local t = i / sampleCount
+		local pos = self.spline:getPoint(t)
+		distance += (pos - lastPos).magnitude
+		lastPos = pos
+		table.insert(samples, distance)
+	end
+	self.samples = samples
 	self.length = self.samples[#self.samples]
-	self.Lut = self:compute(lutResolution)
+	local lut = {}
+	local step = self.length / resolution
+	local index = 1
+	for i = 1, resolution - 1 do
+		distance = i * step
+		while distance > self.samples[index] and index <= #self.samples do
+			index += 1
+		end
+		local intervalStart = self.samples[index - 1] or 0
+		local interval = self.samples[index] - intervalStart
+		local intervalPos = (distance - intervalStart) / interval
+		local t = ((index - 1) * (1 - intervalPos) + index * intervalPos) / #self.samples
+		lut[i] = t
+	end
+	lut[resolution] = 1
+	self.lut = lut
 end
 
-function SplineLut.new(Spline: Spline.Spline)
+function SplineLut.new(spline: SplineSuper)
 	local self = setmetatable({}, SplineLut)
-	self.Spline = Spline
+	self.spline = spline
 	return self
 end
 
-function SplineLut.generate(Spline: Spline.Spline, sampleCount: number, lutResolution: number)
-	local self = SplineLut.new(Spline)
+function SplineLut.generate(spline: SplineSuper, sampleCount: number, lutResolution: number)
+	local self = SplineLut.new(spline)
 	self:regenerate(sampleCount, lutResolution)
 	return self
 end

@@ -3,6 +3,12 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
+      "assets": {
+        "$className": "Folder",
+        "Trains": {
+          "$path": "assets/trains"
+        }
+      },
       "src": {
         "$path": "./src/shared"
       },
@@ -30,6 +36,17 @@
         "src": {
           "$path": "./src/client"
         }
+      }
+    },
+    "Workspace": {
+      "Terrain": {
+        "$path": "assets/Terrain.rbxm"
+      },
+      "$properties": {
+        "FilteringEnabled": true
+      },
+      "Map": {
+        "$path": "assets/Map"
       }
     },
     "SoundService": {
