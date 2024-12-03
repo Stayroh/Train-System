@@ -1,3 +1,5 @@
+--!strict
+
 local Permutation = {
 	151,
 	160,

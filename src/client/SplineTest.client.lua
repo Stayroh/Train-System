@@ -5,6 +5,7 @@ end
 
 local BezierSpline = require(game.ReplicatedStorage.src.BezierSpline)
 local BezierConverter = require(game.ReplicatedStorage.src.BezierConverter)
+local RouteNetwork = require(game.ReplicatedStorage.src.TrainSystemV2.RouteNetwork)
 
 function getCurvature(Spline: BezierSpline.BezierSpline, t: number): number
 	local Tangent = Spline:getVelocity(t)
@@ -23,7 +24,7 @@ function DrawSpline(Spline: BezierSpline.BezierSpline, Lut, Resolution: number, 
 	local lastPosition
 	for i = 0, Resolution do
 		local t = i / Resolution
-		local correctedT = Lut:getCorrectetT(t)
+		local correctedT = Lut:inverseLookup(t)
 		local Point = Spline:getPoint(correctedT)
 		local Part = Instance.new("Part")
 		Part.Shape = Enum.PartType.Ball
@@ -51,7 +52,7 @@ function _DrawTangentSpline(Spline: BezierSpline.BezierSpline, Lut, Resolution: 
 	Folder.Parent = workspace
 	for i = 0, Resolution do
 		local t = i / Resolution
-		local correctedT = Lut:getCorrectetT(t)
+		local correctedT = Lut:inverseLookup(t)
 		local Position = Spline:getPoint(correctedT)
 		local Tangent = Spline:getVelocity(correctedT)
 		local Part = Instance.new("Part")
@@ -138,10 +139,10 @@ function getCFrame(position: Vector3, tangent: Vector3, acceleration: Vector3, e
 	return CFrame.lookAt(position, position - tangent, math.sin(bankAngle) * normal + math.cos(bankAngle) * upVector)
 end
 
-function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t_end: number)
+function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t_end: number, parent: Folder)
 	local segment = originalRail:Clone()
 	local bones = segment.Bone0:GetChildren()
-	local correctedStartT = spline.lut:getCorrectetT(t_start)
+	local correctedStartT = spline.lut:inverseLookup(t_start)
 	local startCF = getCFrame(
 		spline:getPoint(correctedStartT),
 		spline:getVelocity(correctedStartT),
@@ -155,7 +156,7 @@ function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t
 		local bone = segment.Bone0:FindFirstChild("Bone" .. tostring(i)) :: Bone
 		local alpha = i / #bones
 		local t = t_start * (1 - alpha) + t_end * alpha
-		local correctedT = spline.lut:getCorrectetT(t)
+		local correctedT = spline.lut:inverseLookup(t)
 		local cf = getCFrame(
 			spline:getPoint(correctedT),
 			spline:getVelocity(correctedT),
@@ -164,7 +165,7 @@ function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t
 		)
 		bone.CFrame = startCF:ToObjectSpace(cf)
 	end
-	segment.Parent = railFolder
+	segment.Parent = parent
 end
 --[[
 DrawSpline(spline1, Lut1, 100, Color3.fromRGB(255, 0, 0))
@@ -190,13 +191,15 @@ end
 
 ]]
 
-local splines = {}
-
 local railWidth = 9.338
 
 local boundsFolder = Instance.new("Folder")
 boundsFolder.Name = "Bounds"
 boundsFolder.Parent = workspace
+
+local nodes: { RouteNetwork.Node } = {}
+
+local conversions: { BezierConverter.BezierConversion } = {}
 
 for i = 1, #knots do
 	local P0, P1, P2, P3 =
@@ -205,19 +208,28 @@ for i = 1, #knots do
 		knots[i + 2] or knots[i + 2 - #knots],
 		knots[i + 3] or knots[i + 3 - #knots]
 
-	local Conversion: BezierConverter.BezierConversion = BezierConverter:convert(P0, P1, P2, P3)
-	local spline = BezierSpline.new(
-		Conversion.startPosition,
-		Conversion.startPosition + Conversion.startHandle,
-		Conversion.endPosition + Conversion.endHandle,
-		Conversion.endPosition
-	)
-	splines[i] = spline
+	conversions[i] = BezierConverter:convert(P0, P1, P2, P3)
+end
 
+for i = 1, #conversions do
+	nodes[i] = {
+		position = conversions[i].startPosition,
+		handle = conversions[i].startHandle,
+		targetSpeed = 3,
+		previousNode = (i - 2) % #conversions + 1,
+		nextNode = i % #conversions + 1,
+	}
+end
+
+local routeNetwork = RouteNetwork.new(nodes)
+
+for splineIndex, spline in pairs(routeNetwork.splines) do
+	local folder = Instance.new("Folder")
+	folder.Name = "Spline" .. tostring(splineIndex)
 	local segmentCount = math.round(spline.lut.length / railSegmentLength)
 	local segmentT = 1 / segmentCount
 	for i = 1, segmentCount do
-		renderRailSegment(spline, (i - 1) * segmentT, i * segmentT)
+		renderRailSegment(spline, (i - 1) * segmentT, i * segmentT, folder)
 	end
 
 	--Create Bounding Box
@@ -230,7 +242,8 @@ for i = 1, #knots do
 	Part.BrickColor = BrickColor.random()
 	Part.Transparency = 0.5
 	Part.CanCollide = false
-	Part.Parent = boundsFolder
+	Part.Parent = folder
+	folder.Parent = railFolder
 end
 
 task.wait(5)
@@ -238,8 +251,19 @@ task.wait(5)
 game:GetService("RunService"):BindToRenderStep("StupidIntersection", Enum.RenderPriority.Camera.Value + 1, function()
 	local r = workspace.Sphere.Size.X / 2
 	local pos = workspace.Sphere.Position
-	local t = splines[4]:intersectSphere(pos, r, 0, true)
+	local t = routeNetwork.splines[4]:intersectSphere(pos, r, 0, true)
 	if t then
-		workspace.Point.Position = splines[4]:getPoint(t)
+		workspace.Point.Position = routeNetwork.splines[4]:getPoint(t)
 	end
 end)
+
+local moverLocation: RouteNetwork.RouteNetworkLocation = {
+	node1 = 1,
+	node2 = 2,
+	t = 0,
+}
+
+while wait(0.1) do
+	moverLocation = routeNetwork:stepDistance(moverLocation, -100)
+	workspace.Mover.Position = routeNetwork:getPoint(moverLocation)
+end

@@ -61,7 +61,7 @@ function SplineSuper:intersectSphere(center: Vector3, radius: number, startTValu
 		local squaredPolynomial = Polynomial.new(squaredPolynomialMatrix[1])
 		polynomialSum = polynomialSum + squaredPolynomial
 	end
-	local t = polynomialSum:sampledBisection(startTValue, direction and 1 or 0, 100, 100, 0.000001)
+	local t = polynomialSum:sampledBisection(startTValue, direction and 1 or 0, 50, 50, 0.00001)
 	return t
 end
 

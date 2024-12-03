@@ -1,3 +1,5 @@
+--!strict
+
 type SplineSuper = typeof(require(game.ReplicatedStorage.src.SplineSuper))
 
 local SplineLut: SplineLutClass = {} :: SplineLutClass
@@ -5,11 +7,12 @@ SplineLut.__index = SplineLut
 
 type SplineLutClass = {
 	__index: SplineLutClass,
-	getCorrectetT: (self: SplineLut, t: number) -> number,
-	getTFromDistance: (self: SplineLut, distance: number) -> number,
+	inverseLookup: (self: SplineLut, t: number) -> number,
+	forwardLookup: (self: SplineLut, t: number) -> number,
 	regenerate: (self: SplineLut, sampleCount: number, resolution: number) -> nil,
 	new: (Spline: SplineSuper) -> SplineLut,
 	generate: (Spline: SplineSuper, sampleCount: number, lutResolution: number) -> SplineLut,
+	getLength: (self: SplineLut) -> number,
 }
 
 export type SplineLut = typeof(setmetatable(
@@ -24,7 +27,11 @@ export type SplineLut = typeof(setmetatable(
 	SplineLut
 ))
 
-function SplineLut:getCorrectetT(t: number): number
+function SplineLut:getLength(): number
+	return self.length
+end
+
+function SplineLut:inverseLookup(t: number): number
 	local lowerIndex = math.floor(t * #self.lut)
 	local upperIndex = math.ceil(t * #self.lut)
 	if lowerIndex == upperIndex then
@@ -40,9 +47,20 @@ function SplineLut:getCorrectetT(t: number): number
 	return returnValue
 end
 
-function SplineLut:getTFromDistance(distance: number): number
-	local t = distance / self.length
-	return self:getCorrectetT(t)
+function SplineLut:forwardLookup(t: number): number
+	local lowerIndex = math.floor(t * #self.samples)
+	local upperIndex = math.ceil(t * #self.samples)
+	if lowerIndex == upperIndex then
+		if lowerIndex == 0 then
+			return 0
+		end
+		return self.samples[lowerIndex]
+	end
+	local lowerT = self.samples[lowerIndex] or 0
+	local upperT = self.samples[upperIndex] or 0
+	local fraction = (t * #self.samples) - lowerIndex
+	local returnValue = lowerT + (upperT - lowerT) * fraction
+	return returnValue
 end
 
 function SplineLut:regenerate(sampleCount: number, resolution: number)

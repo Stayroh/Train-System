@@ -1,3 +1,5 @@
+--!strict
+
 local Matrix: MatrixClass = {} :: MatrixClass
 Matrix.__index = Matrix
 

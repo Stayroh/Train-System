@@ -1,3 +1,4 @@
+--!strict
 --Module for 2D Perlin Noise and its gradient vector
 
 local PerlinNoise = {}
