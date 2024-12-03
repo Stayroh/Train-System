@@ -1,5 +1,6 @@
 --!strict
 local Matrix = require(game.ReplicatedStorage.src.Matrix)
+local Polynomial = require(game.ReplicatedStorage.src.Polynomial)
 local SplineLut = require(game.ReplicatedStorage.src.SplineLut)
 local SplineSuper: SplineSuperSuperClass = {} :: SplineSuperSuperClass
 SplineSuper.__index = SplineSuper
@@ -9,6 +10,13 @@ type SplineSuperSuperClass = {
 	getPoint: (self: SplineSuper, t: number) -> Vector3,
 	getVelocity: (self: SplineSuper, t: number) -> Vector3,
 	getAcceleration: (self: SplineSuper, t: number) -> Vector3,
+	intersectSphere: (
+		self: SplineSuper,
+		center: Vector3,
+		radius: number,
+		startTValue: number,
+		direction: boolean
+	) -> number?,
 	new: (
 		P0: Vector3,
 		P1: Vector3,
@@ -26,6 +34,9 @@ export type SplineSuper = typeof(setmetatable(
 		P1: Vector3,
 		P2: Vector3,
 		P3: Vector3,
+		matrixForm: Matrix.Matrix,
+		dtMatrixForm: Matrix.Matrix,
+		dt2MatrixForm: Matrix.Matrix,
 		matrixFormParameterized: Matrix.Matrix,
 		dtMatrixFormParameterized: Matrix.Matrix,
 		dt2MatrixFormParameterized: Matrix.Matrix,
@@ -33,6 +44,26 @@ export type SplineSuper = typeof(setmetatable(
 	},
 	SplineSuper
 ))
+
+function SplineSuper:intersectSphere(center: Vector3, radius: number, startTValue: number, direction: boolean): number?
+	local centerArray = { center.X, center.Y, center.Z }
+	local polynomialSum = Polynomial.new({ -radius ^ 2, 0, 0, 0, 0, 0, 0 })
+	for d = 1, 3 do
+		local rowVector = {
+			self.matrixFormParameterized[1][d] - centerArray[d],
+			self.matrixFormParameterized[2][d],
+			self.matrixFormParameterized[3][d],
+			self.matrixFormParameterized[4][d],
+		}
+		local squaredMatrix = Matrix.new({ { rowVector[1] }, { rowVector[2] }, { rowVector[3] }, { rowVector[4] } })
+			* Matrix.new({ rowVector })
+		local squaredPolynomialMatrix = squaredMatrix:getAntiDiagonalSum()
+		local squaredPolynomial = Polynomial.new(squaredPolynomialMatrix[1])
+		polynomialSum = polynomialSum + squaredPolynomial
+	end
+	local t = polynomialSum:sampledBisection(startTValue, direction and 1 or 0, 100, 100, 0.000001)
+	return t
+end
 
 function SplineSuper:getPoint(t: number): Vector3
 	local tVector = Matrix.new({ { 1, t, t ^ 2, t ^ 3 } })
@@ -63,6 +94,9 @@ function SplineSuper.new(
 	self.P1 = P1
 	self.P2 = P2
 	self.P3 = P3
+	self.matrixForm = matrixForm
+	self.dtMatrixForm = dtMatrixForm
+	self.dt2MatrixForm = dt2MatrixForm
 	local pointMatrix = Matrix.new({ P0, P1, P2, P3 })
 	self.matrixFormParameterized = matrixForm * pointMatrix
 	self.dtMatrixFormParameterized = dtMatrixForm * pointMatrix

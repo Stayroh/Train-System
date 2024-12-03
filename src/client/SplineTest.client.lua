@@ -224,7 +224,7 @@ for i = 1, #knots do
 	local bounds = spline:getBounds()
 	local Part = Instance.new("Part")
 	Part.Anchored = true
-	Part.Size = bounds.Size + Vector3.one * railWidth
+	Part.Size = bounds.Size -- + Vector3.one * railWidth
 	Part.CFrame = bounds.CFrame
 	Part.Material = Enum.Material.Neon
 	Part.BrickColor = BrickColor.random()
@@ -232,3 +232,14 @@ for i = 1, #knots do
 	Part.CanCollide = false
 	Part.Parent = boundsFolder
 end
+
+task.wait(5)
+
+game:GetService("RunService"):BindToRenderStep("StupidIntersection", Enum.RenderPriority.Camera.Value + 1, function()
+	local r = workspace.Sphere.Size.X / 2
+	local pos = workspace.Sphere.Position
+	local t = splines[4]:intersectSphere(pos, r, 0, true)
+	if t then
+		workspace.Point.Position = splines[4]:getPoint(t)
+	end
+end)

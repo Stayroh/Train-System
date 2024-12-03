@@ -12,6 +12,8 @@ type MatrixClass = {
 	getVector2FromRow: (self: Matrix, row: number) -> Vector2,
 	getVector3FromColumn: (self: Matrix, column: number) -> Vector3,
 	getVector2FromColumn: (self: Matrix, column: number) -> Vector2,
+	getDiagonalSum: (self: Matrix) -> Matrix,
+	getAntiDiagonalSum: (self: Matrix) -> Matrix,
 }
 
 export type Matrix = typeof(setmetatable({} :: { { any } }, Matrix))
@@ -104,6 +106,34 @@ function Matrix:getVector2FromColumn(column: number): Vector2
 		return Vector2.new()
 	end
 	return Vector2.new(self[1][column], self[2] and self[2][column] or 0)
+end
+
+function Matrix:getAntiDiagonalSum(): Matrix
+	local result = {}
+	for i = 1, #self do
+		for j = 1, #self[1] do
+			local resultIndex = i + j - 1
+			if not result[resultIndex] then
+				result[resultIndex] = 0
+			end
+			result[resultIndex] += self[i][j]
+		end
+	end
+	return setmetatable({ result }, Matrix) :: Matrix
+end
+
+function Matrix:getDiagonalSum(): Matrix
+	local result = {}
+	for i = 1, #self do
+		for j = 1, #self[1] do
+			local resultIndex = -i + j + #self
+			if not result[resultIndex] then
+				result[resultIndex] = 0
+			end
+			result[resultIndex] += self[i][j]
+		end
+	end
+	return setmetatable({ result }, Matrix) :: Matrix
 end
 
 function Matrix.new(values: { { number } } | { Vector3 } | { Vector2 } | Vector3 | Vector2 | number): Matrix
