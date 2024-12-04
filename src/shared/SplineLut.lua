@@ -60,7 +60,7 @@ function SplineLut:forwardLookup(t: number): number
 	local upperT = self.samples[upperIndex] or 0
 	local fraction = (t * #self.samples) - lowerIndex
 	local returnValue = lowerT + (upperT - lowerT) * fraction
-	return returnValue
+	return returnValue / self.length
 end
 
 function SplineLut:regenerate(sampleCount: number, resolution: number)

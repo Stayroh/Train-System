@@ -34,9 +34,6 @@ export type SplineSuper = typeof(setmetatable(
 		P1: Vector3,
 		P2: Vector3,
 		P3: Vector3,
-		matrixForm: Matrix.Matrix,
-		dtMatrixForm: Matrix.Matrix,
-		dt2MatrixForm: Matrix.Matrix,
 		matrixFormParameterized: Matrix.Matrix,
 		dtMatrixFormParameterized: Matrix.Matrix,
 		dt2MatrixFormParameterized: Matrix.Matrix,
@@ -94,9 +91,6 @@ function SplineSuper.new(
 	self.P1 = P1
 	self.P2 = P2
 	self.P3 = P3
-	self.matrixForm = matrixForm
-	self.dtMatrixForm = dtMatrixForm
-	self.dt2MatrixForm = dt2MatrixForm
 	local pointMatrix = Matrix.new({ P0, P1, P2, P3 })
 	self.matrixFormParameterized = matrixForm * pointMatrix
 	self.dtMatrixFormParameterized = dtMatrixForm * pointMatrix

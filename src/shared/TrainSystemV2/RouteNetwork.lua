@@ -10,7 +10,7 @@ type RouteNetworkClass = {
 	createSplines: (self: RouteNetwork) -> { BezierSpline.BezierSpline },
 	checkNeighbourRelation: (self: RouteNetwork, currentNode: number, neighbourNode: number) -> boolean?, -- Returns true if nighbourNode is currentNode's nextNode, false if it is the previousNode, and nil if it is not a neighbour.
 	getSplineAndT: (self: RouteNetwork, location: RouteNetworkLocation) -> (BezierSpline.BezierSpline, number, boolean), -- Returns the spline and the position on the spline for a given location. Also returns whether the spline is reversed from the perspective of the location.
-	getConnectingSpline: (self: RouteNetwork, node1: number, node2: number) -> BezierSpline.BezierSpline, -- Returns the spline connecting two nodes.
+	getConnectingSpline: (self: RouteNetwork, node1: number, node2: number) -> (BezierSpline.BezierSpline, boolean), -- Returns the spline connecting two nodes. Also returns whether the spline is reversed from the perspective of node1 to node2.
 	getPoint: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the position of a location on the route network.
 	getVelocity: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the velocity of a location on the route network.
 	getAcceleration: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the acceleration of a location on the route network.
@@ -20,7 +20,7 @@ type RouteNetworkClass = {
 		location: RouteNetworkLocation,
 		distance: number
 	) -> (RouteNetworkLocation, number), -- Returns a location that is distance away from the given location. Accepts all real numbers for distance. In case the the full distance can not be covered, it will go to the furthest possible location and return the remaining distance.
-	itersectSphere: (
+	intersectSphere: (
 		self: RouteNetwork,
 		center: Vector3,
 		radius: number,
@@ -56,20 +56,46 @@ export type RouteNetwork = typeof(setmetatable(
 	RouteNetwork
 ))
 
-function RouteNetwork:itersectSphere(
+function RouteNetwork:intersectSphere(
 	center: Vector3,
 	radius: number,
 	traverseFrom: RouteNetworkLocation,
 	maxSplines: number
 ): RouteNetworkLocation?
+	local node1, node2 = traverseFrom.node1, traverseFrom.node2
+
+	local spline, isReversed = self:getConnectingSpline(node1, node2)
+	local startT = isReversed and 1 - traverseFrom.t or traverseFrom.t
+	local intersectionT
+	local i = 0
+	while intersectionT == nil and i < maxSplines do
+		local intersection = spline:intersectSphere(center, radius, spline.lut:inverseLookup(startT), not isReversed)
+		if intersection then
+			intersectionT = spline.lut:forwardLookup(intersection)
+			break
+		end
+		local newNode2 = self:getFollowingNode(node1, node2)
+		if not newNode2 then
+			break
+		end
+		node1, node2 = node2, newNode2
+		spline, isReversed = self:getConnectingSpline(node1, node2)
+		startT = isReversed and 1 or 0
+		i += 1
+	end
+	if intersectionT then
+		return { node1 = node1, node2 = node2, t = isReversed and 1 - intersectionT or intersectionT }
+	else
+		return nil
+	end
 end
 
-function RouteNetwork:getConnectingSpline(node1: number, node2: number): BezierSpline.BezierSpline
+function RouteNetwork:getConnectingSpline(node1: number, node2: number): (BezierSpline.BezierSpline, boolean)
 	local node = self.nodes[node1]
-	if node.nextNode == node2 and node.nextSpline then
-		return self.splines[node.nextSpline]
-	elseif node.previousNode == node2 and node.previousSpline then
-		return self.splines[node.previousSpline]
+	if node.nextNode == node2 and node.nextSpline and node.nextSplineReversed ~= nil then
+		return self.splines[node.nextSpline], node.nextSplineReversed
+	elseif node.previousNode == node2 and node.previousSpline and node.previousSplineReversed ~= nil then
+		return self.splines[node.previousSpline], node.previousSplineReversed
 	end
 	assert(false, string.format("No spline found between node %d and %d", node1, node2))
 end

@@ -248,22 +248,17 @@ end
 
 task.wait(5)
 
-game:GetService("RunService"):BindToRenderStep("StupidIntersection", Enum.RenderPriority.Camera.Value + 1, function()
+game:GetService("RunService").RenderStepped:Connect(function()
 	local r = workspace.Sphere.Size.X / 2
 	local pos = workspace.Sphere.Position
-	local t = routeNetwork.splines[4]:intersectSphere(pos, r, 0, true)
-	if t then
-		workspace.Point.Position = routeNetwork.splines[4]:getPoint(t)
+	local startLocation = {
+		node1 = 1,
+		node2 = 2,
+		t = 0,
+	}
+	local intersectionLocation = routeNetwork:intersectSphere(pos, r, startLocation, 50)
+	if intersectionLocation then
+		local spline, t = routeNetwork:getSplineAndT(intersectionLocation)
+		workspace.Point.Position = spline:getPoint(spline.lut:inverseLookup(t))
 	end
 end)
-
-local moverLocation: RouteNetwork.RouteNetworkLocation = {
-	node1 = 1,
-	node2 = 2,
-	t = 0,
-}
-
-while wait(0.1) do
-	moverLocation = routeNetwork:stepDistance(moverLocation, -100)
-	workspace.Mover.Position = routeNetwork:getPoint(moverLocation)
-end
