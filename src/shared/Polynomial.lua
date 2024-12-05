@@ -39,8 +39,14 @@ end
 
 function Polynomial:getValue(x: number): number
 	local result = 0
+	local powersOfX = { 1 }
+	if #self > 1 then
+		for i = 2, #self do
+			powersOfX[i] = powersOfX[i - 1] * x
+		end
+	end
 	for i = 1, #self do
-		result += self[i] * x ^ (i - 1)
+		result += self[i] * powersOfX[i]
 	end
 	return result
 end

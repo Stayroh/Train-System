@@ -5,7 +5,7 @@ Train.__index = Train
 
 type TrainClass = {
 	__index: TrainClass,
-	new: () -> Train,
+	new: (layout: { { car } }) -> Train,
 }
 
 export type Train = typeof(setmetatable({} :: {}, Train))

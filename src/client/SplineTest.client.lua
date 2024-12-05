@@ -248,17 +248,19 @@ end
 
 task.wait(5)
 
-game:GetService("RunService").RenderStepped:Connect(function()
-	local r = workspace.Sphere.Size.X / 2
-	local pos = workspace.Sphere.Position
-	local startLocation = {
-		node1 = 1,
-		node2 = 2,
-		t = 0,
-	}
-	local intersectionLocation = routeNetwork:intersectSphere(pos, r, startLocation, 50)
-	if intersectionLocation then
-		local spline, t = routeNetwork:getSplineAndT(intersectionLocation)
-		workspace.Point.Position = spline:getPoint(spline.lut:inverseLookup(t))
+game:GetService("RunService"):BindToRenderStep("name", 10, function()
+	for i = 1, 100 do
+		local r = workspace.Sphere.Size.X / 2
+		local pos = workspace.Sphere.Position
+		local startLocation = {
+			node1 = 1,
+			node2 = 2,
+			t = 0,
+		}
+		local intersectionLocation = routeNetwork:intersectSphere(pos, r, startLocation, 50)
+		if intersectionLocation then
+			local spline, t = routeNetwork:getSplineAndT(intersectionLocation)
+			workspace.Point.Position = spline:getPoint(spline.lut:inverseLookup(t))
+		end
 	end
 end)
