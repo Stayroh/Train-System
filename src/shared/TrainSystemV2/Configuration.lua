@@ -1,16 +1,16 @@
 --!strict
 
-export type Bogie = {
+export type BogieDescription = {
 	name: string, -- Unique identifier for the bogie.
-	primaryConnection: Vector3, -- The primary connection point of the bogie to the car.
-	secondaryConnection: Vector3?, -- For shared bogies, the connetion point of the bogie to the secondary car. When exists, the following car will be forced to use the same bogie and not create their own.
+	joint: Vector3, -- The primary connection point of the bogie to the car.
 	stiffness: number, -- The stiffness of the spring connecting the bogie to the car.
 	damping: number, -- The damping of the spring connecting the bogie to the car.
 	springOffset: number, -- The offset of the spring from the primary connection point.
 	wheelRadius: number, -- The radius of the wheel. Used for updating the rotation of the wheel axis for visual connection between the wheel and the rail.
+	shared: boolean, -- If the bogie is shared between cars. Mostly false
 }
 
-export type Car = {
+export type CarDescription = {
 	name: string, -- Unique identifier for the car.
 	length: number, -- The length of the car.
 	frontConnection: Vector3, -- The connection point of the front bogie to the car.
@@ -22,13 +22,13 @@ export type Car = {
 }
 
 type Configuration = {
-	cars: { [string]: Car },
-	bogies: { [string]: Bogie },
+	cars: { [string]: CarDescription },
+	bogies: { [string]: BogieDescription },
 }
 
 local Configuration: Configuration = {
 	cars = {
-		sovietCarriage = {
+		SovietCarriage = {
 			name = "SovietCarriage",
 			length = 82,
 			frontConnection = Vector3.new(0, 0.687, 27.592),
@@ -40,13 +40,13 @@ local Configuration: Configuration = {
 		},
 	},
 	bogies = {
-		sovietCarriageB = {
+		SovietCarriageB = {
 			name = "SovietCarriageB",
-			primaryConnection = Vector3.new(0, -0.687, -27.592),
-			stiffness = 100000,
-			damping = 1000,
-			springOffset = 0,
-			wheelRadius = 0.5,
+			joint = Vector3.new(0, 3.668 + 7, 0), -- original is 3.668
+			stiffness = 5,
+			damping = 7,
+			wheelRadius = 1.27952,
+			shared = false,
 		},
 	},
 } :: Configuration

@@ -231,7 +231,7 @@ for splineIndex, spline in pairs(routeNetwork.splines) do
 	for i = 1, segmentCount do
 		renderRailSegment(spline, (i - 1) * segmentT, i * segmentT, folder)
 	end
-
+	--[[
 	--Create Bounding Box
 	local bounds = spline:getBounds()
 	local Part = Instance.new("Part")
@@ -243,13 +243,14 @@ for splineIndex, spline in pairs(routeNetwork.splines) do
 	Part.Transparency = 0.5
 	Part.CanCollide = false
 	Part.Parent = folder
+	]]
 	folder.Parent = railFolder
 end
 
 task.wait(5)
 
-game:GetService("RunService"):BindToRenderStep("name", 10, function()
-	for i = 1, 100 do
+game:GetService("RunService").RenderStepped:Connect(function()
+	for i = 1, 1 do
 		local r = workspace.Sphere.Size.X / 2
 		local pos = workspace.Sphere.Position
 		local startLocation = {
@@ -264,3 +265,58 @@ game:GetService("RunService"):BindToRenderStep("name", 10, function()
 		end
 	end
 end)
+
+local Train = require(game.ReplicatedStorage.src.TrainSystemV2.Train)
+local lastCamPos = workspace.CurrentCamera.CFrame.Position
+local layout: Train.TrainLayout = {
+	{ car = "SovietCarriage", reversed = false },
+	{ car = "SovietCarriage", reversed = false },
+	{ car = "SovietCarriage", reversed = false },
+	{ car = "SovietCarriage", reversed = false },
+	{ car = "SovietCarriage", reversed = false },
+}
+local myTrain = Train.fromLayout(layout, { node1 = 1, node2 = 2, t = 0 }, routeNetwork)
+myTrain.folder.Parent = workspace.Trains
+local speed = 200
+workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+game:GetService("RunService").PreRender:Connect(function(deltaTime)
+	local deltaTime = game:GetService("RunService").RenderStepped:Wait()
+	local newLocation = routeNetwork:stepDistance(myTrain.location, deltaTime * speed)
+	myTrain:setLocation(newLocation, speed, deltaTime)
+	local myCar = myTrain.cars[4]
+	local cf = myCar.cf
+	local lookTo = cf.Position + cf.UpVector * 30 + Vector3.new(0, 30, 0)
+	local target = lookTo - cf.LookVector * 100
+	local blend = math.pow(0.5, deltaTime * 2)
+	lastCamPos = lastCamPos * blend + target * (1 - blend)
+	workspace.CurrentCamera.CFrame = CFrame.lookAt(lastCamPos, lookTo, cf.UpVector)
+end)
+
+local TrainWorkerScript = script.Parent.TrainWorker
+
+local function cloneTable(t)
+	local clone = {}
+	for i, v in pairs(t) do
+		if type(v) == "table" then
+			clone[i] = cloneTable(v)
+		else
+			clone[i] = v
+		end
+	end
+	return clone
+end
+
+--[[
+local routeNetworkClone = cloneTable(routeNetwork)
+
+for i = 1, 4 do
+	local actor = Instance.new("Actor")
+	actor.Name = "TrainWorker_" .. tostring(i)
+	actor.Parent = workspace.Trains
+	local clone = TrainWorkerScript:Clone()
+	clone.Parent = actor
+	clone.Disabled = false
+	actor:SendMessage("TrainSpawn", routeNetworkClone)
+	task.wait(0.1)
+end
+]]

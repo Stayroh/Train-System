@@ -14,6 +14,7 @@ type RouteNetworkClass = {
 	getPoint: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the position of a location on the route network.
 	getVelocity: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the velocity of a location on the route network.
 	getAcceleration: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the acceleration of a location on the route network.
+	getTargetSpeed: (self: RouteNetwork, location: RouteNetworkLocation) -> number, -- Returns the target speed of a location on the route network.
 	getFollowingNode: (self: RouteNetwork, node1: number, node2: number) -> number?, -- Returns the index of the node which is connected to node2 but not node1. Returns nil if no such node exists.
 	stepDistance: (
 		self: RouteNetwork,
@@ -25,7 +26,8 @@ type RouteNetworkClass = {
 		center: Vector3,
 		radius: number,
 		traverseFrom: RouteNetworkLocation,
-		maxSplines: number
+		maxSplines: number,
+		invertLocation: boolean
 	) -> RouteNetworkLocation?, -- Returns the location of the first intersection of a sphere with the route network. Returns nil if no intersection is found. Starts searching from traverseFrom in the direction of the next node. Stops after maxSplines splines have been traversed.
 }
 
@@ -60,12 +62,18 @@ function RouteNetwork:intersectSphere(
 	center: Vector3,
 	radius: number,
 	traverseFrom: RouteNetworkLocation,
-	maxSplines: number
+	maxSplines: number,
+	invertDirection: boolean
 ): RouteNetworkLocation?
 	local node1, node2 = traverseFrom.node1, traverseFrom.node2
+	local t = traverseFrom.t
+	if invertDirection then
+		node1, node2 = node2, node1
+		t = 1 - t
+	end
 
 	local spline, isReversed = self:getConnectingSpline(node1, node2)
-	local startT = isReversed and 1 - traverseFrom.t or traverseFrom.t
+	local startT = isReversed and 1 - t or t
 	local intersectionT
 	local i = 0
 	while intersectionT == nil and i < maxSplines do
@@ -84,6 +92,10 @@ function RouteNetwork:intersectSphere(
 		i += 1
 	end
 	if intersectionT then
+		if invertDirection then
+			intersectionT = 1 - intersectionT
+			node1, node2 = node2, node1
+		end
 		return { node1 = node1, node2 = node2, t = isReversed and 1 - intersectionT or intersectionT }
 	else
 		return nil
@@ -168,6 +180,12 @@ end
 function RouteNetwork:getAcceleration(location: RouteNetworkLocation): Vector3
 	local spline, t = self:getSplineAndT(location)
 	return spline:getAcceleration(spline.lut:inverseLookup(t))
+end
+
+function RouteNetwork:getTargetSpeed(location: RouteNetworkLocation): number
+	local node1Speed = self.nodes[location.node1].targetSpeed
+	local node2Speed = self.nodes[location.node2].targetSpeed
+	return node1Speed + (node2Speed - node1Speed) * location.t
 end
 
 function RouteNetwork:checkNeighbourRelation(currentNode: number, neighbourNode: number): boolean?

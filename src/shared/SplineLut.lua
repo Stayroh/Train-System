@@ -1,6 +1,6 @@
 --!strict
 
-type SplineSuper = typeof(require(game.ReplicatedStorage.src.SplineSuper))
+--type SplineSuper = typeof(require(game.ReplicatedStorage.src.SplineSuper))
 
 local SplineLut: SplineLutClass = {} :: SplineLutClass
 SplineLut.__index = SplineLut
@@ -9,15 +9,14 @@ type SplineLutClass = {
 	__index: SplineLutClass,
 	inverseLookup: (self: SplineLut, t: number) -> number,
 	forwardLookup: (self: SplineLut, t: number) -> number,
-	regenerate: (self: SplineLut, sampleCount: number, resolution: number) -> nil,
-	new: (Spline: SplineSuper) -> SplineLut,
-	generate: (Spline: SplineSuper, sampleCount: number, lutResolution: number) -> SplineLut,
+	regenerate: (self: SplineLut, spline: any, sampleCount: number, resolution: number) -> nil,
+	new: () -> SplineLut,
+	generate: (Spline: any, sampleCount: number, lutResolution: number) -> SplineLut,
 	getLength: (self: SplineLut) -> number,
 }
 
 export type SplineLut = typeof(setmetatable(
 	{} :: {
-		spline: SplineSuper,
 		sampleCount: number,
 		resolution: number,
 		samples: { number },
@@ -63,15 +62,15 @@ function SplineLut:forwardLookup(t: number): number
 	return returnValue / self.length
 end
 
-function SplineLut:regenerate(sampleCount: number, resolution: number)
+function SplineLut:regenerate(spline: any, sampleCount: number, resolution: number)
 	self.sampleCount = sampleCount
 	self.resolution = resolution
 	local distance = 0
 	local samples = {}
-	local lastPos = self.spline:getPoint(0)
+	local lastPos = spline:getPoint(0)
 	for i = 1, sampleCount do
 		local t = i / sampleCount
-		local pos = self.spline:getPoint(t)
+		local pos = spline:getPoint(t)
 		distance += (pos - lastPos).magnitude
 		lastPos = pos
 		table.insert(samples, distance)
@@ -96,15 +95,14 @@ function SplineLut:regenerate(sampleCount: number, resolution: number)
 	self.lut = lut
 end
 
-function SplineLut.new(spline: SplineSuper)
+function SplineLut.new()
 	local self = setmetatable({}, SplineLut)
-	self.spline = spline
 	return self
 end
 
 function SplineLut.generate(spline: SplineSuper, sampleCount: number, lutResolution: number)
 	local self = SplineLut.new(spline)
-	self:regenerate(sampleCount, lutResolution)
+	self:regenerate(spline, sampleCount, lutResolution)
 	return self
 end
 
