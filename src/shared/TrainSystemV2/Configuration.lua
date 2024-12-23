@@ -7,6 +7,7 @@ export type BogieDescription = {
 	damping: number, -- The damping of the spring connecting the bogie to the car.
 	springOffset: number, -- The offset of the spring from the primary connection point.
 	wheelRadius: number, -- The radius of the wheel. Used for updating the rotation of the wheel axis for visual connection between the wheel and the rail.
+	mass: number, -- The mass of the bogie.
 	shared: boolean, -- If the bogie is shared between cars. Mostly false
 }
 
@@ -30,9 +31,9 @@ local Configuration: Configuration = {
 	cars = {
 		SovietCarriage = {
 			name = "SovietCarriage",
-			length = 82,
-			frontConnection = Vector3.new(0, 0.687, 27.592),
-			rearConnection = Vector3.new(0, 0.687, -27.592),
+			length = 71.597,
+			frontConnection = Vector3.new(0, -0.6, 24.084),
+			rearConnection = Vector3.new(0, -0.6, -24.084),
 			bogie1 = "SovietCarriageB",
 			bogie2 = "SovietCarriageB",
 			bogie1Reversed = false,
@@ -42,10 +43,12 @@ local Configuration: Configuration = {
 	bogies = {
 		SovietCarriageB = {
 			name = "SovietCarriageB",
-			joint = Vector3.new(0, 3.668 + 7, 0), -- original is 3.668
-			stiffness = 5,
-			damping = 7,
-			wheelRadius = 1.27952,
+			joint = Vector3.new(00, 3.202, 0), -- original is 3.668
+			stiffness = 300, -- Multiplied by mass
+			damping = 4, -- Mutlplied by Sitffness and mass
+			springOffset = 1.05,
+			wheelRadius = 1.707,
+			mass = 20000,
 			shared = false,
 		},
 	},

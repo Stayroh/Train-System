@@ -27,20 +27,22 @@ export type Bogie = typeof(setmetatable(
 		routeNetwork: RouteNetwork.RouteNetwork, -- The route network the bogie is on.
 		location: RouteNetwork.RouteNetworkLocation, -- The location of the bogie on the route network.
 		cf: CFrame, -- The CFrame of the bogie.
+		lastCF: CFrame?, -- The last CFrame of the bogie.
 		joint: Vector3, -- The primary connection point of the bogie to the car.
 		stiffness: number, -- The stiffness of the spring connecting the bogie to the car.
+		mass: number, -- Sum of the Mass of the attached Cars divided by the amount of it carrying bogies.
 		damping: number, -- The damping of the spring connecting the bogie to the car.
 		wheelRadius: number, -- The radius of the wheel. Used for updating the rotation of the wheel axis for visual connection between the wheel and the rail.
 		shared: boolean, -- If the bogie is shared between cars. Mostly false
-		springVelocity: number, -- The current velocity of the spring.
 		springPivot: Vector3?, -- The pivot point of the spring. Representing the end of the spring, where the spring is connected to the car. Is in world space
-		springDelta: number, -- The current delta of the spring. The difference between the current height of the spring and the rest height.
+		springPivotVelocity: Vector3?, -- The velocity of the spring pivot.
+		springOffset: number, -- The offset of the spring from the primary connection point.
 	},
 	Bogie
 ))
 
 function Bogie:getConnection(): CFrame
-	local offset = self.joint + Vector3.new(0, self.springDelta, 0)
+	local offset = self.springPivot and self.joint + self.springPivot - self.cf.Position or self.joint
 	return self.cf:ToWorldSpace(CFrame.new(offset))
 end
 
@@ -63,7 +65,9 @@ function Bogie:setLocation(location: RouteNetwork.RouteNetworkLocation)
 		math.sin(bankAngle) * normal + math.cos(bankAngle) * Vector3.new(0, 1, 0)
 	)
 	self.location = location
-	self.cf = self.reversed and cf * CFrame.Angles(0, math.pi, 0) or cf
+	local newCF = self.reversed and cf * CFrame.Angles(0, math.pi, 0) or cf
+	self.lastCF = self.lastCF and self.cf or newCF
+	self.cf = newCF
 	self.model:PivotTo(self.cf)
 end
 
@@ -80,19 +84,25 @@ function Bogie:updatePhysics(speed: number, deltaTime: number)
 
 	--Update the spring physics
 	local deltaHeight = self.springPivot and self.cf.UpVector:Dot(self.springPivot - self.cf.Position) or 0
-	--deltaHeight += (math.random() - 0.5) * deltaTime * speed / 20 --(1 - (1 / (1 + (self.Train.Velocity / 20))))
-	local springAcceleration = -deltaHeight * self.stiffness
-	local dampingAcceleration = -self.springVelocity * self.damping
+	local onAxisVelocity = self.springPivotVelocity and self.cf.UpVector:Dot(self.springPivotVelocity) or 0
+	local bogieVelocity = self.lastCF and (self.cf.Position - self.lastCF.Position) / deltaTime or Vector3.new(0, 0, 0)
+	local onAxisBogieVelocity = self.cf.UpVector:Dot(bogieVelocity)
+	local springForce = -(deltaHeight - self.springOffset + onAxisVelocity * deltaTime) * self.stiffness
+	local dampingForce = -(onAxisVelocity - onAxisBogieVelocity) * self.damping
 	local gravityAcceleration = 40 * Vector3.new(0, -1, 0):Dot(self.cf.UpVector)
-	local totalAccerelation = springAcceleration + dampingAcceleration + gravityAcceleration
-	local distance = totalAccerelation * deltaTime ^ 2 / 2 + self.springVelocity + deltaTime
-	self.springVelocity += totalAccerelation * deltaTime
-	self.springDelta = deltaHeight + distance
-	if self.springDelta > 10 or self.springDelta < -10 then
-		self.springVelocity = 0
-		self.springDelta = math.clamp(self.springDelta, -10, 10)
+	local totalAccerelation = (springForce + dampingForce) / self.mass + gravityAcceleration
+	local distance = totalAccerelation * deltaTime ^ 2 / 2 + onAxisVelocity * deltaTime
+	onAxisVelocity += totalAccerelation * deltaTime
+	local newSpringLength = distance + deltaHeight
+	if newSpringLength > 10 then
+		onAxisVelocity = math.min(onAxisVelocity, onAxisBogieVelocity)
+		newSpringLength = math.clamp(newSpringLength, -10, 10)
+	elseif newSpringLength < -10 then
+		onAxisVelocity = math.max(onAxisVelocity, onAxisBogieVelocity)
+		newSpringLength = math.clamp(newSpringLength, -10, 10)
 	end
-	self.springPivot = self.cf.UpVector * self.springDelta + self.cf.Position
+	self.springPivot = self.cf.UpVector * newSpringLength + self.cf.Position
+	self.springPivotVelocity = self.cf.UpVector * onAxisVelocity
 end
 
 function Bogie.new(
@@ -107,15 +117,16 @@ function Bogie.new(
 	self.routeNetwork = routeNetwork
 	self.reversed = reversed
 	self.joint = thisConfig.joint
-	self.stiffness = thisConfig.stiffness
-	self.damping = thisConfig.damping
+	self.stiffness = thisConfig.stiffness * thisConfig.mass
+	self.damping = thisConfig.damping * thisConfig.mass
 	self.wheelRadius = thisConfig.wheelRadius
 	self.shared = thisConfig.shared
-	self.springDelta = 0
+	self.springOffset = thisConfig.springOffset
+	self.mass = thisConfig.mass
 	self.model = game.ReplicatedStorage.assets.Trains:findFirstChild(name, true):Clone()
 	self.location = location
 	self.cf = CFrame.new(0, 0, 0)
-	self.springVelocity = 0
+	self.lastCF = nil
 	return self
 end
 

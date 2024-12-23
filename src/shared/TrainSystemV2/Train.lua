@@ -33,7 +33,7 @@ type TrainClass = {
 export type Train = typeof(setmetatable(
 	{} :: {
 		cars: { Car.Car },
-		folder: Folder,
+		model: Model,
 		location: RouteNetwork.RouteNetworkLocation,
 		routeNetwork: RouteNetwork.RouteNetwork,
 		speed: number,
@@ -89,14 +89,14 @@ function Train.new(
 	self.length = 0
 	self.averageSlopeSine = 0
 	self.endLocation = location
-	self.folder = Instance.new("Folder")
-	self.folder.Name = "Train"
+	self.model = Instance.new("Model")
+	self.model.Name = "Train"
 	for i, car in ipairs(cars) do
 		self.length += car.length
-		car.model.Parent = self.folder
-		car.rearBogie.model.Parent = self.folder
+		car.model.Parent = self.model
+		car.rearBogie.model.Parent = self.model
 		if i == 1 or not car.frontBogie.shared then
-			car.frontBogie.model.Parent = self.folder
+			car.frontBogie.model.Parent = self.model
 		end
 	end
 	return self
