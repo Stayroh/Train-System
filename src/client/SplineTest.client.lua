@@ -231,8 +231,8 @@ for i = 1, #conversions do
 		position = conversions[i].startPosition,
 		handle = conversions[i].startHandle,
 		targetSpeed = 3,
-		previousNode = (i - 2) % #conversions + 1,
-		nextNode = i % #conversions + 1,
+		previousNode = { index = (i - 2) % #conversions + 1, isSwitchNode = false },
+		nextNode = { index = i % #conversions + 1, isSwitchNode = false },
 	}
 end
 

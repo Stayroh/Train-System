@@ -40,7 +40,7 @@ export type Train = typeof(setmetatable(
 		length: number,
 		averageSlopeSine: number,
 		endLocation: RouteNetwork.RouteNetworkLocation,
-		switchSelection
+		switchSelection: { RouteNetwork.SwitchSelectionOverride },
 	},
 	Train
 ))
