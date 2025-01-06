@@ -3,6 +3,7 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
+local DisplacementModifier = require(game.ReplicatedStorage.src.DisplacementModifier)
 local BezierSpline = require(game.ReplicatedStorage.src.BezierSpline)
 local BezierConverter = require(game.ReplicatedStorage.src.BezierConverter)
 local RouteNetwork = require(game.ReplicatedStorage.src.TrainSystemV2.RouteNetwork)
@@ -113,6 +114,7 @@ do
 	local i = 1
 	while knotsFolder:FindFirstChild(tostring(i)) do
 		knots[i] = knotsFolder[tostring(i)].Position
+		knotsFolder[tostring(i)].Transparency = 1
 		i += 1
 	end
 end
@@ -136,7 +138,7 @@ function getCFrame(position: Vector3, tangent: Vector3, acceleration: Vector3, e
 	local curvatureVector = tangent:Cross(tangent:Cross(acceleration)) / tangent.Magnitude ^ 3
 	local k = -normal:Dot(curvatureVector)
 	local bankAngle = math.atan(excpectedSpeed ^ 2 * k / G)
-	return CFrame.lookAt(position, position - tangent, math.sin(bankAngle) * normal + math.cos(bankAngle) * upVector)
+	return CFrame.lookAt(position, position + tangent, math.sin(bankAngle) * normal + math.cos(bankAngle) * upVector)
 end
 
 function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t_end: number, parent: Folder)
@@ -144,11 +146,12 @@ function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t
 	local bones = segment.Bone0:GetChildren()
 	local correctedStartT = spline.lut:inverseLookup(t_start)
 	local startCF = getCFrame(
-		spline:getPoint(correctedStartT),
+		spline:getPoint(correctedStartT, false),
 		spline:getVelocity(correctedStartT),
 		spline:getAcceleration(correctedStartT),
-		2
+		3
 	)
+	startCF = spline.displacementModifier + startCF
 	local offset = CFrame.new(0, 0, 4)
 	segment.CFrame = startCF:ToWorldSpace(offset)
 	segment.Bone0.WorldCFrame = startCF
@@ -158,11 +161,12 @@ function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t
 		local t = t_start * (1 - alpha) + t_end * alpha
 		local correctedT = spline.lut:inverseLookup(t)
 		local cf = getCFrame(
-			spline:getPoint(correctedT),
+			spline:getPoint(correctedT, false),
 			spline:getVelocity(correctedT),
 			spline:getAcceleration(correctedT),
-			2
+			3
 		)
+		cf = spline.displacementModifier + cf
 		bone.CFrame = startCF:ToObjectSpace(cf)
 	end
 	segment.Parent = parent
@@ -226,13 +230,14 @@ for i = 1, #conversions do
 	nodes[i] = {
 		position = conversions[i].startPosition,
 		handle = conversions[i].startHandle,
-		targetSpeed = 2,
+		targetSpeed = 3,
 		previousNode = (i - 2) % #conversions + 1,
 		nextNode = i % #conversions + 1,
 	}
 end
 
-local routeNetwork = RouteNetwork.new(nodes)
+local displacementModifier = DisplacementModifier.new(Vector3.new(0, 0, 0), 40)
+local routeNetwork = RouteNetwork.new(nodes, displacementModifier)
 
 for splineIndex, spline in pairs(routeNetwork.splines) do
 	local folder = Instance.new("Folder")
@@ -280,16 +285,21 @@ end)
 local Train = require(game.ReplicatedStorage.src.TrainSystemV2.Train)
 local lastCamPos = workspace.CurrentCamera.CFrame.Position
 local layout: Train.TrainLayout = {
-	{ car = "SovietCarriage", reversed = false },
-	{ car = "SovietCarriage", reversed = false },
-	{ car = "SovietCarriage", reversed = false },
-	{ car = "SovietCarriage", reversed = false },
-	{ car = "SovietCarriage", reversed = false },
-	{ car = "SovietCarriage", reversed = false },
-	{ car = "SovietCarriage", reversed = false },
+	{ car = "TGVEngine", reversed = false },
+	{ car = "TGVConnection", reversed = false },
+	{ car = "TGVCarriage", reversed = false },
+	{ car = "TGVCarriage", reversed = true },
+	{ car = "TGVConnection", reversed = true },
+	--{ car = "TGVEngine", reversed = true },
 	--[[
 	{ car = "SovietCarriage", reversed = false },
 	{ car = "SovietCarriage", reversed = false },
+	{ car = "FlatcarTest", reversed = false },
+	{ car = "FlatcarTest", reversed = false },
+
+	{ car = "SovietCarriage", reversed = false },
+	{ car = "SovietCarriage", reversed = false },
+	
 	{ car = "SovietCarriage", reversed = false },
 	{ car = "SovietCarriage", reversed = false },
 	{ car = "SovietCarriage", reversed = false },
@@ -315,10 +325,15 @@ local layout: Train.TrainLayout = {
 	{ car = "SovietCarriage", reversed = true },
 	 ]]
 }
-local myTrain = Train.fromLayout(layout, { node1 = 1, node2 = 2, t = 0 }, routeNetwork)
+local myTrain = Train.fromLayout(layout, { node1 = 45, node2 = 46, t = 0.1 }, routeNetwork)
 myTrain.model.Parent = workspace.Trains
 local speed = 300
-workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+local camToggle = false
+local timeScale = 10.0
+if camToggle then
+	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+	workspace.CurrentCamera.FieldOfView = 100
+end
 
 function setFOV(distance)
 	local S = 70
@@ -329,8 +344,16 @@ end
 workspace.some.Event:Connect(function(a)
 	myTrain.cars[1].frontBogie.springPivot = myTrain.cars[1].frontBogie.springPivot + Vector3.new(0, a, 0)
 end)
+local running = true
+workspace.toggleRuntime.Event:Connect(function()
+	running = not running
+end)
 
 game:GetService("RunService").PreRender:Connect(function(deltaTime)
+	deltaTime *= timeScale
+	if not running then
+		return
+	end
 	debug.profilebegin("Train")
 	local acceleration = myTrain.averageSlopeSine * -300
 	local stepDistance = deltaTime * speed + 0.5 * acceleration * deltaTime ^ 2
@@ -339,13 +362,15 @@ game:GetService("RunService").PreRender:Connect(function(deltaTime)
 	myTrain:setLocation(newLocation, speed, deltaTime)
 	local myCar = myTrain.cars[1]
 	local cf = myCar.cf
-	local lookTo = cf.Position + cf.LookVector * 40
-	local target = lookTo + cf.LookVector * 80
-	local blend = math.pow(0.5, deltaTime * 6)
+	local lookTo = cf.Position + cf.LookVector * 20
+	local target = lookTo + cf.LookVector * 105 + cf.UpVector * 00
+	local blend = math.pow(0.5, deltaTime * 4)
 	lastCamPos = lastCamPos * blend + target * (1 - blend)
-	local fixedLookTo = cf.Position + cf.UpVector * 2 + cf.LookVector * 5
-	local fixedTarget = fixedLookTo + cf.LookVector * 30
-	workspace.CurrentCamera.CFrame = CFrame.lookAt(fixedLookTo, fixedTarget)
+	local fixedLookTo = cf:PointToWorldSpace(Vector3.new(-2.258, 7.007, -32.064))
+	local fixedTarget = fixedLookTo + cf.LookVector * 50 - cf.RightVector * 0 - cf.UpVector * 15
+	if camToggle then
+		workspace.CurrentCamera.CFrame = CFrame.lookAt(fixedLookTo, fixedTarget, cf.UpVector)
+	end
 	--setFOV((lastCamPos - lookTo).Magnitude)
 end)
 
@@ -362,7 +387,6 @@ local function cloneTable(t)
 	end
 	return clone
 end
-
 --[[
 local routeNetworkClone = cloneTable(routeNetwork)
 
@@ -374,6 +398,6 @@ for i = 1, 4 do
 	clone.Parent = actor
 	clone.Disabled = false
 	actor:SendMessage("TrainSpawn", routeNetworkClone)
-	task.wait(0.1)
+	task.wait(2.0)
 end
 ]]

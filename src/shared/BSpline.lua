@@ -1,4 +1,5 @@
 --!strict
+local DisplacementModifier = require(game.ReplicatedStorage.src.DisplacementModifier)
 local SplineSuper = require(game.ReplicatedStorage.src.SplineSuper)
 local Matrix = require(game.ReplicatedStorage.src.Matrix)
 
@@ -8,12 +9,24 @@ setmetatable(BSpline, SplineSuper)
 
 type BSplineClass = {
 	__index: BSplineClass,
-	new: (P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3) -> BSpline,
+	new: (
+		P0: Vector3,
+		P1: Vector3,
+		P2: Vector3,
+		P3: Vector3,
+		displacementModifier: DisplacementModifier.DisplacementModifier?
+	) -> BSpline,
 }
 
 export type BSpline = typeof(setmetatable({} :: {}, BSpline)) & SplineSuper.SplineSuper
 
-function BSpline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): BSpline
+function BSpline.new(
+	P0: Vector3,
+	P1: Vector3,
+	P2: Vector3,
+	P3: Vector3,
+	displacementModifier: DisplacementModifier.DisplacementModifier?
+): BSpline
 	local matrixForm = Matrix.new({
 		{ 1, 4, 1, 0 },
 		{ -3, 0, 3, 0 },
@@ -36,7 +49,7 @@ function BSpline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): BSplin
 	}) * (1 / 6)
 
 	local self = setmetatable(
-		SplineSuper.new(P0, P1, P2, P3, matrixForm, dtMatrixForm, dt2MatrixForm) :: BSpline,
+		SplineSuper.new(P0, P1, P2, P3, matrixForm, dtMatrixForm, dt2MatrixForm, displacementModifier) :: BSpline,
 		BSpline
 	) :: BSpline
 

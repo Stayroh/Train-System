@@ -1,4 +1,5 @@
 --!strict
+local DisplacementModifier = require(game.ReplicatedStorage.src.DisplacementModifier)
 local SplineSuper = require(game.ReplicatedStorage.src.SplineSuper)
 local Matrix = require(game.ReplicatedStorage.src.Matrix)
 
@@ -8,7 +9,13 @@ setmetatable(BezierSpline, SplineSuper)
 
 type BezierSplineClass = {
 	__index: BezierSplineClass,
-	new: (P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3) -> BezierSpline,
+	new: (
+		P0: Vector3,
+		P1: Vector3,
+		P2: Vector3,
+		P3: Vector3,
+		displacementModifier: DisplacementModifier.DisplacementModifier?
+	) -> BezierSpline,
 	getBounds: (self: BezierSpline) -> Region3,
 }
 
@@ -69,7 +76,13 @@ function BezierSpline:getBounds(): Region3
 	)
 end
 
-function BezierSpline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): BezierSpline
+function BezierSpline.new(
+	P0: Vector3,
+	P1: Vector3,
+	P2: Vector3,
+	P3: Vector3,
+	displacementModifier: DisplacementModifier.DisplacementModifier?
+): BezierSpline
 	local matrixForm = Matrix.new({
 		{ 1, 0, 0, 0 },
 		{ -3, 3, 0, 0 },
@@ -92,7 +105,7 @@ function BezierSpline.new(P0: Vector3, P1: Vector3, P2: Vector3, P3: Vector3): B
 	})
 
 	local self = setmetatable(
-		SplineSuper.new(P0, P1, P2, P3, matrixForm, dtMatrixForm, dt2MatrixForm) :: BezierSpline,
+		SplineSuper.new(P0, P1, P2, P3, matrixForm, dtMatrixForm, dt2MatrixForm, displacementModifier) :: BezierSpline,
 		BezierSpline
 	) :: BezierSpline
 

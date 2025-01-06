@@ -1,4 +1,5 @@
 --!strict
+local DisplacementModifier = require(game.ReplicatedStorage.src.DisplacementModifier)
 local BezierSpline = require(game.ReplicatedStorage.src.BezierSpline)
 
 local RouteNetwork: RouteNetworkClass = {} :: RouteNetworkClass
@@ -6,7 +7,7 @@ RouteNetwork.__index = RouteNetwork
 
 type RouteNetworkClass = {
 	__index: RouteNetworkClass,
-	new: (nodes: { Node }) -> RouteNetwork,
+	new: (nodes: { Node }, switchNodes: { SwitchNode}, displacementModifier: DisplacementModifier.DisplacementModifier?) -> RouteNetwork,
 	createSplines: (self: RouteNetwork) -> { BezierSpline.BezierSpline },
 	checkNeighbourRelation: (self: RouteNetwork, currentNode: number, neighbourNode: number) -> boolean?, -- Returns true if nighbourNode is currentNode's nextNode, false if it is the previousNode, and nil if it is not a neighbour.
 	getSplineAndT: (self: RouteNetwork, location: RouteNetworkLocation) -> (BezierSpline.BezierSpline, number, boolean), -- Returns the spline and the position on the spline for a given location. Also returns whether the spline is reversed from the perspective of the location.
@@ -14,8 +15,10 @@ type RouteNetworkClass = {
 	getPoint: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the position of a location on the route network.
 	getVelocity: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the velocity of a location on the route network.
 	getAcceleration: (self: RouteNetwork, location: RouteNetworkLocation) -> Vector3, -- Returns the acceleration of a location on the route network.
+	getCFrames: (self: RouteNetwork, location: RouteNetworkLocation) -> CFrame, -- Returns the CFrame of a location on the route network.
 	getTargetSpeed: (self: RouteNetwork, location: RouteNetworkLocation) -> number, -- Returns the target speed of a location on the route network.
 	getFollowingNode: (self: RouteNetwork, node1: number, node2: number) -> number?, -- Returns the index of the node which is connected to node2 but not node1. Returns nil if no such node exists.
+	getNodeAny: (self: RouteNetwork, nodeIndex: number, isSwitchNode: boolean) -> Node | SwitchNode | nil,
 	stepDistance: (
 		self: RouteNetwork,
 		location: RouteNetworkLocation,
@@ -31,17 +34,31 @@ type RouteNetworkClass = {
 	) -> RouteNetworkLocation?, -- Returns the location of the first intersection of a sphere with the route network. Returns nil if no intersection is found. Starts searching from traverseFrom in the direction of the next node. Stops after maxSplines splines have been traversed.
 }
 
+export type SwitchNode = {
+	position: Vector3, -- Position of the node. Start or End of a bezier curve. (P0 or P3)
+	handle: Vector3, -- Handle of the node. For next note, position + handle is P1. For previous node, position - handle is P2.
+	nextNode: {{number, boolean}}?, -- Array of indices of the next node in the route network.
+	previousNode: {{number, boolean}}?, -- Index of the previous node in the route network.
+	nextSpline: {number}?, -- Array of indices of the next spline in the route network. The Index of this array corrosponds to the nextNode array index. Note that this will only exist after the RouteNetwork has been fully constructed. Meaning that this attribute will be overwritten by the RouteNetwork object and should not be there when passing the nodes to the RouteNetwork constructor.
+	previousSpline: {number}?, -- Array of indices of the previous spline in the route network. The Index of this array corrosponds to the previousNode array index. Note that this will only exist after the RouteNetwork has been fully constructed. Meaning that this attribute will be overwritten by the RouteNetwork object and should not be there when passing the nodes to the RouteNetwork constructor.
+	nextSplineReversed: {boolean}?, -- Whether this node connects to the end of the to this side connected spline. This happens when the spline was created be the other node.
+	previousSplineReversed: {boolean}?, -- Whether this node connects to the end of the to this side connected spline. This happens when the spline was created be the other node.
+	targetSpeed: number, -- Target speed of the train at this node. Used for bank angle calculations.
+	nextSelection: number, -- Selection of the switch spline and connecting node to go for as the next node. Defualt is 1
+	previousSelection: number, -- Selection of the switch spline and connecting node to go for as the previous node. Defualt is 1
+} -- Like Node Type, but with multiple connections.
+
 export type Node = {
 	position: Vector3, -- Position of the node. Start or End of a bezier curve. (P0 or P3)
 	handle: Vector3, -- Handle of the node. For next note, position + handle is P1. For previous node, position - handle is P2.
-	nextNode: number?, -- Index of the next node in the route network.
-	previousNode: number?, -- Index of the previous node in the route network.
+	nextNode: {number, boolean}?, -- Index of the next node in the route network and wether it is a SwitchNode.
+	previousNode: {number, boolean}?, -- Index of the previous node in the route network and wether it is a a SwitchNode.
 	nextSpline: number?, -- Index of the next spline in the route network. Note that this will only exist after the RouteNetwork has been fully constructed. Meaning that this attribute will be overwritten by the RouteNetwork object and should not be there when passing the nodes to the RouteNetwork constructor.
 	previousSpline: number?, -- Index of the previous spline in the route network. Note that this will only exist after the RouteNetwork has been fully constructed. Meaning that this attribute will be overwritten by the RouteNetwork object and should not be there when passing the nodes to the RouteNetwork constructor.
 	nextSplineReversed: boolean?, -- Whether this node connects to the end of the to this side connected spline. This happens when the spline was created be the other node.
 	previousSplineReversed: boolean?, -- Whether this node connects to the end of the to this side connected spline. This happens when the spline was created be the other node.
 	targetSpeed: number, -- Target speed of the train at this node. Used for bank angle calculations.
-} -- Direct association with a combination of a bezier anchor and handle.
+} -- Direct association with a combination of a qbezier anchor and handle.
 
 export type RouteNetworkLocation = {
 	node1: number, -- Index of the starting node.
@@ -52,6 +69,8 @@ export type RouteNetworkLocation = {
 export type RouteNetwork = typeof(setmetatable(
 	{} :: {
 		nodes: { Node },
+		switchNodes: { SwitchNode},
+		displacementModifier: DisplacementModifier.DisplacementModifier?, -- Displacement modifier for the route network.
 		splines: { BezierSpline.BezierSpline },
 		totalLength: number, -- Total length of the route network. Calculated by summing the length of all splines.
 	},
@@ -100,6 +119,10 @@ function RouteNetwork:intersectSphere(
 	else
 		return nil
 	end
+end
+
+function RouteNetwork:getNodeAny(nodeIndex: number, isSwitchNode: boolean): Node | SwitchNode | nil
+	return isSwitchNode and self.switchNodes[nodeIndex] or self.nodes[nodeIndex]
 end
 
 function RouteNetwork:getConnectingSpline(node1: number, node2: number): (BezierSpline.BezierSpline, boolean)
@@ -182,6 +205,22 @@ function RouteNetwork:getAcceleration(location: RouteNetworkLocation): Vector3
 	return spline:getAcceleration(spline.lut:inverseLookup(t))
 end
 
+function RouteNetwork:getCFrames(location: RouteNetworkLocation): CFrame
+	local upVector = Vector3.new(0, 1, 0)
+	local G = 40
+	local spline, t = self:getSplineAndT(location)
+	local correctedT = spline.lut:inverseLookup(t)
+	local excpectedSpeed = self:getTargetSpeed(location)
+	local point = spline:getPoint(correctedT)
+	local velocity = spline:getVelocity(correctedT)
+	local acceleration = spline:getAcceleration(correctedT)
+	local normal = velocity:Cross(upVector).Unit
+	local curvatureVector = velocity:Cross(velocity:Cross(acceleration)) / velocity.Magnitude ^ 3
+	local k = -normal:Dot(curvatureVector)
+	local bankAngle = math.atan(excpectedSpeed ^ 2 * k / G)
+	return CFrame.lookAt(point, point + velocity, math.sin(bankAngle) * normal + math.cos(bankAngle) * upVector)
+end
+
 function RouteNetwork:getTargetSpeed(location: RouteNetworkLocation): number
 	local node1Speed = self.nodes[location.node1].targetSpeed
 	local node2Speed = self.nodes[location.node2].targetSpeed
@@ -201,6 +240,7 @@ end
 
 function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 	local splines = {}
+	-- For all nodes
 	for i = 1, #self.nodes do
 		local node = self.nodes[i]
 		if node.nextNode and node.nextSpline == nil then
@@ -210,7 +250,7 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 			local P1 = P0 + node.handle
 			local P3 = nextNode.position
 			local P2 = P3 + nextNode.handle * (isNextNodeNext and 1 or -1)
-			local spline = BezierSpline.new(P0, P1, P2, P3)
+			local spline = BezierSpline.new(P0, P1, P2, P3, self.displacementModifier)
 			local splineIndex = #splines + 1
 			splines[splineIndex] = spline
 			node.nextSpline = splineIndex
@@ -231,7 +271,7 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 			local P1 = P0 - node.handle
 			local P3 = previousNode.position
 			local P2 = P3 + previousNode.handle * (isPreviousNodeNext and 1 or -1)
-			local spline = BezierSpline.new(P0, P1, P2, P3)
+			local spline = BezierSpline.new(P0, P1, P2, P3, self.displacementModifier)
 			local splineIndex = #splines + 1
 			splines[splineIndex] = spline
 			node.previousSpline = splineIndex
@@ -250,10 +290,16 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 	return splines
 end
 
-function RouteNetwork.new(nodes: { Node }): RouteNetwork
+function RouteNetwork.new(
+	nodes: { Node },
+	switchNodes: { SwitchNode},
+	displacementModifier: DisplacementModifier.DisplacementModifier?
+): RouteNetwork
 	local self = setmetatable({}, RouteNetwork)
 	self.totalLength = 0
+	self.displacementModifier = displacementModifier
 	self.nodes = nodes
+	self.switchNodes = switchNodes
 	self.splines = self:createSplines()
 	return self
 end

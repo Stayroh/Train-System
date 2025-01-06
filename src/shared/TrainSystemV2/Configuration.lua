@@ -39,17 +39,77 @@ local Configuration: Configuration = {
 			bogie1Reversed = false,
 			bogie2Reversed = true,
 		},
+		FlatcarTest = {
+			name = "FlatcarTest",
+			length = 62,
+			frontConnection = Vector3.new(0, -0.798, 20),
+			rearConnection = Vector3.new(0, -0.798, -20),
+			bogie1 = "SovietCarriageB",
+			bogie2 = "SovietCarriageB",
+			bogie1Reversed = false,
+			bogie2Reversed = true,
+		},
+		TGVEngine = {
+			name = "TGVEngine",
+			length = 88.056,
+			frontConnection = Vector3.new(0, -1.219, -25.011),
+			rearConnection = Vector3.new(0, -1.219, 29.962),
+			bogie1 = "TGVBogie",
+			bogie2 = "TGVBogie",
+			bogie1Reversed = false,
+			bogie2Reversed = true,
+		},
+		TGVCarriage = {
+			name = "TGVCarriage",
+			length = 79.951,
+			frontConnection = Vector3.new(0, -1.219, -40.058),
+			rearConnection = Vector3.new(0, -1.219, 40.058),
+			bogie1 = "TGVBogieShared",
+			bogie2 = "TGVBogieShared",
+			bogie1Reversed = false,
+			bogie2Reversed = false,
+		},
+		TGVConnection = {
+			name = "TGVConnection",
+			length = 92.872,
+			frontConnection = Vector3.new(0, -1.219, -32.995),
+			rearConnection = Vector3.new(0, -1.219, 46.514),
+			bogie1 = "TGVBogie",
+			bogie2 = "TGVBogieShared",
+			bogie1Reversed = false,
+			bogie2Reversed = false,
+		},
 	},
 	bogies = {
 		SovietCarriageB = {
 			name = "SovietCarriageB",
-			joint = Vector3.new(00, 3.202, 0), -- original is 3.668
+			joint = Vector3.new(0, 3.202, 0), -- original is 3.668
 			stiffness = 300, -- Multiplied by mass
 			damping = 4, -- Mutlplied by Sitffness and mass
 			springOffset = 1.05,
 			wheelRadius = 1.707,
 			mass = 20000,
 			shared = false,
+		},
+		TGVBogie = {
+			name = "TGVBogie",
+			joint = Vector3.new(0, 3.527, 0), -- original is 3.668
+			stiffness = 298.55, -- Multiplied by mass
+			damping = 3, -- Mutlplied by Sitffness and mass
+			springOffset = 1.05,
+			wheelRadius = 1.707,
+			mass = 20000,
+			shared = false,
+		},
+		TGVBogieShared = {
+			name = "TGVBogieShared",
+			joint = Vector3.new(0, 3.527, 0), -- original is 3.668
+			stiffness = 298.55, -- Multiplied by mass
+			damping = 3, -- Mutlplied by Sitffness and mass
+			springOffset = 1.05,
+			wheelRadius = 1.707,
+			mass = 20000,
+			shared = true,
 		},
 	},
 } :: Configuration

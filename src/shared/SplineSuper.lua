@@ -2,12 +2,13 @@
 local Matrix = require(game.ReplicatedStorage.src.Matrix)
 local Polynomial = require(game.ReplicatedStorage.src.Polynomial)
 local SplineLut = require(game.ReplicatedStorage.src.SplineLut)
+local DisplacementModifier = require(game.ReplicatedStorage.src.DisplacementModifier)
 local SplineSuper: SplineSuperSuperClass = {} :: SplineSuperSuperClass
 SplineSuper.__index = SplineSuper
 
 type SplineSuperSuperClass = {
 	__index: SplineSuperSuperClass,
-	getPoint: (self: SplineSuper, t: number) -> Vector3,
+	getPoint: (self: SplineSuper, t: number, useDisplacement: boolean?) -> Vector3,
 	getVelocity: (self: SplineSuper, t: number) -> Vector3,
 	getAcceleration: (self: SplineSuper, t: number) -> Vector3,
 	intersectSphere: (
@@ -24,7 +25,8 @@ type SplineSuperSuperClass = {
 		P3: Vector3,
 		matrixForm: Matrix.Matrix,
 		dtMatrixForm: Matrix.Matrix,
-		dt2MatrixForm: Matrix.Matrix
+		dt2MatrixForm: Matrix.Matrix,
+		displacementModifier: DisplacementModifier.DisplacementModifier?
 	) -> SplineSuper,
 }
 
@@ -38,6 +40,7 @@ export type SplineSuper = typeof(setmetatable(
 		dtMatrixFormParameterized: Matrix.Matrix,
 		dt2MatrixFormParameterized: Matrix.Matrix,
 		lut: SplineLut.SplineLut,
+		displacementModifier: DisplacementModifier.DisplacementModifier?,
 	},
 	SplineSuper
 ))
@@ -62,9 +65,15 @@ function SplineSuper:intersectSphere(center: Vector3, radius: number, startTValu
 	return t
 end
 
-function SplineSuper:getPoint(t: number): Vector3
+function SplineSuper:getPoint(t: number, useDisplacement: boolean?): Vector3
 	local tVector = Matrix.new({ { 1, t, t ^ 2, t ^ 3 } })
-	return (tVector * self.matrixFormParameterized):getAsVector3()
+	local point = (tVector * self.matrixFormParameterized):getAsVector3()
+	if self.displacementModifier and not (useDisplacement == false) then
+		local offset = self.displacementModifier:getDisplacement(point)
+		local tangent = self:getVelocity(t).Unit
+		point += offset - offset:Dot(tangent) * tangent
+	end
+	return point
 end
 
 function SplineSuper:getVelocity(t: number): Vector3
@@ -84,7 +93,8 @@ function SplineSuper.new(
 	P3: Vector3,
 	matrixForm: Matrix.Matrix,
 	dtMatrixForm: Matrix.Matrix,
-	dt2MatrixForm: Matrix.Matrix
+	dt2MatrixForm: Matrix.Matrix,
+	displacementModifier: DisplacementModifier.DisplacementModifier?
 ): SplineSuper
 	local self = setmetatable({}, SplineSuper) :: SplineSuper
 	self.P0 = P0
@@ -95,6 +105,7 @@ function SplineSuper.new(
 	self.matrixFormParameterized = matrixForm * pointMatrix
 	self.dtMatrixFormParameterized = dtMatrixForm * pointMatrix
 	self.dt2MatrixFormParameterized = dt2MatrixForm * pointMatrix
+	self.displacementModifier = displacementModifier
 	self.lut = SplineLut.generate(self, 100, 100)
 	return self
 end

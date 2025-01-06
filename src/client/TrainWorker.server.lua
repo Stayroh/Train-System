@@ -18,7 +18,7 @@ actor:BindToMessage("TrainSpawn", function(routeNetworkClone)
 		node2 = 2,
 		t = 0,
 	}
-	local trainSpeed = 1
+	local trainSpeed = 100
 	local radius = 10
 	local partColor = BrickColor.random()
 	for i = 1, 20 do
