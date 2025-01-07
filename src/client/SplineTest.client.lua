@@ -114,7 +114,7 @@ do
 	local i = 1
 	while knotsFolder:FindFirstChild(tostring(i)) do
 		knots[i] = knotsFolder[tostring(i)].Position
-		knotsFolder[tostring(i)].Transparency = 1
+		--knotsFolder[tostring(i)].Transparency = 1
 		i += 1
 	end
 end
@@ -213,6 +213,7 @@ boundsFolder.Name = "Bounds"
 boundsFolder.Parent = workspace
 
 local nodes: { RouteNetwork.Node } = {}
+local switchNodes: { RouteNetwork.SwitchNode } = {}
 
 local conversions: { BezierConverter.BezierConversion } = {}
 
@@ -227,6 +228,16 @@ for i = 1, #knots do
 end
 
 for i = 1, #conversions do
+	local generatedNode = Instance.new("Part")
+	generatedNode.Size = Vector3.new(1, 1, 1)
+	generatedNode.Position = conversions[i].startPosition
+	generatedNode.Anchored = true
+	generatedNode.CanCollide = false
+	generatedNode.Shape = Enum.PartType.Ball
+	generatedNode.Material = Enum.Material.Neon
+	generatedNode.Color = Color3.fromRGB(255, 0, 0)
+	generatedNode.Name = "Node" .. tostring(i)
+	generatedNode.Parent = workspace.GeneratedNodes
 	nodes[i] = {
 		position = conversions[i].startPosition,
 		handle = conversions[i].startHandle,
@@ -236,8 +247,38 @@ for i = 1, #conversions do
 	}
 end
 
+local switchA: RouteNetwork.SwitchNode = nodes[3]
+local switchB: RouteNetwork.SwitchNode = nodes[18]
+nodes[3] = nil
+nodes[18] = nil
+table.remove(nodes, 18)
+nodes[2].nextNode = { index = 1, isSwitchNode = true }
+nodes[4].previousNode = { index = 1, isSwitchNode = true }
+nodes[17].nextNode = { index = 2, isSwitchNode = true }
+nodes[19].previousNode = { index = 2, isSwitchNode = true }
+switchA.nextNode = { { index = 4, isSwitchNode = false }, { index = 2, isSwitchNode = true } }
+switchA.previousNode = { { index = 2, isSwitchNode = false } }
+switchB.nextNode = { { index = 19, isSwitchNode = false }, { index = 1, isSwitchNode = true } }
+switchB.previousNode = { { index = 17, isSwitchNode = false } }
+switchA.nextSpline = {}
+switchA.previousSpline = {}
+switchB.nextSpline = {}
+switchB.previousSpline = {}
+switchA.nextSplineReversed = {}
+switchA.previousSplineReversed = {}
+switchB.nextSplineReversed = {}
+switchB.previousSplineReversed = {}
+switchA.nextSelection = 1
+switchA.previousSelection = 1
+switchB.nextSelection = 1
+switchB.previousSelection = 1
+switchNodes[1] = switchA
+switchNodes[2] = switchB
+print(switchNodes)
+print(nodes)
 local displacementModifier = DisplacementModifier.new(Vector3.new(0, 0, 0), 40)
-local routeNetwork = RouteNetwork.new(nodes, displacementModifier)
+local routeNetwork = RouteNetwork.new(nodes, switchNodes, displacementModifier)
+print(routeNetwork)
 
 for splineIndex, spline in pairs(routeNetwork.splines) do
 	local folder = Instance.new("Folder")
@@ -270,11 +311,11 @@ game:GetService("RunService").RenderStepped:Connect(function()
 		local r = workspace.Sphere.Size.X / 2
 		local pos = workspace.Sphere.Position
 		local startLocation = {
-			node1 = 1,
-			node2 = 2,
+			node1 = { index = 1, isSwitchNode = false },
+			node2 = { index = 2, isSwitchNode = false },
 			t = 0,
 		}
-		local intersectionLocation = routeNetwork:intersectSphere(pos, r, startLocation, 50)
+		local intersectionLocation = routeNetwork:intersectSphere(pos, r, startLocation, 50, false)
 		if intersectionLocation then
 			local spline, t = routeNetwork:getSplineAndT(intersectionLocation)
 			workspace.Point.Position = spline:getPoint(spline.lut:inverseLookup(t))
@@ -290,7 +331,7 @@ local layout: Train.TrainLayout = {
 	{ car = "TGVCarriage", reversed = false },
 	{ car = "TGVCarriage", reversed = true },
 	{ car = "TGVConnection", reversed = true },
-	--{ car = "TGVEngine", reversed = true },
+	{ car = "TGVEngine", reversed = true },
 	--[[
 	{ car = "SovietCarriage", reversed = false },
 	{ car = "SovietCarriage", reversed = false },
@@ -325,11 +366,15 @@ local layout: Train.TrainLayout = {
 	{ car = "SovietCarriage", reversed = true },
 	 ]]
 }
-local myTrain = Train.fromLayout(layout, { node1 = 45, node2 = 46, t = 0.1 }, routeNetwork)
+local myTrain = Train.fromLayout(
+	layout,
+	{ node1 = { index = 45, isSwitchNode = false }, node2 = { index = 46, isSwitchNode = false }, t = 0.1 },
+	routeNetwork
+)
 myTrain.model.Parent = workspace.Trains
 local speed = 300
 local camToggle = false
-local timeScale = 10.0
+local timeScale = 1.0
 if camToggle then
 	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 	workspace.CurrentCamera.FieldOfView = 100

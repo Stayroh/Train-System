@@ -75,7 +75,6 @@ function Bogie:updatePhysics(speed: number, deltaTime: number)
 	self.springVelocity = self.lastCF and (self.springVelocity * self.lastCF.UpVector):Dot(self.cf.UpVector)
 		or self.springVelocity
 
-	print(self.lastCF ~= nil)
 	local deltaHeight = self.lastCF
 			and (self.springDisplacement - (self.cf.Position - self.lastCF.Position):Dot(self.lastCF.UpVector)) / self.cf.UpVector:Dot(
 				self.lastCF.UpVector

@@ -80,12 +80,13 @@ function Car:alignToBogies()
 	local combinedUpVector = (frontCFrame.UpVector + rearCFrame.UpVector).Unit or Vector3.new(0, 1, 0)
 	local middlePosition = (frontCFrame.Position + rearCFrame.Position) / 2
 	self.cf = CFrame.lookAt(middlePosition, frontCFrame.Position, combinedUpVector)
-
+	--[[
 	if self.name == "TGVEngine" then
 		local clonePoint = workspace.TestPoint:Clone()
 		clonePoint.CFrame = frontCFrame
 		clonePoint.Parent = workspace.TestPoints
 	end
+	]]
 	self.cf = self.cf * self.connectionOffset
 	self.cf = self.reversed and self.cf * CFrame.Angles(0, math.pi, 0) or self.cf
 	self.model:PivotTo(self.cf)

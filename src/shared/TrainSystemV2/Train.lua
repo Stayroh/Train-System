@@ -92,6 +92,7 @@ function Train.new(
 	self.endLocation = location
 	self.model = Instance.new("Model")
 	self.model.Name = "Train"
+	self.switchSelection = {}
 	for i, car in ipairs(cars) do
 		self.length += car.length
 		car.model.Parent = self.model
