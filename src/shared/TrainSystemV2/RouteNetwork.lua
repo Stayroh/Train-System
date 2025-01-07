@@ -160,7 +160,7 @@ function RouteNetwork:getConnectingSpline(
 	node2: NodeReference
 ): (BezierSpline.BezierSpline, boolean)
 	local actualNode1 = self:getNodeByNodeReference(node1)
-
+	print(node1, node2)
 	local isNext, selection = self:checkNeighbourRelation(node1, node2)
 	if isNext == true then
 		if node1.isSwitchNode then
@@ -187,6 +187,7 @@ function RouteNetwork:getFollowingNode(
 	node2: NodeReference,
 	switchSelection: { SwitchSelectionOverride }?
 ): NodeReference?
+	print(node1, node2)
 	local followingNodeDirectionOfNode2 = self:checkNeighbourRelation(node2, node1)
 	assert(
 		followingNodeDirectionOfNode2 ~= nil,
@@ -196,16 +197,20 @@ function RouteNetwork:getFollowingNode(
 	if node2.isSwitchNode then
 		if followingNodeDirectionOfNode2 then
 			if switchSelection and switchSelection[node2.index] and switchSelection[node2.index].previousSelection then
+				print("a")
 				return actualNode2.previousNode[switchSelection[node2.index].previousSelection]
 			else
-				return actualNode2.previousSelection and actualNode2.previousNode[actualNode2.previousSelection]
+				print("b")
+				return actualNode2.previousSelection ~= nil and actualNode2.previousNode[actualNode2.previousSelection]
 					or actualNode2.previousNode[1]
 			end
 		else
 			if switchSelection and switchSelection[node2.index] and switchSelection[node2.index].nextSelection then
+				print("c")
 				return actualNode2.nextNode[switchSelection[node2.index].nextSelection]
 			else
-				return actualNode2.nextSelection and actualNode2.nextSpline[actualNode2.nextSelection]
+				print("d")
+				return actualNode2.nextSelection ~= nil and actualNode2.nextNode[actualNode2.nextSelection]
 					or actualNode2.nextNode[1]
 			end
 		end
@@ -223,6 +228,7 @@ function RouteNetwork:stepDistance(
 	distance: number,
 	switchSelection: { SwitchSelectionOverride }?
 ): (RouteNetworkLocation, number)
+	print(location)
 	local node1, node2, t = location.node1, location.node2, location.t
 	local didSwap = distance < 0
 	if didSwap then
@@ -236,6 +242,7 @@ function RouteNetwork:stepDistance(
 	while targetDistance > length do
 		print("Crossed Spline")
 		local nextNode = self:getFollowingNode(node1, node2, switchSelection)
+		print(nextNode)
 		if not nextNode then
 			local newLocation =
 				{ node1 = didSwap and node2 or node1, node2 = didSwap and node1 or node2, t = didSwap and 0 or 1 }
@@ -301,6 +308,7 @@ function RouteNetwork:checkNeighbourRelation(
 	currentNode: NodeReference,
 	neighbourNode: NodeReference
 ): (boolean?, number?)
+	print(neighbourNode)
 	if currentNode.isSwitchNode then
 		local node = self.switchNodes[currentNode.index]
 		for i = 1, #node.nextNode do
@@ -426,8 +434,9 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 		print(switchNode)
 	end
 	-- For all nodes
-	for i = 1, #self.nodes do
-		local node = self.nodes[i]
+
+	for i, node in ipairs(self.nodes) do
+		--local node = self.nodes[i]
 		local selfReference = { index = i, isSwitchNode = false }
 		if node.nextNode and node.nextSpline == nil then
 			local nextNode = self:getNodeByNodeReference(node.nextNode)

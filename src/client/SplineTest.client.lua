@@ -249,17 +249,20 @@ end
 
 local switchA: RouteNetwork.SwitchNode = nodes[3]
 local switchB: RouteNetwork.SwitchNode = nodes[18]
-nodes[3] = nil
-nodes[18] = nil
 table.remove(nodes, 18)
+table.remove(nodes, 3)
+for i = 1, #nodes do
+	nodes[i].previousNode = { index = (i - 2) % #nodes + 1, isSwitchNode = false }
+	nodes[i].nextNode = { index = i % #nodes + 1, isSwitchNode = false }
+end
 nodes[2].nextNode = { index = 1, isSwitchNode = true }
-nodes[4].previousNode = { index = 1, isSwitchNode = true }
-nodes[17].nextNode = { index = 2, isSwitchNode = true }
-nodes[19].previousNode = { index = 2, isSwitchNode = true }
-switchA.nextNode = { { index = 4, isSwitchNode = false }, { index = 2, isSwitchNode = true } }
+nodes[3].previousNode = { index = 1, isSwitchNode = true }
+nodes[16].nextNode = { index = 2, isSwitchNode = true }
+nodes[17].previousNode = { index = 2, isSwitchNode = true }
+switchA.nextNode = { { index = 3, isSwitchNode = false }, { index = 2, isSwitchNode = true } }
 switchA.previousNode = { { index = 2, isSwitchNode = false } }
-switchB.nextNode = { { index = 19, isSwitchNode = false }, { index = 1, isSwitchNode = true } }
-switchB.previousNode = { { index = 17, isSwitchNode = false } }
+switchB.nextNode = { { index = 17, isSwitchNode = false }, { index = 1, isSwitchNode = true } }
+switchB.previousNode = { { index = 16, isSwitchNode = false } }
 switchA.nextSpline = {}
 switchA.previousSpline = {}
 switchB.nextSpline = {}
@@ -403,7 +406,8 @@ game:GetService("RunService").PreRender:Connect(function(deltaTime)
 	local acceleration = myTrain.averageSlopeSine * -300
 	local stepDistance = deltaTime * speed + 0.5 * acceleration * deltaTime ^ 2
 	speed += acceleration * deltaTime
-	local newLocation = routeNetwork:stepDistance(myTrain.location, stepDistance)
+	local newLocation =
+		routeNetwork:stepDistance(myTrain.location, stepDistance, { { nextSelection = 1 }, { nextSelection = 2 } })
 	myTrain:setLocation(newLocation, speed, deltaTime)
 	local myCar = myTrain.cars[1]
 	local cf = myCar.cf
