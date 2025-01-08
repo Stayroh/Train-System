@@ -150,7 +150,7 @@ function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t
 		spline:getVelocity(correctedStartT),
 		spline:getAcceleration(correctedStartT),
 		3
-	)
+	) * CFrame.Angles(0, math.pi, 0)
 	startCF = spline.displacementModifier + startCF
 	local offset = CFrame.new(0, 0, 4)
 	segment.CFrame = startCF:ToWorldSpace(offset)
@@ -167,7 +167,7 @@ function renderRailSegment(spline: BezierSpline.BezierSpline, t_start: number, t
 			3
 		)
 		cf = spline.displacementModifier + cf
-		bone.CFrame = startCF:ToObjectSpace(cf)
+		bone.CFrame = startCF:ToObjectSpace(cf) * CFrame.Angles(0, math.pi, 0)
 	end
 	segment.Parent = parent
 	--Create a part to later convert it to terrain
@@ -205,6 +205,13 @@ do
 end
 
 ]]
+
+--Set Collision Group to all trains
+for _, part in pairs(game.ReplicatedStorage.assets.Trains:GetDescendants()) do
+	if part:IsA("BasePart") then
+		part.CollisionGroup = "Train"
+	end
+end
 
 local railWidth = 9.338
 
@@ -371,11 +378,11 @@ local layout: Train.TrainLayout = {
 }
 local myTrain = Train.fromLayout(
 	layout,
-	{ node1 = { index = 45, isSwitchNode = false }, node2 = { index = 46, isSwitchNode = false }, t = 0.1 },
+	{ node1 = { index = 1, isSwitchNode = false }, node2 = { index = 2, isSwitchNode = false }, t = 0.1 },
 	routeNetwork
 )
 myTrain.model.Parent = workspace.Trains
-local speed = 300
+local speed = 250
 local camToggle = false
 local timeScale = 1.0
 if camToggle then
@@ -397,17 +404,59 @@ workspace.toggleRuntime.Event:Connect(function()
 	running = not running
 end)
 
-game:GetService("RunService").PreRender:Connect(function(deltaTime)
+local player = game.Players.LocalPlayer
+
+local rayParam = RaycastParams.new()
+rayParam.FilterType = Enum.RaycastFilterType.Include
+rayParam.FilterDescendantsInstances = { workspace.Trains }
+game:GetService("RunService").Stepped:Connect(function(_, deltaTime)
 	deltaTime *= timeScale
 	if not running then
 		return
 	end
 	debug.profilebegin("Train")
+	--Evaluate Character Platform
+	local character = player.Character
+	local lastGroundCFrame
+	local lastCar, lastWhichBogie
+	local lastHRPCFrame
+	local HRP
+	if character then
+		local humanoidRootPart = character:FindFirstChild("HumanoidRootPart") :: BasePart
+		if humanoidRootPart then
+			HRP = humanoidRootPart
+			local hit = workspace:Raycast(humanoidRootPart.Position, Vector3.new(0, -20, 0), rayParam)
+			if hit then
+				local hitPart = hit.Instance
+				local hitModel = hitPart:FindFirstAncestorWhichIsA("Model") :: Model
+				if hitModel then
+					local carIndex, whichBogie = myTrain:getBogieAndCarIndexFromModel(hitModel)
+					local car
+					if carIndex then
+						car = myTrain.cars[carIndex]
+					end
+					print(carIndex)
+					if car and whichBogie == true then
+						lastGroundCFrame = car.frontBogie.cf
+					elseif car and whichBogie == false then
+						lastGroundCFrame = car.rearBogie.cf
+					elseif car then
+						lastGroundCFrame = car.cf
+					end
+					if car then
+						lastCar = car
+						lastWhichBogie = whichBogie
+					end
+				end
+			end
+		end
+	end
+	--Train Calculation
 	local acceleration = myTrain.averageSlopeSine * -300
 	local stepDistance = deltaTime * speed + 0.5 * acceleration * deltaTime ^ 2
 	speed += acceleration * deltaTime
 	local newLocation =
-		routeNetwork:stepDistance(myTrain.location, stepDistance, { { nextSelection = 1 }, { nextSelection = 2 } })
+		routeNetwork:stepDistance(myTrain.location, stepDistance, { { nextSelection = 2 }, { nextSelection = 1 } })
 	myTrain:setLocation(newLocation, speed, deltaTime)
 	local myCar = myTrain.cars[1]
 	local cf = myCar.cf
@@ -421,6 +470,22 @@ game:GetService("RunService").PreRender:Connect(function(deltaTime)
 		workspace.CurrentCamera.CFrame = CFrame.lookAt(fixedLookTo, fixedTarget, cf.UpVector)
 	end
 	--setFOV((lastCamPos - lookTo).Magnitude)
+	--Update Character
+	if lastGroundCFrame and lastCar then
+		local newGroundCFrame
+		if lastWhichBogie == true then
+			newGroundCFrame = lastCar.frontBogie.cf
+		elseif lastWhichBogie == false then
+			newGroundCFrame = lastCar.rearBogie.cf
+		else
+			newGroundCFrame = lastCar.cf
+		end
+		local deltaPosition = newGroundCFrame.Position - lastGroundCFrame.Position
+		local deltaYRotation = lastGroundCFrame:ToObjectSpace(newGroundCFrame):ToEulerAnglesYXZ()
+		if HRP then
+			HRP.CFrame = newGroundCFrame:ToWorldSpace(lastGroundCFrame:ToObjectSpace(HRP.CFrame))
+		end
+	end
 end)
 
 local TrainWorkerScript = script.Parent.TrainWorker

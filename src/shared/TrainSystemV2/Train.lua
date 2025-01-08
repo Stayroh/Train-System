@@ -28,6 +28,7 @@ type TrainClass = {
 	) -> Train,
 	setLocation: (self: Train, location: RouteNetwork.RouteNetworkLocation, speed: number?, deltaTime: number?) -> (),
 	updateSlope: (self: Train) -> (),
+	getBogieAndCarIndexFromModel: (self: Train, model: Model) -> (number?, boolean?), -- Returns nil if not found. isFrontBogie is nil if it's a car otherwise it's true if it's a front bogie and false if it's a rear bogie.
 }
 
 export type Train = typeof(setmetatable(
@@ -44,6 +45,19 @@ export type Train = typeof(setmetatable(
 	},
 	Train
 ))
+
+function Train:getBogieAndCarIndexFromModel(model: Model): (number?, boolean?)
+	for i, car in ipairs(self.cars) do
+		if car.model == model then
+			return i
+		elseif car.frontBogie.model == model then
+			return i, true
+		elseif car.rearBogie.model == model then
+			return i, false
+		end
+	end
+	return nil
+end
 
 function Train:updateSlope()
 	local frontElevation = self.cars[1].frontBogie.cf.Position.Y
