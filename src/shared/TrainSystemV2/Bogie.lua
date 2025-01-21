@@ -1,6 +1,7 @@
 --!strict
 local Configuration = require(game.ReplicatedStorage.src.TrainSystemV2.Configuration)
 local RouteNetwork = require(game.ReplicatedStorage.src.TrainSystemV2.RouteNetwork)
+type Train = typeof(require(game.ReplicatedStorage.src.TrainSystemV2.Train))
 
 local Bogie: BogieClass = {} :: BogieClass
 Bogie.__index = Bogie
@@ -11,7 +12,8 @@ type BogieClass = {
 		name: string,
 		routeNetwork: RouteNetwork.RouteNetwork,
 		location: RouteNetwork.RouteNetworkLocation,
-		reversed: boolean
+		reversed: boolean,
+		train: Train
 	) -> Bogie,
 	setLocation: (self: Bogie, location: RouteNetwork.RouteNetworkLocation) -> (),
 	getConnection: (self: Bogie) -> CFrame,
@@ -23,6 +25,7 @@ export type Bogie = typeof(setmetatable(
 	{} :: {
 		name: string, -- Unique identifier for the bogie.
 		model: Model, -- The model of the bogie.
+		train: Train, -- The train the bogie is on.
 		reversed: boolean, -- If the bogie is reversed.
 		routeNetwork: RouteNetwork.RouteNetwork, -- The route network the bogie is on.
 		location: RouteNetwork.RouteNetworkLocation, -- The location of the bogie on the route network.
@@ -52,9 +55,8 @@ end
 
 function Bogie:setLocation(location: RouteNetwork.RouteNetworkLocation)
 	local cf = self.routeNetwork:getCFrames(location)
-	cf = self.routeNetwork.displacementModifier + cf
 	self.location = location
-	local newCF = self.reversed and cf * CFrame.Angles(0, math.pi, 0) or cf
+	local newCF = self.routeNetwork.displacementModifier + (self.reversed and cf * CFrame.Angles(0, math.pi, 0) or cf)
 	self.lastCF = self.lastCF and self.cf or newCF
 	self.cf = newCF
 	self.model:PivotTo(self.cf)
@@ -62,7 +64,7 @@ end
 
 function Bogie:updatePhysics(speed: number, deltaTime: number)
 	--Update the visual rotation of each axle
-	local rotationStep = speed * deltaTime / self.wheelRadius
+	local rotationStep = speed * deltaTime / self.wheelRadius * (self.reversed and -1 or 1)
 	for i, axleValue in pairs(self.model:GetChildren()) do
 		if axleValue.Name ~= "Axle" then
 			continue
@@ -72,8 +74,8 @@ function Bogie:updatePhysics(speed: number, deltaTime: number)
 	end
 
 	--Update the spring physics
-	self.springVelocity = self.lastCF and (self.springVelocity * self.lastCF.UpVector):Dot(self.cf.UpVector)
-		or self.springVelocity
+	--self.springVelocity = self.lastCF and (self.springVelocity * self.lastCF.UpVector):Dot(self.cf.UpVector)
+	--	or self.springVelocity
 
 	local deltaHeight = self.lastCF
 			and (self.springDisplacement - (self.cf.Position - self.lastCF.Position):Dot(self.lastCF.UpVector)) / self.cf.UpVector:Dot(
@@ -81,6 +83,9 @@ function Bogie:updatePhysics(speed: number, deltaTime: number)
 			)
 		or self.springDisplacement
 
+	if deltaTime == 0 then
+		warn("deltaTime must be greater than 0")
+	end
 	local bogieVelocity = self.lastCF and (self.cf.Position - self.lastCF.Position) / deltaTime or Vector3.new(0, 0, 0)
 	local onAxisBogieVelocity = self.cf.UpVector:Dot(bogieVelocity)
 	local springForce = -(deltaHeight - self.springOffset + self.springVelocity * deltaTime) * self.stiffness
@@ -97,6 +102,12 @@ function Bogie:updatePhysics(speed: number, deltaTime: number)
 		self.springVelocity = math.max(self.springVelocity, onAxisBogieVelocity)
 		newSpringLength = math.clamp(newSpringLength, -10, 10)
 	end
+	--Test if NaN
+	--[[
+	if newSpringLength ~= newSpringLength then
+		newSpringLength = 0
+	end
+	]]
 	self.springDisplacement = newSpringLength
 end
 
@@ -104,11 +115,13 @@ function Bogie.new(
 	name: string,
 	routeNetwork: RouteNetwork.RouteNetwork,
 	location: RouteNetwork.RouteNetworkLocation,
-	reversed: boolean
+	reversed: boolean,
+	train: Train
 ): Bogie
 	local self = setmetatable({}, Bogie) :: Bogie
 	local thisConfig = Configuration.bogies[name]
 	self.name = name
+	self.train = train
 	self.routeNetwork = routeNetwork
 	self.reversed = reversed
 	self.joint = thisConfig.joint

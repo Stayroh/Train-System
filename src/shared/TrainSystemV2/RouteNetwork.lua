@@ -12,7 +12,9 @@ type RouteNetworkClass = {
 		switchNodes: { SwitchNode },
 		displacementModifier: DisplacementModifier.DisplacementModifier?
 	) -> RouteNetwork,
-	createSplines: (self: RouteNetwork) -> { BezierSpline.BezierSpline },
+	createSplines: (
+		self: RouteNetwork
+	) -> ({ BezierSpline.BezierSpline }, { { startNode: NodeReference, endNode: NodeReference } }),
 	checkNeighbourRelation: (
 		self: RouteNetwork,
 		currentNode: NodeReference,
@@ -101,6 +103,7 @@ export type RouteNetwork = typeof(setmetatable(
 		switchNodes: { SwitchNode },
 		displacementModifier: DisplacementModifier.DisplacementModifier?, -- Displacement modifier for the route network.
 		splines: { BezierSpline.BezierSpline },
+		splineNodes: { startNode: NodeReference, endNode: NodeReference }, -- Array of the start and end node of each spline.
 		totalLength: number, -- Total length of the route network. Calculated by summing the length of all splines.
 	},
 	RouteNetwork
@@ -255,7 +258,7 @@ end
 
 function RouteNetwork:getSplineAndT(location: RouteNetworkLocation): (BezierSpline.BezierSpline, number, boolean)
 	local spline, reversed = self:getConnectingSpline(location.node1, location.node2)
-	return spline, reversed and 1 - location.t or location.t, reversed
+	return spline, (reversed and 1 - location.t or location.t), reversed
 end
 
 function RouteNetwork:getPoint(location: RouteNetworkLocation): Vector3
@@ -276,11 +279,11 @@ end
 function RouteNetwork:getCFrames(location: RouteNetworkLocation): CFrame
 	local upVector = Vector3.new(0, 1, 0)
 	local G = 40
-	local spline, t = self:getSplineAndT(location)
+	local spline, t, reversed = self:getSplineAndT(location)
 	local correctedT = spline.lut:inverseLookup(t)
 	local excpectedSpeed = self:getTargetSpeed(location)
 	local point = spline:getPoint(correctedT)
-	local velocity = spline:getVelocity(correctedT)
+	local velocity = reversed and -spline:getVelocity(correctedT) or spline:getVelocity(correctedT)
 	local acceleration = spline:getAcceleration(correctedT)
 	local normal = velocity:Cross(upVector).Unit
 	local curvatureVector = velocity:Cross(velocity:Cross(acceleration)) / velocity.Magnitude ^ 3
@@ -338,8 +341,14 @@ function RouteNetwork:checkNeighbourRelation(
 	end
 end
 
-function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
+function RouteNetwork:createSplines(): ({ BezierSpline.BezierSpline }, {
+	{
+		startNode: NodeReference,
+		endNode: NodeReference,
+	}
+})
 	local splines = {}
+	local splineNodes = {}
 	-- For all switch nodes
 	for i = 1, #self.switchNodes do
 		print(i)
@@ -361,9 +370,9 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 			local spline = BezierSpline.new(P0, P1, P2, P3, self.displacementModifier)
 			local splineIndex = #splines + 1
 			splines[splineIndex] = spline
+			splineNodes[splineIndex] = { startNode = selfReference, endNode = switchNode.nextNode[j] }
 			switchNode.nextSpline[j] = splineIndex
 			switchNode.nextSplineReversed[j] = false
-			print(switchNode.nextNode)
 			if switchNode.nextNode[j].isSwitchNode then
 				if isNextNodeNext then
 					nextNode.nextSpline[nextNodeConnectionIndex] = splineIndex
@@ -400,6 +409,7 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 			local spline = BezierSpline.new(P0, P1, P2, P3, self.displacementModifier)
 			local splineIndex = #splines + 1
 			splines[splineIndex] = spline
+			splineNodes[splineIndex] = { startNode = selfReference, endNode = switchNode.previousNode[j] }
 			switchNode.previousSpline[j] = splineIndex
 			switchNode.previousSplineReversed[j] = false
 			if previousNodeConnectionIndex then
@@ -438,6 +448,7 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 			local spline = BezierSpline.new(P0, P1, P2, P3, self.displacementModifier)
 			local splineIndex = #splines + 1
 			splines[splineIndex] = spline
+			splineNodes[splineIndex] = { startNode = selfReference, endNode = node.nextNode }
 			node.nextSpline = splineIndex
 			node.nextSplineReversed = false
 			if node.nextNode.isSwitchNode then
@@ -470,6 +481,7 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 			local spline = BezierSpline.new(P0, P1, P2, P3, self.displacementModifier)
 			local splineIndex = #splines + 1
 			splines[splineIndex] = spline
+			splineNodes[splineIndex] = { startNode = selfReference, endNode = node.previousNode }
 			node.previousSpline = splineIndex
 			node.previousSplineReversed = false
 			if previousNodeConnectionIndex then
@@ -493,7 +505,7 @@ function RouteNetwork:createSplines(): { BezierSpline.BezierSpline }
 		end
 	end
 	print("Total length of route network: " .. self.totalLength)
-	return splines
+	return splines, splineNodes
 end
 
 function RouteNetwork.new(
@@ -506,7 +518,9 @@ function RouteNetwork.new(
 	self.displacementModifier = displacementModifier
 	self.nodes = nodes
 	self.switchNodes = switchNodes
-	self.splines = self:createSplines()
+	local splines, splineNodes = self:createSplines()
+	self.splines = splines
+	self.splineNodes = splineNodes
 	return self
 end
 

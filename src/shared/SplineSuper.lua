@@ -8,7 +8,7 @@ SplineSuper.__index = SplineSuper
 
 type SplineSuperSuperClass = {
 	__index: SplineSuperSuperClass,
-	getPoint: (self: SplineSuper, t: number, useDisplacement: boolean?) -> Vector3,
+	getPoint: (self: SplineSuper, t: number) -> Vector3,
 	getVelocity: (self: SplineSuper, t: number) -> Vector3,
 	getAcceleration: (self: SplineSuper, t: number) -> Vector3,
 	intersectSphere: (
@@ -65,14 +65,9 @@ function SplineSuper:intersectSphere(center: Vector3, radius: number, startTValu
 	return t
 end
 
-function SplineSuper:getPoint(t: number, useDisplacement: boolean?): Vector3
+function SplineSuper:getPoint(t: number): Vector3
 	local tVector = Matrix.new({ { 1, t, t ^ 2, t ^ 3 } })
 	local point = (tVector * self.matrixFormParameterized):getAsVector3()
-	if self.displacementModifier and not (useDisplacement == false) then
-		local offset = self.displacementModifier:getDisplacement(point)
-		local tangent = self:getVelocity(t).Unit
-		point += offset - offset:Dot(tangent) * tangent
-	end
 	return point
 end
 

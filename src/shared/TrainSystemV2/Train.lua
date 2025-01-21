@@ -19,12 +19,14 @@ type TrainClass = {
 	new: (
 		carArray: { Car.Car },
 		location: RouteNetwork.RouteNetworkLocation,
-		routeNetwork: RouteNetwork.RouteNetwork
+		routeNetwork: RouteNetwork.RouteNetwork,
+		switchSelection: { RouteNetwork.SwitchSelectionOverride }
 	) -> Train,
 	fromLayout: (
 		layout: TrainLayout,
 		location: RouteNetwork.RouteNetworkLocation,
-		routeNetwork: RouteNetwork.RouteNetwork
+		routeNetwork: RouteNetwork.RouteNetwork,
+		switchSelection: { RouteNetwork.SwitchSelectionOverride }
 	) -> Train,
 	setLocation: (self: Train, location: RouteNetwork.RouteNetworkLocation, speed: number?, deltaTime: number?) -> (),
 	updateSlope: (self: Train) -> (),
@@ -79,8 +81,13 @@ function Train:setLocation(location: RouteNetwork.RouteNetworkLocation, speed: n
 				car.interCarDistance,
 				self.cars[i - 1].rearBogie.location,
 				3,
-				true
-			) or self.routeNetwork:stepDistance(self.cars[i - 1].rearBogie.location, -car.interCarDistance)
+				true,
+				self.switchSelection
+			) or self.routeNetwork:stepDistance(
+				self.cars[i - 1].rearBogie.location,
+				-car.interCarDistance,
+				self.switchSelection
+			)
 		end
 		if speed and deltaTime then
 			car:setLocationPhysics(thisLocation, speed, deltaTime)
@@ -94,12 +101,17 @@ end
 function Train.new(
 	cars: { Car.Car },
 	location: RouteNetwork.RouteNetworkLocation,
-	routeNetwork: RouteNetwork.RouteNetwork
+	routeNetwork: RouteNetwork.RouteNetwork,
+	switchSelection: { RouteNetwork.SwitchSelectionOverride }
 ): Train
 	local self = setmetatable({}, Train) :: Train
 	self.cars = cars
+	for i, v in ipairs(cars) do
+		v.train = self
+	end
 	self.location = location
 	self.routeNetwork = routeNetwork
+	self.switchSelection = switchSelection
 	self.speed = 0
 	self.length = 0
 	self.averageSlopeSine = 0
@@ -121,15 +133,31 @@ end
 function Train.fromLayout(
 	layout: TrainLayout,
 	location: RouteNetwork.RouteNetworkLocation,
-	routeNetwork: RouteNetwork.RouteNetwork
+	routeNetwork: RouteNetwork.RouteNetwork,
+	switchSelection: { RouteNetwork.SwitchSelectionOverride }
 ): Train
-	local cars = {}
-
+	local self = setmetatable({}, Train) :: Train
+	self.cars = {}
+	self.location = location
+	self.routeNetwork = routeNetwork
+	self.switchSelection = switchSelection
+	self.speed = 0
+	self.length = 0
+	self.averageSlopeSine = 0
+	self.endLocation = location
+	self.model = Instance.new("Model")
+	self.model.Name = "Train"
 	for i, carLayout in ipairs(layout) do
-		local car = Car.new(carLayout.car, routeNetwork, location, carLayout.reversed, cars[i - 1])
-		cars[i] = car
+		local car = Car.new(carLayout.car, routeNetwork, location, carLayout.reversed, self, self.cars[i - 1])
+		self.cars[i] = car
+		self.length += car.length
+		car.model.Parent = self.model
+		car.rearBogie.model.Parent = self.model
+		if i == 1 or not car.frontBogie.shared then
+			car.frontBogie.model.Parent = self.model
+		end
 	end
-	local self = Train.new(cars, location, routeNetwork)
+
 	return self
 end
 

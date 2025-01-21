@@ -2,6 +2,7 @@
 local Configuration = require(game.ReplicatedStorage.src.TrainSystemV2.Configuration)
 local Bogie = require(game.ReplicatedStorage.src.TrainSystemV2.Bogie)
 local RouteNetwork = require(game.ReplicatedStorage.src.TrainSystemV2.RouteNetwork)
+type Train = typeof(require(game.ReplicatedStorage.src.TrainSystemV2.Train))
 
 local Car: CarClass = {} :: CarClass
 Car.__index = Car
@@ -13,6 +14,7 @@ type CarClass = {
 		routeNetwork: RouteNetwork.RouteNetwork,
 		location: RouteNetwork.RouteNetworkLocation,
 		reversed: boolean,
+		train: Train,
 		previousCar: Car?
 	) -> Car,
 	setLocation: (self: Car, location: RouteNetwork.RouteNetworkLocation) -> (),
@@ -32,6 +34,7 @@ export type Car = typeof(setmetatable(
 		reversed: boolean, -- If the car is reversed.
 		model: Model, -- The model of the car.
 		cf: CFrame, -- The CFrame of the car's base part. Its primary part.
+		train: Train, -- The train the car is on.
 		routeNetwork: RouteNetwork.RouteNetwork, -- The route network the car is on.
 		location: RouteNetwork.RouteNetworkLocation, -- The location of the car on the route network.
 		length: number, -- The length of the car.
@@ -60,9 +63,17 @@ function Car:setBogiesLocation(location: RouteNetwork.RouteNetworkLocation)
 	if not self.frontBogie.shared then -- Checks wether it's a shared bogie, and if so don't update it, because it already has beed updated by the previous car.
 		self.frontBogie:setLocation(location)
 	end
-	local rearLocation =
-		self.routeNetwork:intersectSphere(self.frontBogie.cf.Position, -self.wheelbase, location, 5, true)
-	self.rearBogie:setLocation(rearLocation or self.routeNetwork:stepDistance(location, -self.wheelbase))
+	local rearLocation = self.routeNetwork:intersectSphere(
+		self.frontBogie.cf.Position,
+		-self.wheelbase,
+		location,
+		5,
+		true,
+		self.train.switchSelection
+	)
+	self.rearBogie:setLocation(
+		rearLocation or self.routeNetwork:stepDistance(location, -self.wheelbase, self.train.switchSelection)
+	)
 end
 
 function Car:setLocationPhysics(location: RouteNetwork.RouteNetworkLocation, speed: number, deltaTime: number)
@@ -97,11 +108,13 @@ function Car.new(
 	routeNetwork: RouteNetwork.RouteNetwork,
 	location: RouteNetwork.RouteNetworkLocation,
 	reversed: boolean,
+	train: Train,
 	previousCar: Car?
 ): Car
 	local self = setmetatable({}, Car) :: Car
 	local thisConfig = Configuration.cars[name]
 	self.name = name
+	self.train = train
 	self.length = thisConfig.length
 	self.reversed = reversed
 	self.location = location
@@ -112,7 +125,7 @@ function Car.new(
 		if previousCar and previousCar.rearBogie.shared then
 			self.frontBogie = previousCar.rearBogie
 		else
-			self.frontBogie = Bogie.new(thisConfig.bogie2, routeNetwork, location, not thisConfig.bogie2Reversed)
+			self.frontBogie = Bogie.new(thisConfig.bogie2, routeNetwork, location, not thisConfig.bogie2Reversed, train)
 		end
 		self.rearBogie = Bogie.new(thisConfig.bogie1, routeNetwork, location, not thisConfig.bogie1Reversed)
 		self.frontConnection = mirrorZAxis(thisConfig.rearConnection)

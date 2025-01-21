@@ -67,10 +67,10 @@ function SplineLut:regenerate(spline: any, sampleCount: number, resolution: numb
 	self.resolution = resolution
 	local distance = 0
 	local samples = {}
-	local lastPos = spline:getPoint(0, false)
+	local lastPos = spline:getPoint(0)
 	for i = 1, sampleCount do
 		local t = i / sampleCount
-		local pos = spline:getPoint(t, false)
+		local pos = spline:getPoint(t)
 		distance += (pos - lastPos).magnitude
 		lastPos = pos
 		table.insert(samples, distance)
