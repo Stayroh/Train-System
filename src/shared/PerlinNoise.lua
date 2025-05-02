@@ -97,4 +97,5 @@ function PerlinNoise:OctavePerlin(input: Vector2, octaves: number, roughness: nu
 	return total / maxValue, col
 end
 
+
 return PerlinNoise
