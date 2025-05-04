@@ -472,13 +472,13 @@ game.ReplicatedStorage.Speed:GetPropertyChangedSignal("Value"):Connect(function(
 	speed = game.ReplicatedStorage.Speed.Value
 end)
 
-local camToggle = false
+local camToggle = true
 local timeScale = 1.0
 local framTimeCap = 1 / 240
 
 if camToggle then
 	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
-	workspace.CurrentCamera.FieldOfView = 100
+	workspace.CurrentCamera.FieldOfView = 90
 end
 
 function setFOV(distance)
@@ -552,23 +552,22 @@ game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
 		end
 	end
 	--Train Calculation
-	local acceleration = 0 --myTrain.averageSlopeSine * -300
+	local acceleration = myTrain.averageSlopeSine * -40
 	local stepDistance = deltaTime * speed + 0.5 * acceleration * deltaTime ^ 2
 	speed += acceleration * deltaTime
 	local newLocation = routeNetwork:stepDistance(myTrain.location, stepDistance, switchSelection)
 	myTrain:setLocation(newLocation, speed, deltaTime)
 	local myCar = myTrain.cars[1]
-	local frontBogie = myCar.frontBogie
+	local frontBogie = myCar.rearBogie
 	local cf = myCar.cf
 	local lookTo = cf.Position + cf.LookVector * 20
 	local target = lookTo + cf.LookVector * 105 + cf.UpVector * 00
 	local blend = math.pow(0.5, deltaTime * 4)
 	lastCamPos = lastCamPos * blend + target * (1 - blend)
-	local fixedLookTo = frontBogie.cf:PointToWorldSpace(Vector3.new(0, 7, 0))
+	local fixedLookTo = frontBogie.cf:PointToWorldSpace(Vector3.new(-7, 2, -25))
 	local fixedTarget = frontBogie.cf.Position
 	if camToggle then
-		workspace.CurrentCamera.CFrame =
-			CFrame.lookAlong(fixedLookTo, -frontBogie.cf.upVector, frontBogie.cf.lookVector)
+		workspace.CurrentCamera.CFrame = CFrame.lookAt(fixedLookTo, frontBogie.cf.Position, Vector3.new(0, 1, 0))
 	end
 	--setFOV((lastCamPos - lookTo).Magnitude)
 	--Update Character

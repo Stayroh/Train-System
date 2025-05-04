@@ -5,5 +5,6 @@
     },
     "stylua.targetReleaseVersion": "latest",
     "editor.formatOnSave": true,
-    "luau-lsp.diagnostics.strictDatamodelTypes": true
+    "luau-lsp.diagnostics.strictDatamodelTypes": true,
+    "stylua.disableVersionCheck": true
 }

@@ -26,7 +26,8 @@ function DisplacementModifier:__add(other: Vector3 | CFrame): Vector3 | CFrame
 	else
 		local offset = self:getOctaveDisplacement(other.Position)
 		local scaledOffset = other:VectorToWorldSpace(other:VectorToObjectSpace(offset) * self.scale)
-		return other + scaledOffset
+		local rollScale = other.Position * 0.015 + Vector3.new(23, 25.2, 53.5)
+		return (other + scaledOffset) * CFrame.Angles(0, 0, math.noise(rollScale.X, rollScale.Y, rollScale.Z) * 0.04)
 	end
 end
 
