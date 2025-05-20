@@ -1,6 +1,9 @@
 # Project place file
-/Train-System.rbxlx
-
+/Train-System.rbxl
+Packages/
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
+/*.rbxl
+deploy.sh
+sourcemap.json
